@@ -1,0 +1,138 @@
+/*
+ * Copyright (c) 2006-2020, RT-Thread Development Team
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Change Logs:
+ * Date           Author       Notes
+ * 2020-11-26     RT-Thread    first version
+ */
+
+#include <rtthread.h>
+#include <rtdbg.h>
+#include <board.h>
+#include <rtdevice.h>
+
+
+void ExtISR()
+{
+}
+
+// test sem
+static rt_sem_t g_sem_test = RT_NULL;
+
+
+// timer test
+static void timer1_function(void *parameter)
+{
+    rt_kprintf("%s line %d\n", __FUNCTION__, __LINE__);
+}
+
+
+static void test_timer(void)
+{
+    static rt_timer_t time_test;
+    time_test = rt_timer_create("timer_test", timer1_function, RT_NULL, 500*5, RT_TIMER_CTRL_SET_PERIODIC);
+    
+    rt_timer_start(time_test);
+}
+
+// test task
+void task_the_test(void *pvParameters)
+{
+    while(1)
+    {
+        rt_kprintf("%s line %d: get_tick_get = %d\n", __FUNCTION__, __LINE__, rt_tick_get());
+       // rt_thread_mdelay(2000);
+       rt_sem_take(g_sem_test, RT_WAITING_FOREVER);
+    }
+}
+
+void task_the_test1(void *pvParameters)
+{
+    while(1)
+    {
+        rt_kprintf("%s line %d\n", __FUNCTION__, __LINE__);
+        rt_thread_mdelay(2000);
+        rt_sem_release(g_sem_test);
+    }
+}
+
+static void test_sem_func(void)
+{
+    rt_thread_t task_test, task_test1;
+
+    g_sem_test = rt_sem_create("test_sem", 0, RT_IPC_FLAG_FIFO);
+        
+    task_test = rt_thread_create("Task test", task_the_test, NULL, 500, 15, 10);
+    rt_thread_startup(task_test);
+
+     task_test1 = rt_thread_create("Task test1", task_the_test1, NULL, 500, 15, 15);
+    rt_thread_startup(task_test1);
+}
+
+static struct rt_messagequeue mq;
+static rt_uint8_t msg_pool[2048];
+
+// test mq
+
+// test task
+void task_the_test_mq(void *pvParameters)
+{
+    while(1)
+    {
+        char data = 0;
+        if(rt_mq_recv(&mq, &data, sizeof(data), RT_WAITING_FOREVER) == RT_EOK)
+        {
+            rt_kprintf("%s line %d: data = %d\n", __FUNCTION__, __LINE__, data);
+        }
+    }
+}
+
+void task_the_test_mq1(void *pvParameters)
+{
+    char *send_data = rt_malloc(1);
+    (*send_data) = 0;
+    while(1)
+    {
+        //rt_kprintf("%s line %d\n", __FUNCTION__, __LINE__);
+        rt_thread_mdelay(2000);
+        (*send_data) ++;
+        rt_mq_urgent(&mq, send_data, 1);
+    }
+    rt_free(send_data);
+}
+
+
+static void test_mq_func(void)
+{
+    rt_thread_t task_test, task_test1;
+
+    rt_mq_init(&mq, "mqt", &msg_pool[0], 1, sizeof(msg_pool), RT_IPC_FLAG_FIFO);
+        
+    task_test = rt_thread_create("Task test", task_the_test_mq, NULL, 500, 15, 10);
+    rt_thread_startup(task_test);
+
+     task_test1 = rt_thread_create("Task test1", task_the_test_mq1, NULL, 500, 15, 15);
+    rt_thread_startup(task_test1);
+    
+
+}
+
+int main(void)
+{
+    //test_sem_func();
+
+    test_mq_func();
+    
+    //test_timer();
+    
+    while(1)
+    {
+        static unsigned int count = 0;
+       // rt_kprintf("%s line %d count = %u\r\n", __FUNCTION__, __LINE__ ,count++);
+        rt_thread_mdelay(2000);
+    }
+
+}
+
