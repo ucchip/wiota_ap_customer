@@ -243,6 +243,32 @@ uc_result_e uc_wiota_set_bt_value(bt_value_e bt_value);
 uc_result_e uc_wiota_set_group_number(group_number_e group_number);
 
 /*********************************************************************************
+ This function is to set dcxo.
+
+ param:
+        in:
+            dcxo:the value of the frequency offset to be set.
+        out:NULL.
+
+ return:
+    uc_result_e.
+**********************************************************************************/
+uc_result_e uc_wiota_set_dcxo(u32_t dcxo);
+
+/*********************************************************************************
+ This function is to set single frequency point.
+
+ param:
+        in:
+            frequency_point:single frequency point.
+        out:NULL.
+
+ return:
+    uc_result_e.
+**********************************************************************************/
+uc_result_e uc_wiota_set_frequency_point(u8_t frequency_point);
+
+/*********************************************************************************
  This function is to get the header of the blacklist linked list.(Need to release
     the head pointer after use)
 
@@ -377,21 +403,6 @@ uc_result_e uc_wiota_send_normal_data(u8_t *send_data, u16_t send_data_len, u32_
 uc_result_e uc_wiota_scan_frequency_point_collection(u8_t *frequency_point, u32_t frequency_point_num, u16_t timeout, uc_result callback);
 
 /*********************************************************************************
- This function is to set single frequency point.
-
- param:
-        in:
-            frequency_point:single frequency point..
-            timeout:function execution timeout time,unit:ms
-            callback:function execution result callback
-        out:NULL.
-
- return:
-    uc_result_e.
-**********************************************************************************/
-uc_result_e uc_wiota_set_frequency_point(u8_t frequency_point, u16_t timeout, uc_result callback);
-
-/*********************************************************************************
  This function is to paging one or a group of iote.
 
  param:
@@ -486,7 +497,7 @@ void uc_wiota_init(void);
 void uc_wiota_start(void);
 
 /*********************************************************************************
- This function is to wiota to stop.(Empty function,not implemented)
+ This function is to wiota to exit.(Empty function,not implemented)
 
  param:
         in:NULL.
@@ -494,7 +505,7 @@ void uc_wiota_start(void);
 
  return:NULL.
 **********************************************************************************/
-void uc_wiota_stop(void);
+void uc_wiota_exit(void);
 
 /*********************************************************************************
  This function is to set the connection timeout period of iote in idle state.

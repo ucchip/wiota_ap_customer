@@ -99,7 +99,7 @@ void uc_wiota_set_single_parameter(void)
 
 void test_app_interface_main_task(void* pPara)
 {
-    u16_t timeout = 1000;
+    // u16_t timeout = 100;
 
     //init dynamic parameter
     dynamic_para_t dynaPara =
@@ -125,10 +125,17 @@ void test_app_interface_main_task(void* pPara)
         uc_wiota_scan_frequency_point_collection(fPoint, sizeof(fPoint)/sizeof(u32_t), timeout, uc_wiota_show_result);
     }
 #endif
+    //set dcxo
+    // {
+    //     u32_t dcxo = ...;
+
+    //     uc_wiota_set_dcxo(dcxo);
+    // }
+
     //set frequency point
     {
         u8_t fPoint = 100;
-        uc_wiota_set_frequency_point(fPoint, timeout, uc_wiota_show_result);
+        uc_wiota_set_frequency_point(fPoint);
     }
 
     //set all dynamic parameter
