@@ -1,8 +1,8 @@
 .PHONY: clean All
 
 All:
-	@echo "----------Building project:[ rtthread_app - Debug ]----------"
-	@"$(MAKE)" -f  "rtthread_app.mk" && "$(MAKE)" -f  "rtthread_app.mk" PostBuild
+	@echo "----------Building project:[ uc8088_wiota_ap - Debug ]----------"
+	@"$(MAKE)" -f  "uc8088_wiota_ap.mk" && "$(MAKE)" -f  "uc8088_wiota_ap.mk" PostBuild
 clean:
-	@echo "----------Cleaning project:[ rtthread_app - Debug ]----------"
-	@"$(MAKE)" -f  "rtthread_app.mk" clean
+	@echo "----------Cleaning project:[ uc8088_wiota_ap - Debug ]----------"
+	@"$(MAKE)" -f  "uc8088_wiota_ap.mk" clean

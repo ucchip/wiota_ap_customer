@@ -7,35 +7,31 @@
 
 #include "uc_wiota_interface.h"
 #include "uc_wiota_interface_test.h"
-#include "adp_task.h"
-#include "adp_mem.h"
-#include "vsi.h"
-
-static void* testTaskHandle = NULL;
+#include "rtthread.h"
 
 void uc_wiota_show_access_func(u32_t user_id)
 {
-    TRACE_PRINTF("uc_wiota_show_access_func user_id 0x%x accessed\n", user_id);
+    rt_kprintf("uc_wiota_show_access_func user_id 0x%x accessed\n", user_id);
 }
 
 void uc_wiota_show_drop_func(u32_t user_id)
 {
-    TRACE_PRINTF("uc_wiota_show_drop_func user_id 0x%x dropped\n", user_id);
+    rt_kprintf("uc_wiota_show_drop_func user_id 0x%x dropped\n", user_id);
 }
 
 void uc_wiota_show_report_data(u32_t user_id, u8_t *report_data, u32_t report_data_len)
 {
-    TRACE_PRINTF("uc_wiota_show_report_data user_id 0x%x, reportData ", user_id);
+    rt_kprintf("uc_wiota_show_report_data user_id 0x%x, reportData ", user_id);
     for (u16_t index = 0; index < report_data_len; index++)
     {
-        TRACE_PRINTF("%u", *report_data++);
+        rt_kprintf("%u", *report_data++);
     }
-    TRACE_PRINTF(", reportDataLen %d\n", report_data_len);
+    rt_kprintf(", reportDataLen %d\n", report_data_len);
 }
 
 void uc_wiota_show_result(uc_result_e result)
 {
-    TRACE_PRINTF("uc_wiota_show_result result %d\n", result);
+    rt_kprintf("uc_wiota_show_result result %d\n", result);
 }
 
 void uc_wiota_set_single_parameter(void)
@@ -149,7 +145,6 @@ void test_app_interface_main_task(void* pPara)
     //wiota start
     uc_wiota_start();
 
-    TRACE_PRINTF("test_app_interface_main_task start register callback\n");
     //register callback
     uc_wiota_register_iote_access_callback(uc_wiota_show_access_func);
     uc_wiota_register_iote_dropped_callback(uc_wiota_show_drop_func);
@@ -163,7 +158,6 @@ void test_app_interface_main_task(void* pPara)
     //     uc_wiota_set_iote_idle_tick(tick);
     // }
 
-    TRACE_PRINTF("test_app_interface_main_task start add blacklist\n");
     //add iote to blacklist
     {
         u32_t userIdArry[5] = {0x4c00ccdb, 0xfb3eae00, 0x38f8c8d8, 0x8aff8783, 0x33139955};
@@ -176,12 +170,11 @@ void test_app_interface_main_task(void* pPara)
         uc_wiota_print_blacklist(headNode, blacklistNum);
         if (headNode != NULL)
         {
-            uc_free(headNode);
+            rt_free(headNode);
             headNode = NULL;
         }
     }
 
-    TRACE_PRINTF("test_app_interface_main_task start remove blacklist\n");
     //remove iote from blacklist
     {
         u32_t userIdArry[4] = {0x38f8c8d8, 0xf6149b11, 0x4eaac480, 0x4c00ccdb};
@@ -194,7 +187,7 @@ void test_app_interface_main_task(void* pPara)
         uc_wiota_print_blacklist(headNode, blacklistNum);
         if (headNode != NULL)
         {
-            uc_free(headNode);
+            rt_free(headNode);
             headNode = NULL;
         }
     }
@@ -207,7 +200,6 @@ void test_app_interface_main_task(void* pPara)
 
         // uc_wiota_send_broadcast_data(testData, sizeof(testData)/sizeof(u8_t), timeout, uc_wiota_show_result);
 
-        TRACE_PRINTF("test_app_interface_main_task start quercy iote info\n");
         //query iote infomation
         u16_t ioteNum = 0;
         iote_info_t *ioteInfo = NULL;
@@ -216,17 +208,20 @@ void test_app_interface_main_task(void* pPara)
         uc_wiota_print_iote_info(ioteInfo, ioteNum);
         if (ioteInfo != NULL)
         {
-            uc_free(ioteInfo);
+            rt_free(ioteInfo);
             ioteInfo = NULL;
         }
 
-        uc_thread_delay(20000);
+        rt_thread_mdelay(20000);
     }
     return;
 }
 
 void app_task_init(void)
 {
-    uc_thread_create(&testTaskHandle, "test_app", test_app_interface_main_task, NULL, 256, 3, 3);
-    uc_thread_start(testTaskHandle);
+    rt_thread_t testTaskHandle = rt_thread_create("test_app", test_app_interface_main_task, NULL, 256, 3, 3);
+    if (testTaskHandle != NULL)
+    {
+        rt_thread_startup(testTaskHandle);
+    }
 }

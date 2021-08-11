@@ -7,11 +7,27 @@
 
 #ifndef _UC_WIOTA_INTERFACE_H_
 #define _UC_WIOTA_INTERFACE_H_
-#include "uctypes.h"
 
 #ifdef __cplusplus
 extern "C"
 {
+#endif
+
+typedef unsigned long long  u64_t;
+typedef signed long long  s64_t;
+typedef unsigned long  ul32_t;
+typedef signed long  sl32_t;
+typedef signed int  s32_t;
+typedef unsigned int  u32_t;
+typedef signed short  s16_t;
+typedef unsigned short  u16_t;
+typedef char n8_t;
+typedef signed char  s8_t;
+typedef unsigned char  u8_t;
+typedef unsigned char boolean;
+
+#ifndef NULL
+#define NULL ((void*) 0)
 #endif
 
 #define UC_WIOTA_MAX_SEND_BROADCAST_DATA_LEN  400
