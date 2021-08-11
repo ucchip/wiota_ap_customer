@@ -219,7 +219,7 @@ void test_app_interface_main_task(void* pPara)
 
 void app_task_init(void)
 {
-    rt_thread_t testTaskHandle = rt_thread_create("test_app", test_app_interface_main_task, NULL, 256, 3, 3);
+    rt_thread_t testTaskHandle = rt_thread_create("test_app", test_app_interface_main_task, NULL, 1024, 3, 3);
     if (testTaskHandle != NULL)
     {
         rt_thread_startup(testTaskHandle);
