@@ -36,7 +36,7 @@ void uc_wiota_show_result(uc_result_e result)
 
 void uc_wiota_set_single_parameter(void)
 {
-//set systemId
+    //set systemId
     {
         u32_t systemId = 0x11223344;
 

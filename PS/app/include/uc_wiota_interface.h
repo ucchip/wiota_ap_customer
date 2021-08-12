@@ -369,7 +369,7 @@ uc_result_e uc_wiota_print_iote_info(iote_info_t *head_node, u16_t iote_num);
 iote_info_t* uc_wiota_query_info_of_currently_connected_iote(u16_t *iote_num);
 
 /*********************************************************************************
- This function is to sending broadcast data.
+ This function is to sending broadcast data.(Not supported at the moment)
 
  param:
         in:
@@ -403,7 +403,7 @@ uc_result_e uc_wiota_send_broadcast_data(u8_t *send_data, u16_t send_data_len, u
 uc_result_e uc_wiota_send_normal_data(u8_t *send_data, u16_t send_data_len, u32_t *user_id, u32_t user_id_num, u16_t timeout, uc_result callback);
 
 /*********************************************************************************
- This function is to scaning frequency point collection.
+ This function is to scaning frequency point collection.(Not supported at the moment)
 
  param:
         in:
@@ -419,7 +419,7 @@ uc_result_e uc_wiota_send_normal_data(u8_t *send_data, u16_t send_data_len, u32_
 uc_result_e uc_wiota_scan_frequency_point_collection(u8_t *frequency_point, u32_t frequency_point_num, u16_t timeout, uc_result callback);
 
 /*********************************************************************************
- This function is to paging one or a group of iote.
+ This function is to paging one or a group of iote.(Not supported at the moment)
 
  param:
         in:
