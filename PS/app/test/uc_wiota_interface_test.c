@@ -122,11 +122,11 @@ void test_app_interface_main_task(void* pPara)
     }
 #endif
     //set dcxo
-    // {
-    //     u32_t dcxo = ...;
+    {
+        u32_t dcxo = 0;
 
-    //     uc_wiota_set_dcxo(dcxo);
-    // }
+        uc_wiota_set_dcxo(dcxo);
+    }
 
     //set frequency point
     {
