@@ -303,7 +303,7 @@
       </Compiler>
       <Linker Options="-nostartfiles -Wl,--gc-sections  -T ./board/linker_scripts/link.flash.ld -Wl,-Map=rtthread.map" Required="yes">
         <LibraryPath Value="./"/>
-        <Library Value="win_uc8088_wiota"/>
+        <Library Value="uc8088_wiota"/>
       </Linker>
       <ResourceCompiler Options="" Required="no"/>
       <General OutputFile="$(IntermediateDirectory)/$(ProjectName)" IntermediateDirectory="./Debug" Command="$(OutputFile)" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="" PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
@@ -320,7 +320,6 @@ load</PostConnectCommands>
       <PreBuild/>
       <PostBuild>
         <Command Enabled="yes">riscv32-unknown-elf-objdump -d $(IntermediateDirectory)/$(ProjectName) &gt;$(IntermediateDirectory)/$(ProjectName).asm</Command>
-        <Command Enabled="yes">elf2bin.exe $(IntermediateDirectory)/$(ProjectName).elf</Command>
       </PostBuild>
       <CustomBuild Enabled="no">
         <RebuildCommand/>
