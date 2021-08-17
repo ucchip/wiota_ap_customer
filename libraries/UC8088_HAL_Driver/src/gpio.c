@@ -13,7 +13,7 @@
 #include <sectdefs.h>
 #include "uc_event.h"
 #include "uc_int.h"
-#include "vsi.h"
+//#include "vsi.h"
 //#include "scheduler_frame_for_gpio.h"
 
 extern void scheduler_tick_notify(void);

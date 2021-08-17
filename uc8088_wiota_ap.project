@@ -15,47 +15,6 @@
         <File Name="PS/app/test/uc_wiota_interface_test.h"/>
       </VirtualDirectory>
     </VirtualDirectory>
-    <VirtualDirectory Name="platform">
-      <VirtualDirectory Name="adapter">
-        <VirtualDirectory Name="include">
-          <File Name="PS/platform/adapter/include/adp_mem.h"/>
-          <File Name="PS/platform/adapter/include/adp_projdefs.h"/>
-          <File Name="PS/platform/adapter/include/adp_queue.h"/>
-          <File Name="PS/platform/adapter/include/adp_sem.h"/>
-          <File Name="PS/platform/adapter/include/adp_sys.h"/>
-          <File Name="PS/platform/adapter/include/adp_task.h"/>
-          <File Name="PS/platform/adapter/include/adp_time.h"/>
-        </VirtualDirectory>
-      </VirtualDirectory>
-      <VirtualDirectory Name="include">
-        <File Name="PS/platform/include/modules.h"/>
-        <File Name="PS/platform/include/platform_common.h"/>
-        <File Name="PS/platform/include/sectdefs.h"/>
-        <File Name="PS/platform/include/string_lib.h"/>
-        <File Name="PS/platform/include/trace.h"/>
-        <File Name="PS/platform/include/typedefs.h"/>
-        <File Name="PS/platform/include/uccompile.h"/>
-        <File Name="PS/platform/include/ucdebug.h"/>
-        <File Name="PS/platform/include/uctypes.h"/>
-        <File Name="PS/platform/include/vsi.h"/>
-        <File Name="PS/platform/include/wcdtypes.h"/>
-      </VirtualDirectory>
-      <VirtualDirectory Name="trace">
-        <VirtualDirectory Name="include">
-          <File Name="PS/platform/trace/include/cce_addr.h"/>
-          <File Name="PS/platform/trace/include/ctrl_cmd.h"/>
-          <File Name="PS/platform/trace/include/trace_function.h"/>
-          <File Name="PS/platform/trace/include/trace_interface.h"/>
-          <File Name="PS/platform/trace/include/trcHardwarePort.h"/>
-          <File Name="PS/platform/trace/include/trcKernelPort.h"/>
-          <File Name="PS/platform/trace/include/trcPortDefines.h"/>
-          <File Name="PS/platform/trace/include/trcRecorder.h"/>
-          <File Name="PS/platform/trace/include/trcStreamingConfig.h"/>
-          <File Name="PS/platform/trace/include/trcStreamingPort.h"/>
-          <File Name="PS/platform/trace/include/uc_submodule_def.h"/>
-        </VirtualDirectory>
-      </VirtualDirectory>
-    </VirtualDirectory>
   </VirtualDirectory>
   <Description/>
   <Dependencies/>
@@ -248,6 +207,7 @@
         <File Name="libraries/UC8088_HAL_Driver/src/uc_uartx.c"/>
         <File Name="libraries/UC8088_HAL_Driver/src/uc_utils.c"/>
         <File Name="libraries/UC8088_HAL_Driver/src/uc_watchdog.c"/>
+        <File Name="libraries/UC8088_HAL_Driver/inc/sectdefs.h"/>
       </VirtualDirectory>
     </VirtualDirectory>
   </VirtualDirectory>
@@ -288,13 +248,6 @@
         <IncludePath Value="rt-thread/components/libc/compilers/newlib"/>
         <IncludePath Value="rt-thread/include"/>
         <IncludePath Value="rt-thread/libcpu/risc-v/uc8088"/>
-        <IncludePath Value="PS/platform/include"/>
-        <IncludePath Value="PS/platform/mem_pool"/>
-        <IncludePath Value="PS/platform/msg"/>
-        <IncludePath Value="PS/platform/utils"/>
-        <IncludePath Value="PS/platform/trace/include"/>
-        <IncludePath Value="PS/platform/utils"/>
-        <IncludePath Value="PS/platform/adapter/include"/>
         <IncludePath Value="PS/app/include"/>
         <IncludePath Value="PS/app/test/"/>
         <Preprocessor Value="HAVE_CCONFIG_H"/>
