@@ -177,7 +177,7 @@ extern u8_t *generate_fake_data(u16_t data_len, u8_t repeat_num);
 void test_send_broadcast_data(void)
 {
     u8_t *testData = generate_fake_data(50, 5);
-    u16_t timeout = 100;
+    u16_t timeout = 100;//ms
 
     uc_wiota_send_broadcast_data(testData, 50, timeout, test_show_result);
     rt_free(testData);// !!!need be manually released after use
