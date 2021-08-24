@@ -140,10 +140,12 @@ typedef enum
 }group_number_e;
 
 typedef void (*uc_result)(uc_result_e result);
+typedef void (*uc_iote_access)(u32_t user_id);
+typedef void (*uc_iote_drop)(u32_t user_id);
+typedef void (*uc_report_data)(u32_t user_id, u8_t *report_data, u32_t report_data_len);
 
 /*********************************************************************************
- This function is to set all dynamic parameter(each parameter must be set when
-    calling the function).
+ This function is to set all dynamic parameter
 
  param:
         in:
@@ -154,6 +156,17 @@ typedef void (*uc_result)(uc_result_e result);
     uc_result_e.
 **********************************************************************************/
 uc_result_e uc_wiota_set_all_dynamic_parameter(dynamic_para_t *dyna_para);
+
+/*********************************************************************************
+ This function is to get all dynamic parameter(need be manually released after use)
+
+ param:NULL.
+
+ return:
+    dynamic_para_t.
+**********************************************************************************/
+dynamic_para_t *uc_wiota_get_all_dynamic_parameter(void);
+
 /*********************************************************************************
  This function is to set system id.
 
@@ -299,7 +312,8 @@ uc_result_e uc_wiota_set_frequency_point(u8_t frequency_point);
 blacklist_t *uc_wiota_get_blacklist(u16_t *blacklist_num);
 
 /*********************************************************************************
- This function is to print all the information in the blacklist.
+ This function is to print all the information in the blacklist.(Need to release
+    the head pointer after use)
 
  param:
         in:
@@ -438,37 +452,36 @@ uc_result_e uc_wiota_paging_iote(iote_paging_info_t *iote_paging, u32_t request_
 
  param:
         in:
-            (*callback)(u32_t userId):function pointer,the parameter is the user id
-                of the accessed iote.
+            callback:function pointer,the parameter is the user id of the accessed
+                iote.
         out:NULL.
 
  return:
     uc_result_e.
 **********************************************************************************/
-uc_result_e uc_wiota_register_iote_access_callback(void(*callback)(u32_t user_id));
+uc_result_e uc_wiota_register_iote_access_callback(uc_iote_access callback);
 
 /*********************************************************************************
  This function is to register iote drop prompt callback.
 
  param:
         in:
-            (*callback)(u32_t userId):function pointer,the parameter is the user id
-                of the dropped iote.
+            callback:function pointer,the parameter is the user id of the dropped
+                iote.
         out:NULL.
 
  return:
     uc_result_e.
 **********************************************************************************/
-uc_result_e uc_wiota_register_iote_dropped_callback(void(*callback)(u32_t user_id));
-
+uc_result_e uc_wiota_register_iote_dropped_callback(uc_iote_drop callback);
 
 /*********************************************************************************
  This function is to register uplink data prompt callback.
 
  param:
         in:
-            (*callback)(u32_t userId):function pointer,the parameter is the user id
-                of the iote that report the data.
+            callback:function pointer,the parameter is the user id of the iote that
+                report the data.
             report_data:data content report.
             report_data_len:data length reported
         out:NULL.
@@ -476,7 +489,7 @@ uc_result_e uc_wiota_register_iote_dropped_callback(void(*callback)(u32_t user_i
  return:
     uc_result_e.
 **********************************************************************************/
-uc_result_e uc_wiota_register_proactively_report_data_callback(void(*callback)(u32_t user_id, u8_t *report_data, u32_t report_data_len));
+uc_result_e uc_wiota_register_proactively_report_data_callback(uc_report_data callback);
 
 /*********************************************************************************
  This function is to query exception information.(Empty function,not implemented)
@@ -491,7 +504,7 @@ uc_result_e uc_wiota_register_proactively_report_data_callback(void(*callback)(u
 exception_info_t* uc_wiota_query_exception_infomation(void);
 
 /*********************************************************************************
- This function is to wiota to init.
+ This function is to wiota to reinit.
 
  param:
         in:NULL.
@@ -499,7 +512,18 @@ exception_info_t* uc_wiota_query_exception_infomation(void);
 
  return:NULL.
 **********************************************************************************/
-void uc_wiota_init(void);
+void uc_wiota_reinit(void);
+
+/*********************************************************************************
+ This function is to wiota to first init.
+
+ param:
+        in:NULL.
+        out:NULL.
+
+ return:NULL.
+**********************************************************************************/
+void uc_wiota_first_init(void);
 
 /*********************************************************************************
  This function is to wiota to start.
@@ -524,28 +548,28 @@ void uc_wiota_start(void);
 void uc_wiota_exit(void);
 
 /*********************************************************************************
- This function is to set the connection timeout period of iote in idle state.
+ This function is to set the connection timeout of iote in idle state.
 
  param:
         in:
-            tick:timeout period,default value is 8,a tick is about 100ms.
+            active_time:connection timeout, unit:second
         out:NULL.
 
  return:
     uc_result_e.
 **********************************************************************************/
-uc_result_e uc_wiota_set_iote_idle_tick(u8_t tick);
+uc_result_e uc_wiota_set_active_time(u32_t active_time);
 
 /*********************************************************************************
- This function is to get the connection timeout period of iote in idle state.
+ This function is to get the connection timeout of iote in idle state.
 
  param:
         in:NULL.
         out:NULL.
 
- return:timeout period.
+ return:connection timeout.
 **********************************************************************************/
-u8_t uc_wiota_get_iote_idle_tick(void);
+u32_t uc_wiota_get_active_time(void);
 #ifdef __cplusplus
 }
 #endif

@@ -141,6 +141,14 @@ void gpio_init(void)
     return;
 }
 
+void gpio_deinit(void)
+{
+    int_disable();
+    set_gpio_pin_irq_en(PIN_NUMBER, 0);
+    disable_event_iqr(GPIO_INT_ID);
+    return;
+}
+
 //unsigned int g_gpio_count = 0;
 void ISR_GPIO(void)
 {

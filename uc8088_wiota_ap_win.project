@@ -255,8 +255,8 @@
         <Preprocessor Value="RT_USING_NEWLIB"/>
       </Compiler>
       <Linker Options="-nostartfiles -Wl,--gc-sections  -T ./board/linker_scripts/link.flash.ld -Wl,-Map=rtthread.map" Required="yes">
-        <LibraryPath Value="./"/>
-        <Library Value="uc8088_wiota"/>
+        <LibraryPath Value="./PSlib"/>
+        <Library Value="win_uc8088_wiota"/>
       </Linker>
       <ResourceCompiler Options="" Required="no"/>
       <General OutputFile="$(IntermediateDirectory)/$(ProjectName)" IntermediateDirectory="./Debug" Command="$(OutputFile)" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="" PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>

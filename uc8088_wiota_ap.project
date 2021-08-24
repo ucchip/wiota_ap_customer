@@ -255,7 +255,7 @@
         <Preprocessor Value="RT_USING_NEWLIB"/>
       </Compiler>
       <Linker Options="-nostartfiles -Wl,--gc-sections  -T ./board/linker_scripts/link.flash.ld -Wl,-Map=rtthread.map" Required="yes">
-        <LibraryPath Value="./"/>
+        <LibraryPath Value="./PSlib"/>
         <Library Value="lib_wiota_ap"/>
       </Linker>
       <ResourceCompiler Options="" Required="no"/>
