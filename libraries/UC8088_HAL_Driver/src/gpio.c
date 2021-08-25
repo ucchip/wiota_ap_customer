@@ -165,3 +165,19 @@ void ISR_GPIO(void)
 
     return;
 }
+
+#define GPIO_8288_TO_8088_PIN_NUMBER 25
+void gpoi_8088_to_8288_init(void)
+{
+    // set_pin_function(GPIO_8288_TO_8088_PIN_NUMBER,1);
+    set_gpio_pin_direction(GPIO_8288_TO_8088_PIN_NUMBER, DIR_OUT);
+    // set_gpio_pin_value(GPIO_8288_TO_8088_PIN_NUMBER,PIN_OUT_LOW);//first is low
+    set_gpio_pin_value(GPIO_8288_TO_8088_PIN_NUMBER,0);//first is low
+}
+
+void gpoi_8088_to_8288_change_value(void)
+{
+    // u32_t old_value =get_gpio_pin_value(GPIO_8288_TO_8088_PIN_NUMBER);
+    set_gpio_pin_value(GPIO_8288_TO_8088_PIN_NUMBER,1);
+    set_gpio_pin_value(GPIO_8288_TO_8088_PIN_NUMBER,0);
+}

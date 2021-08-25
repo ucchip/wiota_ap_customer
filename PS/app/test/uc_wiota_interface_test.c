@@ -146,7 +146,7 @@ void test_handle_scan_frequency_point_collection(void)
 // test! set frequency point
 void test_set_frequency_point(void)
 {
-    u8_t fPoint = 100;
+    u32_t fPoint = 100;
     uc_wiota_set_frequency_point(fPoint);
 }
 
@@ -235,13 +235,27 @@ void test_remove_iote_from_blacklist(void)
     }
 }
 
+// #define TEST_SINGLE_RX
+#ifdef TEST_SINGLE_RX
+extern void l1c_rf_test_case1(u32_t count);
+#endif
+
 void app_interface_main_task(void *pPara)
 {
+#ifdef TEST_SINGLE_RX
+    u32_t count = 0;
+    while (4 > count)
+    {
+        rt_thread_mdelay(10000);
+        l1c_rf_test_case1(count++);
+    }
+#else
     uc_wiota_first_init();
 
     // test! set all dynamic parameter after wiota init, before wiota start
     test_set_all_para();
     test_get_all_para();
+#endif
 
     // test! set single parameter after wiota init, before wiota start
     // test_set_single_parameter();
@@ -253,14 +267,11 @@ void app_interface_main_task(void *pPara)
     test_set_connection_timeout();
     test_get_connection_timeout();
 
+    // test! set frequency point after wiota start, before wiota start
+    test_set_frequency_point();
+
     // wiota start
     uc_wiota_start();
-
-    // test! scan frequency point collection after wiota start
-    // test_handle_scan_frequency_point_collection();
-
-    // test! set frequency point after wiota start
-    // test_set_frequency_point();
 
     // test! register callback after wiota start or init
     test_register_callback();
@@ -274,7 +285,7 @@ void app_interface_main_task(void *pPara)
     while (1)
     {
         // test! send broadcast data after wiota start
-        test_send_broadcast_data();
+        // test_send_broadcast_data();
 
         // test! query iote information after wiota start
         test_query_iote_info();

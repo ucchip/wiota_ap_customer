@@ -10,11 +10,11 @@
 
 #include "uc_wiota_interface_test.h"
 
-#define  L1_TEST_SUBMODULE
+#define L1_TEST_SUBMODULE
 
 void ExtISR()
 {
-    return ;
+    return;
 }
 
 int main(void)

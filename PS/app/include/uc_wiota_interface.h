@@ -30,7 +30,7 @@ typedef unsigned char boolean;
 #define NULL ((void*) 0)
 #endif
 
-#define UC_WIOTA_MAX_SEND_BROADCAST_DATA_LEN  400
+#define UC_WIOTA_MAX_SEND_BROADCAST_DATA_LEN  1024
 
 #define UC_WIOTA_MAX_FREQUENCE_POINT 200
 
@@ -295,7 +295,7 @@ uc_result_e uc_wiota_set_dcxo(u32_t dcxo);
  return:
     uc_result_e.
 **********************************************************************************/
-uc_result_e uc_wiota_set_frequency_point(u8_t frequency_point);
+uc_result_e uc_wiota_set_frequency_point(u32_t frequency_point);
 
 /*********************************************************************************
  This function is to get the header of the blacklist linked list.(Need to release
