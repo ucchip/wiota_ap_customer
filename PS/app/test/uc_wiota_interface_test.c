@@ -21,12 +21,17 @@ void test_show_drop_func(u32_t user_id)
 
 void test_show_report_data(u32_t user_id, u8_t *report_data, u32_t report_data_len)
 {
+    // u8_t fake_data = NULL;
+
     rt_kprintf("test_show_report_data user_id 0x%x, reportData ", user_id);
     for (u16_t index = 0; index < report_data_len; index++)
     {
         rt_kprintf("%u", *report_data++);
     }
     rt_kprintf(", reportDataLen %d\n", report_data_len);
+    // fake_data = generate_fake_data(80 ,10);
+    // uc_wiota_send_normal_data(fake_data, 80, &user_id, 1, 100, NULL);
+    // OS_FREE(fake_data);
 }
 
 void test_show_result(uc_result_e result)
