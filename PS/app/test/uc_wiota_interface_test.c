@@ -244,7 +244,7 @@ void test_remove_iote_from_blacklist(void)
     uc_wiota_print_blacklist(headNode, blacklistNum);
     if (headNode != NULL)
     {
-        rt_free(headNode);// !!!need be manually released after use
+        rt_free(headNode); // !!!need be manually released after use
         headNode = NULL;
     }
 }
