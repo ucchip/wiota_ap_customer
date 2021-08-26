@@ -134,7 +134,7 @@ void test_get_all_para(void)
 // test! set dcxo
 void test_set_dcxo(void)
 {
-    u32_t dcxo = 0x20000;
+    u32_t dcxo = 0x00000;
 
     uc_wiota_set_dcxo(dcxo);
 }
@@ -177,14 +177,23 @@ void test_register_callback(void)
     uc_wiota_register_proactively_report_data_callback(test_show_report_data);
 }
 
-// test! send broadcast data
+// test! send normal/ota broadcast data
 extern u8_t *generate_fake_data(u16_t data_len, u8_t repeat_num);
-void test_send_broadcast_data(void)
+void test_send_broadcast_data(broadcast_mode_e mode)
 {
-    u8_t *testData = generate_fake_data(50, 5);
+    u8_t *testData;
     u16_t timeout = 100;//ms
+    if(OTA_BROADCAST != mode)
+    {
+        testData = generate_fake_data(50, 5);
+        uc_wiota_send_broadcast_data(testData, 50, mode, timeout, test_show_result);
+    }
+    else
+    {
+        testData = generate_fake_data(1024, 5);
+        uc_wiota_send_broadcast_data(testData, 1024, mode, timeout, test_show_result);
+    }
 
-    uc_wiota_send_broadcast_data(testData, 50, timeout, test_show_result);
     rt_free(testData);// !!!need be manually released after use
     testData = NULL;
 }
@@ -251,16 +260,16 @@ void app_interface_main_task(void *pPara)
     u32_t count = 0;
     while (4 > count)
     {
-        rt_thread_mdelay(10000);
+        rt_thread_mdelay(1000);
         l1c_rf_test_case1(count++);
     }
 #else
     uc_wiota_first_init();
+#endif
 
     // test! set all dynamic parameter after wiota init, before wiota start
     test_set_all_para();
     test_get_all_para();
-#endif
 
     // test! set single parameter after wiota init, before wiota start
     // test_set_single_parameter();
@@ -289,8 +298,9 @@ void app_interface_main_task(void *pPara)
 
     while (1)
     {
-        // test! send broadcast data after wiota start
-        // test_send_broadcast_data();
+        // test! send normal/ota broadcast data after wiota start
+        // test_send_broadcast_data(NORMAL_BROADCAST);
+        test_send_broadcast_data(OTA_BROADCAST);
 
         // test! query iote information after wiota start
         test_query_iote_info();

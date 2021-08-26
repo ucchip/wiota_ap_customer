@@ -139,6 +139,13 @@ typedef enum
     GROUP_NUMBER_INVALID,
 }group_number_e;
 
+typedef enum
+{
+    NORMAL_BROADCAST = 0, //normal broadcast data,the amount of data is small,and the transmission rate is slow.
+    OTA_BROADCAST    = 1, //OTA broadcast data,large amount of data,faster transmission rate
+    INVALID_BROACAST,
+}broadcast_mode_e;
+
 typedef void (*uc_result)(uc_result_e result);
 typedef void (*uc_iote_access)(u32_t user_id);
 typedef void (*uc_iote_drop)(u32_t user_id);
@@ -383,20 +390,31 @@ uc_result_e uc_wiota_print_iote_info(iote_info_t *head_node, u16_t iote_num);
 iote_info_t* uc_wiota_query_info_of_currently_connected_iote(u16_t *iote_num);
 
 /*********************************************************************************
- This function is to sending broadcast data.(Not supported at the moment)
+ This function is to sending broadcast data.
 
  param:
         in:
             send_data:data to be sent.
-            send_data_len:the length of data to be sent.
+            send_data_len:the length of data to be sent.(the max is 1024 bit)
+            mode:
+                0:normal broadcast data,the amount of data is small,and the
+                    transmission rate is slow.
+                1:OTA broadcast data,large amount of data,faster transmission rate
             timeout:send data timeout time,unit:ms
             callback:send data result callback
         out:NULL.
 
  return:
     uc_result_e.
+
+ note:
+        1.if the callback is NULL,the data sent is larger than 1k,and the next
+    packet can be sent only after the function return value is UC_SUCCESS.
+        2..if the callback is not NULL,the data sent is larger than 1k,you need to
+    wait until the registered callback returns UC_SUCCESS before sending the next
+    packet.
 **********************************************************************************/
-uc_result_e uc_wiota_send_broadcast_data(u8_t *send_data, u16_t send_data_len, u16_t timeout, uc_result callback);
+uc_result_e uc_wiota_send_broadcast_data(u8_t *send_data, u16_t send_data_len, broadcast_mode_e mode, u16_t timeout, uc_result callback);
 
 /*********************************************************************************
  This function is to sending non-broadcast data.

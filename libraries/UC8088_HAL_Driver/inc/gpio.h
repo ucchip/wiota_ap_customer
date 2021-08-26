@@ -89,4 +89,7 @@ int get_gpio_irq_status();
 void gpio_init(void);
 void gpio_deinit(void);
 
+void gpoi_8088_to_8288_init(void);
+void gpoi_8088_to_8288_change_value(void);
+
 #endif // _GPIO_H_
