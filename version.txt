@@ -1,0 +1,7 @@
+v0.01修改如下：
+	1、增加生存时间接口，修改接口名称为uc_wiota_set_active_time()、uc_wiota_get_active_time()
+	2、增加广播和OTA业务支持，见例子：test_send_broadcast()
+	3、增加wiota退出接口，解决wiota退出后的内存泄漏问题
+	4、独立uc_wiota_interface_test.c的例子，已test_开头
+	5、增加频点设置接口，uc_wiota_set_frequency_point()
+	

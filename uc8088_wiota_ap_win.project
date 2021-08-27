@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<CodeLite_Project InternalType="" Name="uc8088_wiota_ap_win" Version="11000">
+<CodeLite_Project InternalType="RISCV" Name="uc8088_wiota_ap_win" Version="11000">
   <Plugins>
     <Plugin Name="qmake">
       <![CDATA[00010001N0005Debug000000000000]]>
@@ -234,7 +234,7 @@
       </Linker>
       <ResourceCompiler Options=""/>
     </GlobalSettings>
-    <Configuration Name="Debug" CompilerType="riscv( riscv32-unknown-elf )" DebuggerType="GNU gdb debugger" Type="Executable" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
+    <Configuration Name="Debug" CompilerType="pulpino" DebuggerType="GNU gdb debugger" Type="Executable" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
       <Compiler Options="-g; -Os; -Wall  -march=rv32imfc;  -ffunction-sections  -Iplatform -Ilibraries/inc " C_Options="-g; -Os; -Wall  -march=rv32imfc; -ffunction-sections;-Iplatform;-Ilibraries/inc;-D _RT_THREAD_;-D _ASIC_;-D UC_DEBUG;-D MEM_OPT;-D _FPGA_;-DLO_TYPE=H_LO;-DIF_VALUE=100;-DHB_COE=1;-DFILTER_TAG=240;-D __AFC_SWITCH__;-D _FPGA_TRACE_TEST_" Assembler="-c; -g;  -march=rv32imfc;  -Iplatform -Ilibraries/inc " Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="0">
         <IncludePath Value="."/>
         <IncludePath Value="/opt/riscv/riscv32-unknown-elf/include"/>
