@@ -8,14 +8,16 @@ __DYNAMIC  =  0;
 
 MEMORY
 {
-    uc_rom      : ORIGIN = 0x00000000, LENGTH = 0x3000  /*12K uncompressed code sys data, NO RODATA!!!!*/
-    instrram    : ORIGIN = 0x00003000, LENGTH = 0x1fd000 /*1M -0x3000*/
-    datarom     : ORIGIN = 0x00200000, LENGTH = 0x100000
-    dataram     : ORIGIN = 0x00300000, LENGTH = 0x39C00  /*d_sram ends at 256K 340000  0x3B490 */
+    uc_rom      : ORIGIN = 0x00000000, LENGTH = 0x3000   /* 12K uncompressed code sys data, NO RODATA!!!! */
+    instrram    : ORIGIN = 0x00003000, LENGTH = 0xFD000  /* 1M - 0x3000 */
+    datarom     : ORIGIN = 0x00200000, LENGTH = 0xFE000  /* 1M - 0x2000*/
+    staticdata  : ORIGIN = 0x002FE000, LENGTH = 0x2000   /* 8K */
+    dataram     : ORIGIN = 0x00300000, LENGTH = 0x39C00  /* d_sram ends at 256K 340000  0x3B490 */
     toolram     : ORIGIN = 0x00339800, LENGTH = 0x800    /* 2K */
-    ccetraceram : ORIGIN = 0x0033A000, LENGTH = 0x1490   /* 5k temp*/
+    ccetraceram : ORIGIN = 0x0033A000, LENGTH = 0x1490   /* 5k temp */
     rvtraceram  : ORIGIN = 0x0033B490, LENGTH = 0x1770
-    stack       : ORIGIN = 0x0033CC00, LENGTH = 0x2000  /* stack and  32ec00 is reserved for trace buffer */ 
+    stack       : ORIGIN = 0x0033CC00, LENGTH = 0x2000   /* stack and 32ec00 is reserved for trace buffer */
+
 }
 
 /* Stack information variables */
@@ -131,7 +133,7 @@ SECTIONS
         *(.dfeinfo);
         *(.rfinfo);
         *(.dumpdata);
-    } > datarom
+    } > staticdata
 
     .shbss :
     {

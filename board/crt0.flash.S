@@ -1402,6 +1402,7 @@ ISR_TB_CMP_ASM:
     csrr a1, mepc
     mv a2, sp
     call ISR_TB_CMP
+    //call uc_8088_tick_handler
     call rt_interrupt_leave
 
     // switch to from thread stack
@@ -1516,6 +1517,7 @@ ISR_TB_OVF_ASM:
     csrr a1, mepc
     mv a2, sp
     call ISR_TB_OVF
+    // call uc_8088_tick_handler
     call rt_interrupt_leave
 
     // switch to from thread stack

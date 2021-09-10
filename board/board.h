@@ -40,4 +40,8 @@ void rtc_calibrate(uint8_t auto_calib, uint32_t *freq_val, uint32_t *bias_val);
 #endif
 void uc8088_chip_reset(void);
 
+void uc8088_systick_init(void);
+
+void timer1_compare_handler(void);
+
 #endif

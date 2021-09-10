@@ -51,6 +51,7 @@ typedef enum
     UC_SUCCESS = 0,
     UC_TIMEOUT = 1,
     UC_FAILED = 2,
+    UC_PAGING = 3,
 }uc_result_e;
 
 typedef struct
@@ -63,13 +64,14 @@ typedef struct
 {
     u32_t system_id;
     u32_t subsystem_id;
-    u16_t reserved;
     u8_t  id_len;
     u8_t  pn_num;          // 0: 1, 1: 2, 2: 4, 3: not use
     u8_t  symbol_length;   //128,256,512,1024
     u8_t  dlul_ratio;      //0 1:1,  1 1:2
     u8_t  bt_value;         //bt from rf 1: 0.3, 0: 1.2
     u8_t  group_number;    //frame ul group number: 1,2,4,8
+    u8_t  ap_max_power;    //0: 21, 1: 30
+    u8_t  spectrum_idx;    //default value:3(470M-510M)
     u8_t  na[48];
 }dynamic_para_t;
 
@@ -93,14 +95,6 @@ typedef struct
     u32_t rssi;
     //TODO:
 }scan_result_t;
-
-typedef struct
-{
-    u64_t user_id;
-    u32_t scramb_id;
-    u16_t boost_level;
-    u16_t cycle;
-}iote_paging_info_t;
 
 typedef struct
 {
@@ -292,6 +286,29 @@ uc_result_e uc_wiota_set_group_number(group_number_e group_number);
 uc_result_e uc_wiota_set_dcxo(u32_t dcxo);
 
 /*********************************************************************************
+ This function is to get dcxo.
+
+ param:NULL
+
+ return:
+    dcxo.
+**********************************************************************************/
+u32_t uc_wiota_get_dcxo(void);
+
+/*********************************************************************************
+ This function is to set ap max power.
+
+ param:
+        in:
+            ap_max_power:the value of the ap max power to be set.
+        out:NULL.
+
+ return:
+    uc_result_e.
+**********************************************************************************/
+uc_result_e uc_wiota_set_ap_max_power(u8_t ap_max_power);
+
+/*********************************************************************************
  This function is to set single frequency point.
 
  param:
@@ -303,6 +320,16 @@ uc_result_e uc_wiota_set_dcxo(u32_t dcxo);
     uc_result_e.
 **********************************************************************************/
 uc_result_e uc_wiota_set_frequency_point(u32_t frequency_point);
+
+/*********************************************************************************
+ This function is to get frequency point.
+
+ param:NULL.
+
+ return:
+    frequency point.
+**********************************************************************************/
+u32_t uc_wiota_get_frequency_point(void);
 
 /*********************************************************************************
  This function is to get the header of the blacklist linked list.(Need to release
@@ -417,7 +444,7 @@ iote_info_t* uc_wiota_query_info_of_currently_connected_iote(u16_t *iote_num);
 uc_result_e uc_wiota_send_broadcast_data(u8_t *send_data, u16_t send_data_len, broadcast_mode_e mode, u16_t timeout, uc_result callback);
 
 /*********************************************************************************
- This function is to sending non-broadcast data.
+ This function is to paging iote and sending non-broadcast data.
 
  param:
         in:
@@ -432,7 +459,7 @@ uc_result_e uc_wiota_send_broadcast_data(u8_t *send_data, u16_t send_data_len, b
  return:
     uc_result_e.
 **********************************************************************************/
-uc_result_e uc_wiota_send_normal_data(u8_t *send_data, u16_t send_data_len, u32_t *user_id, u32_t user_id_num, u16_t timeout, uc_result callback);
+uc_result_e uc_wiota_paging_and_send_normal_data(u8_t *send_data, u16_t send_data_len, u32_t *user_id, u32_t user_id_num, u16_t timeout, uc_result callback);
 
 /*********************************************************************************
  This function is to scaning frequency point collection.(Not supported at the moment)
@@ -449,21 +476,6 @@ uc_result_e uc_wiota_send_normal_data(u8_t *send_data, u16_t send_data_len, u32_
     uc_result_e.
 **********************************************************************************/
 uc_result_e uc_wiota_scan_frequency_point_collection(u8_t *frequency_point, u32_t frequency_point_num, u16_t timeout, uc_result callback);
-
-/*********************************************************************************
- This function is to paging one or a group of iote.(Not supported at the moment)
-
- param:
-        in:
-            iote_paging:parameters of the iote to be paged.
-            request_fn:requested frame number.
-            iote_num:number of iotes to be paged
-        out:NULL.
-
- return:
-    uc_result_e.
-**********************************************************************************/
-uc_result_e uc_wiota_paging_iote(iote_paging_info_t *iote_paging, u32_t request_fn, u32_t iote_num);
 
 /*********************************************************************************
  This function is to register iote access prompt callback.

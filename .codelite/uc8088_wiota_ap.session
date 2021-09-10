@@ -48,7 +48,7 @@
     <TabInfo>
       <wxString Value="/home/jpwang/code/wiota_ap_customer/uc8088_wiota_ap_win.project" Name="FileName"/>
       <int Value="0" Name="FirstVisibleLine"/>
-      <int Value="7" Name="CurrentLine"/>
+      <int Value="32" Name="CurrentLine"/>
       <wxArrayString Name="Bookmarks"/>
       <IntVector Name="CollapsedFolds"/>
     </TabInfo>

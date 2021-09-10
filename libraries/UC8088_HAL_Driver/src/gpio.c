@@ -8,6 +8,8 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 
+#define  L1_TEST_SUBMODULE
+//#include "platform_common.h"
 #include <gpio.h>
 #include <stdio.h>
 #include <sectdefs.h>
@@ -15,9 +17,7 @@
 #include "uc_int.h"
 //#include "vsi.h"
 //#include "scheduler_frame_for_gpio.h"
-
 extern void scheduler_tick_notify(void);
-
 void set_pin_function(int pinnumber, int function)
 {
     volatile int old_function;
@@ -175,9 +175,32 @@ void gpoi_8088_to_8288_init(void)
     set_gpio_pin_value(GPIO_8288_TO_8088_PIN_NUMBER,0);//first is low
 }
 
-void gpoi_8088_to_8288_change_value(void)
+#ifndef TEST_SINGLE_MAIN
+// static u32_t g_gpio_record_count =0;
+void gpoi_8088_to_8288_change_value()
 {
-    // u32_t old_value =get_gpio_pin_value(GPIO_8288_TO_8088_PIN_NUMBER);
     set_gpio_pin_value(GPIO_8288_TO_8088_PIN_NUMBER,1);
     set_gpio_pin_value(GPIO_8288_TO_8088_PIN_NUMBER,0);
+
+    // u32_t count = os_getTimeStamp();
+    // u32_t distance_count=0;
+    // if(g_gpio_record_count < count)
+    // {
+    //    distance_count = count - g_gpio_record_count;
+    // }
+    // else
+    // {
+    //     distance_count = (~0 - g_gpio_record_count) + count;
+    // }
+    // g_gpio_record_count = count;
+    // TRACE_PRINTF("<<<<<timerA dfe count [%u]\n",distance_count);
+
+
 }
+#else
+void gpoi_8088_to_8288_change_value(unsigned int test1,unsigned int test2)
+{
+    TRACE_PRINTF("<<<<<timer [%u]  [%u] \n",test1,test2);
+}
+
+#endif

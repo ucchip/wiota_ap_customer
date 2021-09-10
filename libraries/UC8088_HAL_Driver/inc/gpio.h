@@ -90,6 +90,9 @@ void gpio_init(void);
 void gpio_deinit(void);
 
 void gpoi_8088_to_8288_init(void);
-void gpoi_8088_to_8288_change_value(void);
-
+#ifndef TEST_SINGLE_MAIN
+void gpoi_8088_to_8288_change_value();
+#else
+void gpoi_8088_to_8288_change_value(unsigned int test1, unsigned int test2);
+#endif
 #endif // _GPIO_H_

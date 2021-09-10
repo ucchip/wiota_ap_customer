@@ -63,7 +63,7 @@ void sys_tick_handler(void)
 //	ECP = 0x20000000;
 	ICP = 0x20000000;
     ECP = 0x20000000;
-	
+
 	/* enter interrupt */
     //rt_interrupt_enter();
 
@@ -74,31 +74,61 @@ void sys_tick_handler(void)
     //rt_interrupt_leave();
 }
 
-//#define configCPU_CLOCK_HZ			( ( unsigned long ) 4860000)   
+//#define configCPU_CLOCK_HZ			( ( unsigned long ) 4860000)
 //#define configTICK_RATE_DIV			( 500 )   //Div=Tick*PreScalar 2500?
-#define configCPU_CLOCK_HZ			( ( unsigned long ) BSP_CLOCK_SYSTEM_FREQ_HZ)  
+#define configCPU_CLOCK_HZ			( ( unsigned long ) BSP_CLOCK_SYSTEM_FREQ_HZ) //131072000
 #define configTICK_RATE_DIV			( RT_TICK_PER_SECOND )
+
 
 static void rt_hw_systick_init(void)
 {
-    /* Setup Timer A */    
+    /* Setup Timer A */
     TIMER_CFG_Type TIMERX_InitStructure;
-    
+
     /* set time count*/
     TIMERX_InitStructure.Count = 0x0;
-    
+
     /* set compare value*/
     TIMERX_InitStructure.Compare_Value = configCPU_CLOCK_HZ / (5 * configTICK_RATE_DIV);
-    
+    // TIMERX_InitStructure.Compare_Value = configCPU_CLOCK_HZ;
+
     /* set prescaler value*/
     TIMERX_InitStructure.Prescaler = 4;
-    
+
     /* Timer0 start timer */
     TIMER_Init(UC_TIMER0,&TIMERX_InitStructure);
-    
+
     /* Enable TA IRQ */
-    IER |= 0x20000000; 
+    IER |= 0x20000000;
+    // IER |= (1<<29);
 }
+
+#define TI_OVF_TIMER_TEST
+#ifdef TI_OVF_TIMER_TEST
+static void rt_hw_systick_init_timerB(void)//OVF  timerB
+{
+    /* Setup Timer B */
+    TIMER_CFG_Type TIMERX_InitStructure;
+
+    /* set time count*/
+    TIMERX_InitStructure.Count = 0x0;
+
+    /* set compare value*/
+    TIMERX_InitStructure.Compare_Value = 0;
+
+    /* set prescaler value*/
+    TIMERX_InitStructure.Prescaler = 0;
+
+    /* Timer1 start timer */
+    TIMER_Init(UC_TIMER1,&TIMERX_InitStructure);
+
+
+    /* Enable TA IRQ */
+    IER |= (1<<30);
+
+
+}
+#endif
 
 void rt_hw_board_init(void)
 {
@@ -115,19 +145,22 @@ void rt_hw_board_init(void)
     /* initialize timer0 */
     rt_hw_systick_init();
 
+    /* initialize timer1 */
+    rt_hw_systick_init_timerB();
+
     /* Pin driver initialization is open by default */
 #ifdef RT_USING_PIN
     extern int rt_hw_pin_init(void);
     rt_hw_pin_init();
 #endif
-    
+
 #ifdef RT_USING_SERIAL
     extern int rt_hw_usart_init(void);
 	rt_hw_usart_init();
     extern int virtual_usart_init(void);
     virtual_usart_init();
 #endif
-	
+
 #ifdef RT_USING_CONSOLE
     rt_console_set_device(RT_CONSOLE_DEVICE_NAME);
 #endif
@@ -156,3 +189,34 @@ FINSH_FUNCTION_EXPORT_ALIAS(reboot, __cmd_reboot, Reboot System);
 #endif /* RT_USING_FINSH */
 
 
+void uc_8088_tick_handler(void)
+{
+	// ICP = 0x20000000;
+    // ECP = 0x20000000;
+
+	/* enter interrupt */
+    //rt_interrupt_enter();
+
+    // rt_tick_increase();
+
+    // TIMER_Set_Count(UC_TIMER1, 0);
+
+    // rt_kprintf("<<<uc_8088_tick_handler \n");
+    timer1_compare_handler();
+
+    /* leave interrupt */
+    //rt_interrupt_leave();
+
+}
+
+#include "gpio.h"
+void ISR_TB_OVF(void )
+{
+	ICP = (1<<30);
+    ECP = (1<<30);
+
+    TIMER_Set_Count(UC_TIMER1, 0);
+
+    gpoi_8088_to_8288_change_value();
+    rt_kprintf("<<<uc_8088_tick_handler \n");
+}
