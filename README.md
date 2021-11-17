@@ -9,7 +9,7 @@ This project is the base station side wiota protocol and running on UC8288 chip.
 </br>
 </br>
 
-# Abort UC8288
+# About UC8288
 UC8288 series chips are equipped with the wide area Internet of Things communication protocol WloTa, which is designed on the development platform with UCCHIP's own intellectual property rights. 
 It is fully integrated and has advantages in cost, power consumption, performance, security and other aspects. It is highly customizable and flexibly supports different industry application scenarios.
 
@@ -35,7 +35,7 @@ It is fully integrated and has advantages in cost, power consumption, performanc
 </br>      
       
 
-# Abort WloTa Protocol
+# About WloTa Protocol
 WloTa (Wide-range Intetnet Of Things communicAtion Protocol) protocol designed for the wide-area wireless loT communication is chinese independent intellectual property rights completely. 
 The core characters include large coverage, low power consumption, a large number of connections, low cost, working at 230 MHZ to 470 MHZ in sub 1G spectrum.
 So it is flexible and can meet the demand of Internet communication for many industries.</br>
