@@ -5,7 +5,7 @@ We can provide variety kinds of chips such as GPRS/GPS, Wiota, LTE
 </br>
 
 # About wiota_ap_customer
-This project is the base station side wiota protocol and running on UC8288 chip.
+This project is the base station side for UC8288 chip.
 </br>
 </br>
 
@@ -16,22 +16,39 @@ It is fully integrated and has advantages in cost, power consumption, performanc
 ### Features
   ★ Frequency range: 65MHZ ~ 1GMHZ
   
-  ★ Memory: 4MB NOR, 240KB SRAM
+  ★ Memory: 16MB NOR, 256KB SRAM, 128KB Data SRAM embedded in BSP 
   
-  ★ Common peripherals</br>
+  ★ Common peripherals supported</br>
       &emsp;2 x 16650 compatible UART.</br>
       &emsp;2 x 32 bits timer</br>
       &emsp;SPI Master, four peripheral signal selection</br>
-      &emsp;CAN BUS interface. </br>
       &emsp;4 PWM module, independent output. </br>
-      &emsp;16 multiple gpio interface</br>
+      &emsp;multiple gpio interface</br>
       &emsp;I2C interface.</br>
-      &emsp;12 bits ADC </br>
+      &emsp;Three 12 bits ADC </br>
       &emsp;10 bits Voice DAC and auxiliary DAC</br>
   
   ★ Radio frequency features</br>
       &emsp; Sensitivity is lower than 145 dbm</br>
-      &emsp; 22dbm PA built in</br>
+      &emsp; 17dbm PA built in</br>
+      
+  ★ RISCV 32bit CPU core with float operation unit FPU</br>
+      &emsp; 160Mhz Maximum operation rate(except FPU and DSP communication)</br>
+      &emsp; support mono periodic multiplication and hardware integer division</br>
+      &emsp; support RISCV IMFC commands set and special expanded command</br>
+      &emsp; FPU/DSP@131Mhz</br>
+      
+  ★ Clock</br>
+      &emsp; Embedded with DCXO oscillator(required to connect external crystals)</br>
+      &emsp; Embedded with 32Khz RC oscillator and 32Khz crystal oscillator(required to connect external crystals)</br>
+      &emsp; Embedded with PLL to double frequency of DCXO clock</br>
+      &emsp; support switch DCXO/PLL clock</br>
+      
+  ★ Power/chip management</br>
+      &emsp; Embedded with DCDC converter</br>
+      &emsp; Embedded with LDO, IO LDO</br>
+      &emsp; Embedded with lithium battery</br>
+      &emsp; support in-chip or out-chip temperature detection</br>
 </br>      
       
 
