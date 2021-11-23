@@ -5,13 +5,11 @@ We can provide variety kinds of chips such as GPRS/GPS, Wiota, LTE
 </br>
 
 # About wiota_ap_customer
-This project is the base station side for UC8288 chip.
+This project is the base station side in wiota protocol and runing in the 8088 chip.
 </br>
 </br>
 
-# About UC8288
-UC8288 series chips are equipped with the wide area Internet of Things communication protocol WloTa, which is designed on the development platform with UCCHIP's own intellectual property rights. 
-It is fully integrated and has advantages in cost, power consumption, performance, security and other aspects. It is highly customizable and flexibly supports different industry application scenarios.
+# About UC8088
 
 ### Features
   ★ Frequency range: 65MHZ ~ 1GMHZ
