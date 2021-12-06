@@ -105,7 +105,7 @@ static void rt_hw_systick_init(void)
 
 #define TI_OVF_TIMER_TEST
 #ifdef TI_OVF_TIMER_TEST
-static void rt_hw_systick_init_timerB(void)//OVF  timerB
+__attribute__((used))static void rt_hw_systick_init_timerB(void)//OVF  timerB
 {
     /* Setup Timer B */
     TIMER_CFG_Type TIMERX_InitStructure;
@@ -146,7 +146,7 @@ void rt_hw_board_init(void)
     rt_hw_systick_init();
 
     /* initialize timer1 */
-    rt_hw_systick_init_timerB();
+    // rt_hw_systick_init_timerB();
 
     /* Pin driver initialization is open by default */
 #ifdef RT_USING_PIN
@@ -157,8 +157,8 @@ void rt_hw_board_init(void)
 #ifdef RT_USING_SERIAL
     extern int rt_hw_usart_init(void);
 	rt_hw_usart_init();
-    extern int virtual_usart_init(void);
-    virtual_usart_init();
+    // extern int virtual_usart_init(void);
+    // virtual_usart_init();
 #endif
 
 #ifdef RT_USING_CONSOLE

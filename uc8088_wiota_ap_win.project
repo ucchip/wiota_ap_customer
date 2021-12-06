@@ -9,17 +9,24 @@
     <VirtualDirectory Name="app">
       <VirtualDirectory Name="include">
         <File Name="PS/app/include/uc_wiota_interface.h"/>
+        <File Name="PS/app/include/uc_wiota_version.h"/>
       </VirtualDirectory>
       <VirtualDirectory Name="test">
         <File Name="PS/app/test/uc_wiota_interface_test.c"/>
         <File Name="PS/app/test/uc_wiota_interface_test.h"/>
       </VirtualDirectory>
     </VirtualDirectory>
+    <VirtualDirectory Name="at">
+      <File Name="PS/at/at_wiota.c"/>
+    </VirtualDirectory>
   </VirtualDirectory>
   <Description/>
   <Dependencies/>
   <VirtualDirectory Name="applications">
     <File Name="applications/main.c"/>
+    <File Name="applications/SConscript"/>
+    <File Name="applications/uc_watchdog_app.c"/>
+    <File Name="applications/uc_watchdog_app.h"/>
   </VirtualDirectory>
   <VirtualDirectory Name="rt-thread">
     <VirtualDirectory Name="libcpu">
@@ -98,6 +105,15 @@
           </VirtualDirectory>
           <File Name="rt-thread/components/drivers/include/rtdevice.h"/>
         </VirtualDirectory>
+        <VirtualDirectory Name="watchdog">
+          <File Name="rt-thread/components/drivers/watchdog/SConscript"/>
+          <File Name="rt-thread/components/drivers/watchdog/watchdog.c"/>
+        </VirtualDirectory>
+        <VirtualDirectory Name="hwtimer">
+          <File Name="rt-thread/components/drivers/hwtimer/README_CN.md"/>
+          <File Name="rt-thread/components/drivers/hwtimer/SConscript"/>
+          <File Name="rt-thread/components/drivers/hwtimer/hwtimer.c"/>
+        </VirtualDirectory>
       </VirtualDirectory>
       <VirtualDirectory Name="finsh">
         <File Name="rt-thread/components/finsh/shell.c"/>
@@ -123,6 +139,21 @@
               <File Name="rt-thread/components/libc/compilers/common/sys/time.h" ExcludeProjConfig="Debug"/>
             </VirtualDirectory>
           </VirtualDirectory>
+        </VirtualDirectory>
+      </VirtualDirectory>
+      <VirtualDirectory Name="net">
+        <VirtualDirectory Name="at">
+          <VirtualDirectory Name="include">
+            <File Name="rt-thread/components/net/at/include/at.h"/>
+            <File Name="rt-thread/components/net/at/include/at_log.h"/>
+          </VirtualDirectory>
+          <VirtualDirectory Name="src">
+            <File Name="rt-thread/components/net/at/src/at_base_cmd.c"/>
+            <File Name="rt-thread/components/net/at/src/at_server.c"/>
+            <File Name="rt-thread/components/net/at/src/at_utils.c"/>
+          </VirtualDirectory>
+          <File Name="rt-thread/components/net/at/Kconfig"/>
+          <File Name="rt-thread/components/net/at/SConscript"/>
         </VirtualDirectory>
       </VirtualDirectory>
     </VirtualDirectory>
@@ -167,6 +198,8 @@
     <VirtualDirectory Name="HAL_Drivers">
       <File Name="libraries/HAL_Drivers/drv_log.h"/>
       <File Name="libraries/HAL_Drivers/drv_usart.c"/>
+      <File Name="libraries/HAL_Drivers/drv_hwtimer.c"/>
+      <File Name="libraries/HAL_Drivers/drv_wdt.c"/>
     </VirtualDirectory>
     <VirtualDirectory Name="UC8088_HAL_Driver">
       <VirtualDirectory Name="inc">
@@ -244,6 +277,7 @@
         <IncludePath Value="libraries/UC8088_HAL_Driver/inc"/>
         <IncludePath Value="rt-thread/components/drivers/include"/>
         <IncludePath Value="rt-thread/components/finsh"/>
+        <IncludePath Value="rt-thread/components/net/at/include"/>
         <IncludePath Value="rt-thread/components/libc/compilers/common"/>
         <IncludePath Value="rt-thread/components/libc/compilers/newlib"/>
         <IncludePath Value="rt-thread/include"/>
@@ -253,6 +287,8 @@
         <Preprocessor Value="HAVE_CCONFIG_H"/>
         <Preprocessor Value="__RTTHREAD__"/>
         <Preprocessor Value="RT_USING_NEWLIB"/>
+        <Preprocessor Value="UC8088_MODULE"/>
+        <Preprocessor Value="AT_USING_UART1"/>
       </Compiler>
       <Linker Options="-nostartfiles -Wl,--gc-sections  -T ./board/linker_scripts/link.flash.ld -Wl,-Map=rtthread.map" Required="yes">
         <LibraryPath Value="./PS/lib"/>
@@ -270,7 +306,9 @@ monitor halt
 load</PostConnectCommands>
         <StartupCommands/>
       </Debugger>
-      <PreBuild/>
+      <PreBuild>
+        <Command Enabled="yes"/>
+      </PreBuild>
       <PostBuild>
         <Command Enabled="yes">riscv32-unknown-elf-objdump -d $(IntermediateDirectory)/$(ProjectName) &gt;$(IntermediateDirectory)/$(ProjectName).asm</Command>
       </PostBuild>

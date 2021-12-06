@@ -20,7 +20,7 @@ extern "C" {
 
 #define AT_SW_VERSION                  "1.3.1"
 
-#define AT_CMD_NAME_LEN                16
+#define AT_CMD_NAME_LEN                20
 #define AT_END_MARK_LEN                4
 
 #ifndef AT_CMD_MAX_LEN
@@ -77,6 +77,7 @@ enum at_result
     AT_RESULT_CMD_ERR = -3,            /* AT command format error or No way to execute */
     AT_RESULT_CHECK_FAILE = -4,        /* AT command expression format is error */
     AT_RESULT_PARSE_FAILE = -5,        /* AT command arguments parse is error */
+    AT_RESULT_REPETITIVE_FAILE = -6,   /* AT command repetivitive opteration */
 };
 typedef enum at_result at_result_t;
 
@@ -193,6 +194,7 @@ int at_server_init(void);
 /* AT server send command execute result to AT device */
 void at_server_printf(const char *format, ...);
 void at_server_printfln(const char *format, ...);
+void at_send_data(const void* buffer, unsigned int len);
 void at_server_print_result(at_result_t result);
 rt_size_t at_server_send(at_server_t server, const char *buf, rt_size_t size);
 rt_size_t at_server_recv(at_server_t server, char *buf, rt_size_t size, rt_int32_t timeout);
@@ -260,7 +262,7 @@ int at_resp_parse_line_args_by_kw(at_response_t resp, const char *keyword, const
 #ifdef AT_USING_SERVER
 /* AT server device reset */
 void at_port_reset(void);
-
+at_server_t at_get_server(void);
 /* AT server device factory reset */
 void at_port_factory_reset(void);
 #endif

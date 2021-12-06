@@ -42,13 +42,13 @@
 
 typedef enum
 {
-	FLASH_CMD_ID = 0x9F, 
-	FLASH_CMD_ERASE_SECTOR = 0x20, 
-	FLASH_CMD_ERASE_BLOCK = 0xD8, 
-	FLASH_CMD_STATUS = 0x05, 
-	FLASH_CMD_ENABLE_WR = 0x06, 
-	FLASH_CMD_QREAD = 0x11101011, 
-	FLASH_CMD_READ = 0x3, 
+	FLASH_CMD_ID = 0x9F,
+	FLASH_CMD_ERASE_SECTOR = 0x20,
+	FLASH_CMD_ERASE_BLOCK = 0xD8,
+	FLASH_CMD_STATUS = 0x05,
+	FLASH_CMD_ENABLE_WR = 0x06,
+	FLASH_CMD_QREAD = 0x11101011,
+	FLASH_CMD_READ = 0x3,
 	FLASH_CMD_PAGE_PROGRAM = 0x02
 }ENUM_FLASH_CMD;
 
@@ -64,14 +64,15 @@ EXT_FLASH void FlashRead(uint32_t nAddr, uint8_t *pData, uint16_t usLen);
 EXT_FLASH void FlashQRead(uint32_t nAddr, uint8_t *pData, uint16_t usLen);
 #endif
 EXT_FLASH uint8_t FlashCrc(const uint8_t *pData, uint16_t usLen);
-
+EXT_FLASH void FlashWrite(uint32_t nAddr, const uint8_t *pData, uint16_t usLen);
 //#ifdef __SPI_FLASH_C_
 void FlashEnableWr(void);
 void FlashWaitForWr(void);
 uint8_t FlashStatus(void);
 void FlashPageProgram(uint32_t nAddr, const uint8_t *pData, uint16_t usLen);
 void FlashPageRead(uint32_t nAddr, uint8_t *pData, uint16_t usLen);
-
+EXT_FLASH void FlashPrefetchEnd(void);
+EXT_FLASH void FlashPrefetchBegin(void);
 //#endif
 
 #endif

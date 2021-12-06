@@ -36,7 +36,7 @@ static rt_err_t wdt_control(rt_watchdog_t *wdt, int cmd, void *arg)
     case RT_DEVICE_CTRL_WDT_KEEPALIVE:
         WDG_FEED(UC_WATCHDOG);
         break;
-    
+
         /* set watchdog timeout */
     case RT_DEVICE_CTRL_WDT_SET_TIMEOUT:
         uc8088_wdt.Reload = (*((rt_uint32_t*)arg)) * WDT_CLOCK_FREQ_HZ;
@@ -50,7 +50,7 @@ static rt_err_t wdt_control(rt_watchdog_t *wdt, int cmd, void *arg)
             WDG_SetReload(UC_WATCHDOG, 0xffffffff - uc8088_wdt.Reload);
         }
         break;
-        
+
     case RT_DEVICE_CTRL_WDT_GET_TIMEOUT:
         (*((rt_uint32_t*)arg)) = uc8088_wdt.Reload / WDT_CLOCK_FREQ_HZ;
         break;
@@ -61,7 +61,7 @@ static rt_err_t wdt_control(rt_watchdog_t *wdt, int cmd, void *arg)
         WDG_FEED(UC_WATCHDOG);
         uc8088_wdt.is_start = 1;
         break;
-        
+
     default:
         LOG_W("This command is not supported.");
         return -RT_ERROR;

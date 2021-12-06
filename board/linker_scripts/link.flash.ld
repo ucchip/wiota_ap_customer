@@ -35,14 +35,14 @@ SECTIONS
 
     .vectors :
     {
-         KEEP(*(.vectors));  
+         KEEP(*(.vectors));
     } > uc_rom
-    
+
     .boot : ALIGN(512)
     {
         *(.critical)
-    } > uc_rom 
-    
+    } > uc_rom
+
     .fastfunc :
     {
         . = ALIGN(4);
@@ -52,9 +52,9 @@ SECTIONS
         . = ALIGN(2048);
         _stbl_end = .;
     } > uc_rom
-    
+
 /*functions called only once during startup */
-    .init : 
+    .init :
     {
         . = ALIGN(4);
         *(.init)
@@ -105,7 +105,7 @@ SECTIONS
         PROVIDE_HIDDEN (__init_array_end = .);
     } > datarom
     */
-    
+
 	/*
     .fini_array :
     {
@@ -116,7 +116,7 @@ SECTIONS
     } > datarom
     */
 
-    .rodata : 
+    .rodata :
 	{
         . = ALIGN(4);
 		KEEP (*(.dsp_data));
@@ -124,7 +124,42 @@ SECTIONS
         *(.rodata.*);
 		*(.srodata.*);
 		*(.srodata*);
+
+
+		/* section information for finsh shell */
+		. = ALIGN(4);
+		__fsymtab_start = .;
+		KEEP(*(SORT(FSymTab)))
+		__fsymtab_end = .;
+		. = ALIGN(4);
+		__vsymtab_start = .;
+		KEEP(*(SORT(VSymTab)))
+		__vsymtab_end = .;
+		. = ALIGN(4);
+
+		. = ALIGN(4);
+		__rt_init_start = .;
+		KEEP(*(SORT(.rti_fn*)))
+		__rt_init_end = .;
+		. = ALIGN(4);
+
+		/* section information for modules */
+		. = ALIGN(4);
+		__rtmsymtab_start = .;
+		KEEP(*(SORT(RTMSymTab)))
+		__rtmsymtab_end = .;
+
    } > datarom
+
+    .at_array     :
+    {
+        /* section information for at server */
+        . = ALIGN(4);
+        __rtatcmdtab_start = .;
+        KEEP(*(RtAtCmdTab))
+        __rtatcmdtab_end = .;
+        . = ALIGN(4);
+    } > datarom
 
    .staticinfo : {
         . = ALIGN(4);
@@ -141,7 +176,7 @@ SECTIONS
         *(.shbss)
     } > dataram
 
-    .data : 
+    .data :
 	{
         . = ALIGN(4);
         sdata  =  .;
@@ -165,19 +200,19 @@ SECTIONS
         *(COMMON)
         _bss_end = .;
     } > dataram
-    
-    .heap : 
+
+    .heap :
 	{
         . = ALIGN(4);
-    } > dataram 
-    .guard : 
+    } > dataram
+    .guard :
 	{
         . = ALIGN(4);
         . = . + 16;
-    } > dataram 
-    
+    } > dataram
+
     /* ensure there is enough room for stack */
-    .stack (NOLOAD): 
+    .stack (NOLOAD):
 	{
         . = ALIGN(4);
         . = . + _min_stack ;
@@ -195,24 +230,24 @@ SECTIONS
     {
         [ .stabstr ]
     }
-    
+
     .tool_buff :
     {
         . = ALIGN(4);
         *(.tool_buff)
     } > toolram
-    
+
     .cce_trace_buff :
     {
         . = ALIGN(4);
         *(.cce_trace_buff)
-    } > ccetraceram 
-    
+    } > ccetraceram
+
     .rv_trace_buff :
     {
         . = ALIGN(4);
         *(.rv_trace_buff)
-    } > rvtraceram 
+    } > rvtraceram
 
     .bss :
     {
@@ -220,4 +255,3 @@ SECTIONS
         _end = .;
     } > dataram
 }
-

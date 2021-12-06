@@ -16,9 +16,11 @@
 
 #include <rthw.h>
 
-#define LOG_TAG              "at.svr"
+#define LOG_TAG "at.svr"
 #include <at_log.h>
-
+#ifndef AT_USING_UART1
+#include <rtdevice.h>
+#endif
 #ifdef AT_USING_SERVER
 
 #define AT_CMD_CHAR_0                  '0'
@@ -73,7 +75,10 @@ void at_server_printfln(const char *format, ...)
     va_end(args);
 }
 
-
+void at_send_data(const void* buffer, unsigned int len)
+{
+    rt_device_write(at_server_local->device, 0, buffer, len);
+}
 /**
  * AT server request arguments parse arguments
  *
@@ -135,6 +140,11 @@ void at_server_print_result(at_result_t result)
 
     case AT_RESULT_PARSE_FAILE:
         at_server_printfln("ERR PARSE ARGS FAILED!");
+        at_server_print_result(AT_RESULT_FAILE);
+        break;
+
+    case AT_RESULT_REPETITIVE_FAILE:
+        at_server_printfln("ERR REPETITIVE OPERATION FAILED!");
         at_server_print_result(AT_RESULT_FAILE);
         break;
 
@@ -283,8 +293,7 @@ static rt_err_t at_check_args(const char *args, const char *args_format)
         }
     }
 
-    if (left_sq_bracket_num != right_sq_bracket_num || left_angle_bracket_num != right_angle_bracket_num
-            || left_sq_bracket_num > left_angle_bracket_num)
+    if (left_sq_bracket_num != right_sq_bracket_num || left_angle_bracket_num != right_angle_bracket_num || left_sq_bracket_num > left_angle_bracket_num)
     {
         return -RT_ERROR;
     }
@@ -297,8 +306,7 @@ static rt_err_t at_check_args(const char *args, const char *args_format)
         }
     }
 
-    if ((comma_mark_num + 1 < left_angle_bracket_num - left_sq_bracket_num)
-            || comma_mark_num + 1 > left_angle_bracket_num)
+    if ((comma_mark_num + 1 < left_angle_bracket_num - left_sq_bracket_num) || comma_mark_num + 1 > left_angle_bracket_num)
     {
         return -RT_ERROR;
     }
@@ -335,8 +343,7 @@ static rt_err_t at_cmd_process(at_cmd_t cmd, const char *cmd_args)
         result = cmd->query();
         at_server_print_result(result);
     }
-    else if (cmd_args[0] == AT_CMD_EQUAL_MARK
-            || (cmd_args[0] >= AT_CMD_CHAR_0 && cmd_args[0] <= AT_CMD_CHAR_9 && cmd_args[1] == AT_CMD_CR))
+    else if (cmd_args[0] == AT_CMD_EQUAL_MARK || (cmd_args[0] >= AT_CMD_CHAR_0 && cmd_args[0] <= AT_CMD_CHAR_9 && cmd_args[1] == AT_CMD_CR))
     {
         if (cmd->setup == RT_NULL)
         {
@@ -344,7 +351,7 @@ static rt_err_t at_cmd_process(at_cmd_t cmd, const char *cmd_args)
             return -RT_ERROR;
         }
 
-        if(at_check_args(cmd_args, cmd->args_expr) < 0)
+        if (at_check_args(cmd_args, cmd->args_expr) < 0)
         {
             at_server_print_result(AT_RESULT_CHECK_FAILE);
             return -RT_ERROR;
@@ -397,9 +404,7 @@ static rt_err_t at_cmd_get_name(const char *cmd_buffer, char *cmd_name)
 
     for (i = 0; i < strlen(cmd_buffer) + 1; i++)
     {
-        if (*(cmd_buffer + i) == AT_CMD_QUESTION_MARK || *(cmd_buffer + i) == AT_CMD_EQUAL_MARK
-                || *(cmd_buffer + i) == AT_CMD_CR
-                || (*(cmd_buffer + i) >= AT_CMD_CHAR_0 && *(cmd_buffer + i) <= AT_CMD_CHAR_9))
+        if (*(cmd_buffer + i) == AT_CMD_QUESTION_MARK || *(cmd_buffer + i) == AT_CMD_EQUAL_MARK || *(cmd_buffer + i) == AT_CMD_CR || (*(cmd_buffer + i) >= AT_CMD_CHAR_0 && *(cmd_buffer + i) <= AT_CMD_CHAR_9))
         {
             cmd_name_len = i;
             memcpy(cmd_name, cmd_buffer, cmd_name_len);
@@ -435,9 +440,9 @@ static void server_parser(at_server_t server)
 #define BACKSPACE_KEY           0x08
 #define DELECT_KEY              0x7F
 
-    char cur_cmd_name[AT_CMD_NAME_LEN] = { 0 };
+    char cur_cmd_name[AT_CMD_NAME_LEN] = {0};
     at_cmd_t cur_cmd = RT_NULL;
-    char *cur_cmd_args = RT_NULL, ch, last_ch;
+    char *cur_cmd_args = RT_NULL, ch = ' ', last_ch = ' ';
 
     RT_ASSERT(server);
     RT_ASSERT(server->status != AT_STATUS_UNINITIALIZED);
@@ -479,7 +484,7 @@ static void server_parser(at_server_t server)
         server->recv_buffer[server->cur_recv_len++] = ch;
         last_ch = ch;
 
-        if(!strstr(server->recv_buffer, server->end_mark))
+        if (!strstr(server->recv_buffer, server->end_mark))
         {
             continue;
         }
@@ -503,7 +508,7 @@ static void server_parser(at_server_t server)
             goto __retry;
         }
 
-__retry:
+    __retry:
         memset(server->recv_buffer, 0x00, AT_SERVER_RECV_BUFF_LEN);
         server->cur_recv_len = 0;
     }
@@ -519,8 +524,8 @@ static rt_err_t at_rx_ind(rt_device_t dev, rt_size_t size)
     return RT_EOK;
 }
 
-#if defined(__ICCARM__) || defined(__ICCRX__)               /* for IAR compiler */
-#pragma section="RtAtCmdTab"
+#if defined(__ICCARM__) || defined(__ICCRX__) /* for IAR compiler */
+#pragma section = "RtAtCmdTab"
 #endif
 
 int at_server_init(void)
@@ -534,22 +539,22 @@ int at_server_init(void)
     }
 
     /* initialize the AT commands table.*/
-#if defined(__CC_ARM)                                 /* ARM C Compiler */
+#if defined(__CC_ARM) /* ARM C Compiler */
     extern const int RtAtCmdTab$$Base;
     extern const int RtAtCmdTab$$Limit;
     cmd_table = (at_cmd_t)&RtAtCmdTab$$Base;
     cmd_num = (at_cmd_t)&RtAtCmdTab$$Limit - cmd_table;
-#elif defined (__ICCARM__) || defined(__ICCRX__)      /* for IAR Compiler */
+#elif defined(__ICCARM__) || defined(__ICCRX__) /* for IAR Compiler */
     cmd_table = (at_cmd_t)__section_begin("RtAtCmdTab");
     cmd_num = (at_cmd_t)__section_end("RtAtCmdTab") - cmd_table;
-#elif defined (__GNUC__)                             /* for GCC Compiler */
+#elif defined(__GNUC__)                         /* for GCC Compiler */
     extern const int __rtatcmdtab_start;
     extern const int __rtatcmdtab_end;
     cmd_table = (at_cmd_t)&__rtatcmdtab_start;
-    cmd_num = (at_cmd_t) &__rtatcmdtab_end - cmd_table;
-#endif /* defined(__CC_ARM) */
+    cmd_num = (at_cmd_t)&__rtatcmdtab_end - cmd_table;
+#endif                                          /* defined(__CC_ARM) */
 
-    at_server_local = (at_server_t) rt_calloc(1, sizeof(struct at_server));
+    at_server_local = (at_server_t)rt_calloc(1, sizeof(struct at_server));
     if (!at_server_local)
     {
         result = -RT_ENOMEM;
@@ -575,14 +580,25 @@ int at_server_init(void)
     at_server_local->device = rt_device_find(AT_SERVER_DEVICE);
     if (at_server_local->device)
     {
+#ifndef AT_USING_UART1
+        struct serial_configure config  = RT_SERIAL_CONFIG_DEFAULT; /* init default parment*/
+#endif
         RT_ASSERT(at_server_local->device->type == RT_Device_Class_Char);
-
+#ifndef AT_USING_UART1
+        // config baud rate 115200
+        config.baud_rate = BAUD_RATE_115200;
+        rt_device_control(at_server_local->device, RT_DEVICE_CTRL_CONFIG, &config);
+#endif
         /* using DMA mode first */
-        open_result = rt_device_open(at_server_local->device, RT_DEVICE_OFLAG_RDWR | RT_DEVICE_FLAG_DMA_RX);
+        //open_result = rt_device_open(at_server_local->device, RT_DEVICE_OFLAG_RDWR | RT_DEVICE_FLAG_DMA_RX);
         /* using interrupt mode when DMA mode not supported */
-        if (open_result == -RT_EIO)
+       // if (open_result == -RT_EIO)
+      //  {
+        open_result = rt_device_open(at_server_local->device, RT_DEVICE_OFLAG_RDWR | RT_DEVICE_FLAG_INT_RX);
+     //   }
+        if (RT_EOK != open_result)
         {
-            open_result = rt_device_open(at_server_local->device, RT_DEVICE_OFLAG_RDWR | RT_DEVICE_FLAG_INT_RX);
+            LOG_E("AT device open failed! : %s.", AT_SERVER_DEVICE);
         }
         RT_ASSERT(open_result == RT_EOK);
 
@@ -600,11 +616,11 @@ int at_server_init(void)
 
     at_server_local->parser_entry = server_parser;
     at_server_local->parser = rt_thread_create("at_svr",
-                                         (void (*)(void *parameter))server_parser,
-                                         at_server_local,
-                                         2 * 1024,
-                                         RT_THREAD_PRIORITY_MAX / 3 - 1,
-                                         5);
+                                               (void (*)(void *parameter))server_parser,
+                                               at_server_local,
+                                               2 * 1024,
+                                               3/* RT_THREAD_PRIORITY_MAX / 3 - 1 */,
+                                               5);
     if (at_server_local->parser == RT_NULL)
     {
         result = -RT_ENOMEM;
@@ -618,7 +634,7 @@ __exit:
 
         rt_thread_startup(at_server_local->parser);
 
-        LOG_I("RT-Thread AT server (V%s) initialize success.", AT_SW_VERSION);
+        rt_kprintf("RT-Thread AT server (V%s) initialize success.\n", AT_SW_VERSION);
     }
     else
     {
@@ -627,7 +643,7 @@ __exit:
             rt_free(at_server_local);
         }
 
-        LOG_E("RT-Thread AT server (V%s) initialize failed(%d).", AT_SW_VERSION, result);
+        rt_kprintf("RT-Thread AT server (V%s) initialize failed(%d).\n", AT_SW_VERSION, result);
     }
 
     return result;

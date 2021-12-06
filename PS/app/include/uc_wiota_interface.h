@@ -30,9 +30,14 @@ typedef unsigned char boolean;
 #define NULL ((void*) 0)
 #endif
 
+//period of time writing to flash
+#define UC_WRITE_FLASH_PERIOD ((1000) * (60) * (60))
+
+//max length of broadcast data sent
 #define UC_WIOTA_MAX_SEND_BROADCAST_DATA_LEN  1024
 
-#define UC_WIOTA_MAX_FREQUENCE_POINT 200
+//max num of frequency point
+#define UC_WIOTA_MAX_FREQUENCE_POINT 201
 
 /* 470M */
 #define UC_WIOTA_BASE_FREQUENCE 47000
@@ -56,9 +61,50 @@ typedef enum
 
 typedef struct
 {
-    void * semaphore;
-    uc_result_e result;
-}result_sem_t;
+    void *semaphore;
+    u8_t result;
+}uc_send_result_t;
+
+typedef struct
+{
+    u8_t result;
+}uc_send_recv_t;
+
+typedef struct
+{
+    void *semaphore;
+    u16_t data_len;
+    u8_t *data;
+    u8_t result;
+}uc_scan_result_t;
+
+typedef struct
+{
+    u16_t data_len;
+    u8_t *data;
+    u8_t result;
+}uc_scan_recv_t;
+
+typedef struct
+{
+    u8_t   freq_idx;
+    s8_t   snr;
+    s8_t   rssi;
+    u8_t   is_synced;
+}uc_scan_freq_t;
+
+typedef struct
+{
+    void *semaphore;
+    s8_t temp;
+    u8_t result;
+}uc_temp_result_t;
+
+typedef struct
+{
+    s8_t temp;
+    u8_t result;
+}uc_temp_recv_t;
 
 typedef struct
 {
@@ -70,7 +116,7 @@ typedef struct
     u8_t  dlul_ratio;      //0 1:1,  1 1:2
     u8_t  bt_value;         //bt from rf 1: 0.3, 0: 1.2
     u8_t  group_number;    //frame ul group number: 1,2,4,8
-    u8_t  ap_max_power;    //0: 21, 1: 30
+    u8_t  ap_max_power;    //21, 30
     u8_t  spectrum_idx;    //default value:3(470M-510M)
     u8_t  na[48];
 }dynamic_para_t;
@@ -87,14 +133,6 @@ typedef struct iote_info
     // u8_t signal_quality;
     struct iote_info *next;
 }iote_info_t;
-
-typedef struct
-{
-    u32_t frequency_point;
-    u32_t frequency;
-    u32_t rssi;
-    //TODO:
-}scan_result_t;
 
 typedef struct
 {
@@ -140,10 +178,25 @@ typedef enum
     INVALID_BROACAST,
 }broadcast_mode_e;
 
-typedef void (*uc_result)(uc_result_e result);
+typedef void (*uc_send_callback)(uc_send_recv_t *result);
+typedef void (*uc_scan_callback)(uc_scan_recv_t *result);
+typedef void (*uc_temp_callback)(uc_temp_recv_t *result);
 typedef void (*uc_iote_access)(u32_t user_id);
 typedef void (*uc_iote_drop)(u32_t user_id);
 typedef void (*uc_report_data)(u32_t user_id, u8_t *report_data, u32_t report_data_len);
+
+/*********************************************************************************
+ This function is get version of sw
+
+ param:
+        in:NULL.
+        out:
+            version:version of sw.
+            time:build time.
+
+ return:NULL.
+**********************************************************************************/
+void uc_wiota_get_version(u8_t *version, u8_t *time);
 
 /*********************************************************************************
  This function is to set all dynamic parameter
@@ -296,17 +349,17 @@ uc_result_e uc_wiota_set_dcxo(u32_t dcxo);
 u32_t uc_wiota_get_dcxo(void);
 
 /*********************************************************************************
- This function is to set ap max power.
+ This function is to set ap8288 rf power.
 
  param:
         in:
-            ap_max_power:the value of the ap max power to be set.
+            rf_power:the value of the ap8288 rf power to be set.
         out:NULL.
 
  return:
     uc_result_e.
 **********************************************************************************/
-uc_result_e uc_wiota_set_ap_max_power(u8_t ap_max_power);
+uc_result_e uc_wiota_set_rf_power(s8_t rf_power);
 
 /*********************************************************************************
  This function is to set single frequency point.
@@ -429,6 +482,8 @@ iote_info_t* uc_wiota_query_info_of_currently_connected_iote(u16_t *iote_num);
                 1:OTA broadcast data,large amount of data,faster transmission rate
             timeout:send data timeout time,unit:ms
             callback:send data result callback
+                     when callback==NULL,is blocking call.
+                     Non-blocking call when callback != NULL.
         out:NULL.
 
  return:
@@ -441,7 +496,7 @@ iote_info_t* uc_wiota_query_info_of_currently_connected_iote(u16_t *iote_num);
     wait until the registered callback returns UC_SUCCESS before sending the next
     packet.
 **********************************************************************************/
-uc_result_e uc_wiota_send_broadcast_data(u8_t *send_data, u16_t send_data_len, broadcast_mode_e mode, u16_t timeout, uc_result callback);
+uc_result_e uc_wiota_send_broadcast_data(u8_t *send_data, u16_t send_data_len, broadcast_mode_e mode, s32_t timeout, uc_send_callback callback);
 
 /*********************************************************************************
  This function is to paging iote and sending non-broadcast data.
@@ -453,29 +508,34 @@ uc_result_e uc_wiota_send_broadcast_data(u8_t *send_data, u16_t send_data_len, b
             userId:specify the user id send.
             userIdNum:number of user id.
             timeout:send data timeout time,unit:ms
-            callback:send data result callback
+            callback:send data result callback.
+                     when callback==NULL,is blocking call.
+                     Non-blocking call when callback != NULL.
         out:NULL.
 
  return:
     uc_result_e.
 **********************************************************************************/
-uc_result_e uc_wiota_paging_and_send_normal_data(u8_t *send_data, u16_t send_data_len, u32_t *user_id, u32_t user_id_num, u16_t timeout, uc_result callback);
+uc_result_e uc_wiota_paging_and_send_normal_data(u8_t *send_data, u16_t send_data_len, u32_t *user_id, u32_t user_id_num, s32_t timeout, uc_send_callback callback);
 
 /*********************************************************************************
  This function is to scaning frequency point collection.(Not supported at the moment)
 
  param:
         in:
-            frequency_point:frequency point collection.
-            frequency_point_num:number of frequency point.
-            timeout:scan timeout time,unit:ms
-            callback:scan result callback
+            freq:frequency point collection.
+            freq_num:number of frequency point.
+            timeout:scan timeout time,unit:ms.
+            callback:scan result callback.
+                     when callback==NULL,is blocking call.
+                     Non-blocking call when callback != NULL.
+            scan_result: infomation of eace frequency point after sacnning.
         out:NULL.
 
  return:
     uc_result_e.
 **********************************************************************************/
-uc_result_e uc_wiota_scan_frequency_point_collection(u8_t *frequency_point, u32_t frequency_point_num, u16_t timeout, uc_result callback);
+uc_result_e uc_wiota_scan_freq(u8_t *freq, u8_t freq_num, s32_t timeout, uc_scan_callback callback, uc_scan_recv_t *scan_result);
 
 /*********************************************************************************
  This function is to register iote access prompt callback.
@@ -522,19 +582,7 @@ uc_result_e uc_wiota_register_iote_dropped_callback(uc_iote_drop callback);
 uc_result_e uc_wiota_register_proactively_report_data_callback(uc_report_data callback);
 
 /*********************************************************************************
- This function is to query exception information.(Empty function,not implemented)
-
- param:
-        in:NULL.
-        out:NULL.
-
- return:
-    exception_info_t:
-**********************************************************************************/
-exception_info_t* uc_wiota_query_exception_infomation(void);
-
-/*********************************************************************************
- This function is to wiota to reinit.
+ This function is to wiota to init.
 
  param:
         in:NULL.
@@ -542,18 +590,7 @@ exception_info_t* uc_wiota_query_exception_infomation(void);
 
  return:NULL.
 **********************************************************************************/
-void uc_wiota_reinit(void);
-
-/*********************************************************************************
- This function is to wiota to first init.
-
- param:
-        in:NULL.
-        out:NULL.
-
- return:NULL.
-**********************************************************************************/
-void uc_wiota_first_init(void);
+void uc_wiota_init(void);
 
 /*********************************************************************************
  This function is to wiota to start.
@@ -600,6 +637,21 @@ uc_result_e uc_wiota_set_active_time(u32_t active_time);
  return:connection timeout.
 **********************************************************************************/
 u32_t uc_wiota_get_active_time(void);
+
+/*********************************************************************************
+ This function is to get the ap8288 temperature.
+
+ param:
+        in:
+            timeout:execution timeout.
+            callback:when call==NULL,is blocking call;
+                     Non-blocking call when callback != NULL
+        out:
+            read_temp:temperature result.
+
+ return:uc_result_e.
+**********************************************************************************/
+uc_result_e uc_wiota_read_temperature(uc_temp_callback callback, uc_temp_recv_t *read_temp, u16_t timeout);
 #ifdef __cplusplus
 }
 #endif

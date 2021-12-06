@@ -6,8 +6,8 @@
 
 #include <sectdefs.h>
 #define __critical __attribute__((section(".crt0")))
-#define __critical_64 __attribute__((section(".crt0"), aligned(64))) 
-#define __critical_128 __attribute__((section(".crt0"), aligned(128))) 
+#define __critical_64 __attribute__((section(".crt0"), aligned(64)))
+#define __critical_128 __attribute__((section(".crt0"), aligned(128)))
 #define __critical_512 __attribute__((section(".crt0"), aligned(512)))
 
 #define WAIT_XIP_FREE     while(REG_XIP_CTRL & 0x1)
@@ -35,11 +35,18 @@ __critical_512 uint32_t ReadFlashID()
 	return data;
 }
 
+__critical void FlashPrefetchBegin(void)
+{
+    asm("nop");
+    asm("nop");
+    asm("nop");
+    asm("nop");
+}
 __critical uint32_t Flash_Read_SR()
 {
 	uint32_t data;
-	REG_SPI_CMD = FLASH_CMD_STATUS << 24; //read sr 
-	REG_SPI_LEN = 0x200008;   
+	REG_SPI_CMD = FLASH_CMD_STATUS << 24; //read sr
+	REG_SPI_LEN = 0x200008;
 	WAIT_XIP_FREE;
 	SPI_START(SPI_CMD_RD);
 	while((REG_SPI_STATUS & 0xFF0000)==0);
@@ -63,22 +70,22 @@ __critical void FlashEraseSector(uint32_t nBaseAddr)
 	WAIT_FOR_WR_DONE;
 }
 
-#if 0
+#if 1
 __critical void FlashWrite(uint32_t nAddr, const uint8_t *pData, uint16_t usLen)
 {
-	uint16_t usPage, i, usLenTmp;
-	uint32_t nTmp;
-	
-	usPage = (usLen & FLASH_PAGE_MASK) > 0 ? (usLen >> FLASH_PAGE_BIT_SHIFT) + 1 : usLen >> FLASH_PAGE_BIT_SHIFT;
-	WAIT_FOR_WR_DONE;
-	
-	for(i = 0; i < usPage; i++)
-	{
-		nTmp = i << FLASH_PAGE_BIT_SHIFT;
-		usLenTmp = (usLen >= (nTmp + FLASH_PAGE_SIZE) ? FLASH_PAGE_SIZE : usLen - nTmp);
-		FlashEnableWr();
-		FlashPageProgram(nAddr + nTmp, pData + nTmp, usLenTmp);
-	}
+    uint16_t usPage, i, usLenTmp;
+    uint32_t nTmp;
+
+    usPage = (usLen & FLASH_PAGE_MASK) > 0 ? (usLen >> FLASH_PAGE_BIT_SHIFT) + 1 : usLen >> FLASH_PAGE_BIT_SHIFT;
+    WAIT_FOR_WR_DONE;
+
+    for (i = 0; i < usPage; i++)
+    {
+        nTmp = i << FLASH_PAGE_BIT_SHIFT;
+        usLenTmp = (usLen >= (nTmp + FLASH_PAGE_SIZE) ? FLASH_PAGE_SIZE : usLen - nTmp);
+        FlashEnableWr();
+        FlashPageProgram(nAddr + nTmp, pData + nTmp, usLenTmp);
+    }
 }
 #endif
 
@@ -115,10 +122,10 @@ uint8_t FlashCrc(const uint8_t *pData, uint16_t usLen)
 {
 	int16_t i;
 	uint8_t ucRes = 0x00;
-	
+
 	for(i = 0; i < usLen; i++)
 		ucRes ^= pData[i];
-	
+
 	return ucRes;
 }
 
@@ -131,7 +138,7 @@ __critical void FlashPageProgram(uint32_t nAddr, const uint8_t *pData, uint16_t 
 	REG_SPI_CMD = FLASH_CMD_PAGE_PROGRAM << 24;  //set cmd
 	REG_SPI_ADDR = (nAddr << 8);
 	/* spi len reg format *
-	 * bit16: bit15:8  bit7:0 
+	 * bit16: bit15:8  bit7:0
 	 * DLEN   ADDRLEN  CMDLEN
 	 */
 	REG_SPI_LEN = 0x1808 | (usLen << 19);  //set cmd,addr and data len
@@ -153,3 +160,10 @@ __critical void FlashEnableWr(void)
 	while(REG_SPI_STATUS != 1);
 }
 
+__critical void FlashPrefetchEnd(void)
+{
+    asm("nop");
+    asm("nop");
+    asm("nop");
+    asm("nop");
+}

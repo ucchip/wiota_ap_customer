@@ -9,8 +9,8 @@
 #include "uc_wiota_interface_test.h"
 #include "rtthread.h"
 
-#define BAN_8288_FREQ (150)
-#define BAN_8288_DCXO (0x18000)
+#define BAN_8288_FREQ (170)
+#define BAN_8288_DCXO (36000)
 
 u8_t *generate_fake_data(u32_t data_len, u8_t repeat_num)
 {
@@ -46,9 +46,9 @@ void test_show_drop_func(u32_t user_id)
     rt_kprintf("test_show_drop_func user_id 0x%x dropped\n", user_id);
 }
 
-void test_show_result(uc_result_e result)
+void test_show_result(uc_send_recv_t *result)
 {
-    rt_kprintf("test_show_result result %d\n", result);
+    rt_kprintf("test_show_result result %d\n", result->result);
 }
 
 void test_show_report_data(u32_t user_id, u8_t *report_data, u32_t report_data_len)
@@ -174,12 +174,32 @@ void test_set_dcxo(void)
 }
 
 // test! scan frequency point collection
-void test_handle_scan_frequency_point_collection(void)
+void test_handle_scan_freq(void)
 {
-    u8_t fPoint[8] = {100, 101, 102, 103, 104, 105, 106, 107};
-    u16_t timeout = 60000;
+    u8_t fPoint[20] = {5, 15, 25, 35, 45, 55, 65, 75, 85, 95, 105, 115, 125, 135, 145, 155, 165, 175, 185, 195};
+    s32_t timeout = 60000;
+    uc_scan_recv_t scan_info = {0};
+    u8_t fPointNum = sizeof(fPoint) / sizeof(u8_t);
 
-    uc_wiota_scan_frequency_point_collection(fPoint, sizeof(fPoint) / sizeof(u32_t), timeout, test_show_result);
+    uc_wiota_scan_freq(fPoint, fPointNum, timeout, NULL, &scan_info);
+    // uc_wiota_scan_freq(NULL, 0, 0, NULL, &scan_info); // if fPoint == NULL && fPointNum == 0, default scan all,about 3 min
+    if (scan_info.result == UC_SUCCESS)
+    {
+        uc_scan_freq_t *freqList = (uc_scan_freq_t *)scan_info.data;
+        for (u8_t idx = 0; idx < scan_info.data_len / sizeof(uc_scan_freq_t); idx++)
+        {
+            rt_kprintf("freq_idx = %u, snr = %d, rssi = %d, is_synced = %d\n", freqList->freq_idx, freqList->snr, freqList->rssi, freqList->is_synced);
+            freqList++;
+        }
+    }
+    else
+    {
+        rt_kprintf("scan freq failed or timeout\n");
+    }
+    // according to the scan result , cchoose the best and set
+    // uc_wiota_set_frequency_point(fPoint[0]/* fPoint[x] */);
+    rt_free(scan_info.data); // !!!need be manually released after use
+    scan_info.data = NULL;
 }
 
 // test! set frequency point
@@ -215,7 +235,7 @@ void test_send_broadcast_data(broadcast_mode_e mode)
 {
     u8_t *testData;
     u8_t *tempData = NULL;
-    u16_t timeout = 10000; //ms
+    s32_t timeout = 10000; //ms
     uc_result_e result = UC_FAILED;
     u32_t offset = 0;
 
@@ -231,6 +251,8 @@ void test_send_broadcast_data(broadcast_mode_e mode)
         if (testData == NULL)
         {
             rt_kprintf("test_send_broadcast_data rt_malloc failed\n");
+            rt_free(testData); // !!!need be manually released after use
+            testData = NULL;
             return;
         }
         rt_memset(tempData, 0, 1024);
@@ -296,6 +318,41 @@ void test_add_iote_to_blacklist(void)
     }
 }
 
+// test! read temperature of ap8288
+void test_read_temp(void)
+{
+    uc_temp_recv_t read_temp = {0};
+    u16_t timeout = 10000;
+
+    if (UC_SUCCESS == uc_wiota_read_temperature(NULL, &read_temp, timeout))
+    {
+        rt_kprintf("test_read_temp read_temp %d\n", read_temp.temp);
+    }
+    else
+    {
+        rt_kprintf("read temp failed\n");
+    }
+}
+
+// test! set ap8288 rf power
+void test_set_ap8288_rf_power(void)
+{
+    s8_t rf_power = 24; //value range:-1~34
+    uc_wiota_set_rf_power(rf_power);
+}
+
+// test! get version of sw
+void test_get_version()
+{
+    u8_t version[24] = {0};
+    u8_t time[20] = {0};
+
+    uc_wiota_get_version(version, time);
+
+    rt_kprintf("version %s\n", version);
+    rt_kprintf("time %s\n", time);
+}
+
 // test! remove iote from blacklist
 void test_remove_iote_from_blacklist(void)
 {
@@ -314,64 +371,22 @@ void test_remove_iote_from_blacklist(void)
     }
 }
 
-// #define TEST_SINGLE_MAIN
-#ifdef TEST_SINGLE_MAIN
-extern void l1c_rf_test_case1(u32_t count);
-// #include "board.h"
-#include "adp_sys.h"
-#include "gpio.h"
-rt_timer_t timer = NULL;
-static void test1_timer(void *param)
+// test! wiota exit and restart
+void test_wiota_exit_and_restart(void)
 {
-    // gpoi_8088_to_8288_change_value(timer->init_tick, timer->timeout_tick);
-    rt_kprintf("app_interface_main_task \n");
+    uc_wiota_exit();
+    rt_thread_mdelay(5000);
+    uc_wiota_init();
+    uc_wiota_start();
 }
-#endif
 
-extern void l1c_rf_test_case1(u32_t count);
 void app_interface_main_task(void *pPara)
 {
-#ifdef TEST_SINGLE_MAIN
-#if 1
-    u32_t count = 0;
-    while (4 > count)
-    {
-        rt_thread_mdelay(1000);
-        l1c_rf_test_case1(count++);
-    }
-#else
-    //     const char * timer_name = "8088";
-    // //    timer = uc_timer_create(timer_name,gpoi_8088_to_8288_change_value,NULL,5000,SYS_TIMER_FLAG_PERIODIC|SYS_TIMER_FLAG_HARD_TIMER);
-    //     timer = uc_timer_create(timer_name,test1_timer,NULL,(5000) ,SYS_TIMER_FLAG_PERIODIC|SYS_TIMER_FLAG_HARD_TIMER);
-    //     uc_timer_start((void*)timer,0);
+    uc_wiota_init();
 
-    rt_kprintf("app_interface_main_task \n");
-
-    // uc_hwtimerB_test();
-#endif
-
-    for (;;)
-    {
-        rt_thread_mdelay(200);
-    }
-
-#else
-
-#if 0
-    u32_t count = 0;
-    while (4 > count)
-    {
-        rt_thread_mdelay(1000);
-        l1c_rf_test_case1(++count);
-
-    }
-#endif
-    uc_wiota_first_init();
-#endif
     // test! set all dynamic parameter after wiota init, before wiota start
-    // test_set_all_para();
+    test_set_all_para();
     // test_get_all_para();
-
 
     // test! set single parameter after wiota init, before wiota start
     // test_set_single_parameter();
@@ -381,7 +396,7 @@ void app_interface_main_task(void *pPara)
 
     // test! set/get connection timeout after wiota init, before wiota start
     test_set_connection_timeout();
-    test_get_connection_timeout();
+    // test_get_connection_timeout();
 
     // test! set frequency point after wiota start, before wiota start
     test_set_frequency_point();
@@ -392,11 +407,20 @@ void app_interface_main_task(void *pPara)
     // test! register callback after wiota start or init
     test_register_callback();
 
+    // test! scan frequency point collection, after wiota start
+    // test_handle_scan_freq();
+
     // test! add iote to blacklist after wiota start or init
     // test_add_iote_to_blacklist();
 
     // test! remove iote from blacklist after wiota start or init
     // test_remove_iote_from_blacklist();
+
+    // test! set ap8288 rf power, after wiota start
+    // test_set_ap8288_rf_power();
+
+    // test! get version of sw
+    // test_get_version();
 
     while (1)
     {
@@ -406,17 +430,14 @@ void app_interface_main_task(void *pPara)
 
         // test! query iote information after wiota start
         test_query_iote_info();
+
+        // test! read temperature of ap8288
+        test_read_temp();
+
         rt_thread_mdelay(10000);
 
-        // test! wiota exit
-        // u32_t total, used, max_used;
-        // rt_thread_mdelay(10000);
-        // rt_memory_info(&total, &used, &max_used);
-        // rt_kprintf("app_interface_main_task begin exit begin total %u, used %u, max_used %u\n", total, used, max_used);
-        // uc_wiota_exit();
-        // rt_thread_mdelay(5000);
-        // uc_wiota_reinit();
-        // uc_wiota_start();
+        // test! wiota exit and restart
+        // test_wiota_exit_and_restart();
     }
     return;
 }

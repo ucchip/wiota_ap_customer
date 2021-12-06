@@ -56,20 +56,6 @@
 
 /* Command shell */
 
-#define RT_USING_FINSH
-#define FINSH_THREAD_NAME "tshell"
-#define FINSH_USING_HISTORY
-#define FINSH_HISTORY_LINES 5
-#define FINSH_USING_SYMTAB
-#define FINSH_USING_DESCRIPTION
-#define FINSH_THREAD_PRIORITY 20
-#define FINSH_THREAD_STACK_SIZE 2048
-#define FINSH_CMD_SIZE 80
-#define FINSH_USING_MSH
-#define FINSH_USING_MSH_DEFAULT
-#define FINSH_USING_MSH_ONLY
-#define FINSH_ARG_MAX 10
-
 /* Device virtual file system */
 
 
@@ -80,6 +66,21 @@
 #define RT_USING_SERIAL
 #define RT_SERIAL_RB_BUFSZ 4096
 //#define RT_USING_PIN
+
+/* AT commands */
+
+#define RT_USING_AT
+#define AT_USING_SERVER
+#ifndef AT_USING_UART1
+#define AT_SERVER_DEVICE "uart1"
+#else
+#define AT_SERVER_DEVICE "uart0"
+#endif
+#define AT_SERVER_RECV_BUFF_LEN 256
+#define AT_CMD_END_MARK_CRLF
+#define AT_CMD_MAX_LEN 128
+#define AT_SW_VERSION_NUM 0x10301
+#define RT_USING_WDT
 
 /* Using USB */
 

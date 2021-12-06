@@ -1,80 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Session Name="/home/jpwang/code/wiota_ap_customer/uc8088_wiota_ap.workspace">
-  <int Value="6" Name="m_selectedTab"/>
-  <wxString Value="/home/jpwang/code/wiota_ap_customer/uc8088_wiota_ap.workspace" Name="m_workspaceName"/>
-  <TabInfoArray Name="TabInfoArray">
-    <TabInfo>
-      <wxString Value="/home/jpwang/code/wiota_ap_customer/applications/main.c" Name="FileName"/>
-      <int Value="0" Name="FirstVisibleLine"/>
-      <int Value="21" Name="CurrentLine"/>
-      <wxArrayString Name="Bookmarks"/>
-      <IntVector Name="CollapsedFolds"/>
-    </TabInfo>
-    <TabInfo>
-      <wxString Value="/home/jpwang/code/wiota_ap_customer/uc8088_wiota_ap.project" Name="FileName"/>
-      <int Value="250" Name="FirstVisibleLine"/>
-      <int Value="248" Name="CurrentLine"/>
-      <wxArrayString Name="Bookmarks"/>
-      <IntVector Name="CollapsedFolds"/>
-    </TabInfo>
-    <TabInfo>
-      <wxString Value="/home/jpwang/code/wiota_ap_customer/PS/app/test/uc_wiota_interface_test.c" Name="FileName"/>
-      <int Value="155" Name="FirstVisibleLine"/>
-      <int Value="153" Name="CurrentLine"/>
-      <wxArrayString Name="Bookmarks"/>
-      <IntVector Name="CollapsedFolds"/>
-    </TabInfo>
-    <TabInfo>
-      <wxString Value="/home/jpwang/code/wiota_ap_customer/PS/app/test/uc_wiota_interface_test.h" Name="FileName"/>
-      <int Value="0" Name="FirstVisibleLine"/>
-      <int Value="0" Name="CurrentLine"/>
-      <wxArrayString Name="Bookmarks"/>
-      <IntVector Name="CollapsedFolds"/>
-    </TabInfo>
-    <TabInfo>
-      <wxString Value="/home/jpwang/code/wiota_ap_customer/PS/app/include/uc_wiota_interface.h" Name="FileName"/>
-      <int Value="9" Name="FirstVisibleLine"/>
-      <int Value="7" Name="CurrentLine"/>
-      <wxArrayString Name="Bookmarks"/>
-      <IntVector Name="CollapsedFolds"/>
-    </TabInfo>
-    <TabInfo>
-      <wxString Value="/home/jpwang/code/wiota_ap_customer/libraries/UC8088_HAL_Driver/src/gpio.c" Name="FileName"/>
-      <int Value="47" Name="FirstVisibleLine"/>
-      <int Value="45" Name="CurrentLine"/>
-      <wxArrayString Name="Bookmarks"/>
-      <IntVector Name="CollapsedFolds"/>
-    </TabInfo>
-    <TabInfo>
-      <wxString Value="/home/jpwang/code/wiota_ap_customer/uc8088_wiota_ap_win.project" Name="FileName"/>
-      <int Value="0" Name="FirstVisibleLine"/>
-      <int Value="32" Name="CurrentLine"/>
-      <wxArrayString Name="Bookmarks"/>
-      <IntVector Name="CollapsedFolds"/>
-    </TabInfo>
-    <TabInfo>
-      <wxString Value="/home/jpwang/code/wiota_ap_customer/libraries/UC8088_HAL_Driver/src/spim.c" Name="FileName"/>
-      <int Value="11" Name="FirstVisibleLine"/>
-      <int Value="12" Name="CurrentLine"/>
-      <wxArrayString Name="Bookmarks"/>
-      <IntVector Name="CollapsedFolds"/>
-    </TabInfo>
-    <TabInfo>
-      <wxString Value="/home/jpwang/code/wiota_ap_customer/libraries/UC8088_HAL_Driver/src/uc_boot_strap.c" Name="FileName"/>
-      <int Value="23" Name="FirstVisibleLine"/>
-      <int Value="24" Name="CurrentLine"/>
-      <wxArrayString Name="Bookmarks"/>
-      <IntVector Name="CollapsedFolds"/>
-    </TabInfo>
-    <TabInfo>
-      <wxString Value="/home/jpwang/code/wiota_riscv_ap_rt_thread/wiota_riscv_ap/PS/platform/include/trace.h" Name="FileName"/>
-      <int Value="36" Name="FirstVisibleLine"/>
-      <int Value="37" Name="CurrentLine"/>
-      <wxArrayString Name="Bookmarks"/>
-      <IntVector Name="CollapsedFolds"/>
-    </TabInfo>
-  </TabInfoArray>
+<Session Name="D:\AP8088_code_win\wiota_ap_customer_v0.03\uc8088_wiota_ap.workspace">
+  <int Value="0" Name="m_selectedTab"/>
+  <wxString Value="D:\AP8088_code_win\wiota_ap_customer_v0.03\uc8088_wiota_ap.workspace" Name="m_workspaceName"/>
+  <TabInfoArray Name="TabInfoArray"/>
   <SerializedObject Name="m_breakpoints">
     <long Value="0" Name="Count"/>
   </SerializedObject>
+  <wxString Value="*.c;*.cpp;*.cxx;*.cc;*.h;*.hpp;*.inc;*.mm;*.m;*.xrc;*.plist;*.txt" Name="m_findInFilesMask"/>
 </Session>

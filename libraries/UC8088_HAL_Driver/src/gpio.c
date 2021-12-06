@@ -127,9 +127,11 @@ int get_gpio_irq_status()
 {
     return *(volatile int*) (GPIO_REG_INTSTATUS);
 }
-
-#define PIN_NUMBER  24
-
+#ifndef AT_USING_UART1
+#define PIN_NUMBER  11
+#else
+#define PIN_NUMBER  11
+#endif
 void gpio_init(void)
 {
     int_enable();
@@ -166,7 +168,7 @@ void ISR_GPIO(void)
     return;
 }
 
-#define GPIO_8288_TO_8088_PIN_NUMBER 25
+#define GPIO_8288_TO_8088_PIN_NUMBER 12
 void gpoi_8088_to_8288_init(void)
 {
     // set_pin_function(GPIO_8288_TO_8088_PIN_NUMBER,1);

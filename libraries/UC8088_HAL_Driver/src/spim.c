@@ -21,17 +21,33 @@ void spim_setup_slave() {
     set_pin_function(PIN_SSPIM_CSN, FUNC_SPI);
 }
 
-#endif 
+#endif
 
 void spim_setup_master(int numcs) {
-    uint32_t * pad_mux = (uint32_t *)0x1a107000;
-    uint32_t * pad_cfg = (uint32_t *)0x1a107020;
-    (*pad_mux) |= 0x3F00; //pad 8-13
+    // uint32_t * pad_mux = (uint32_t *)0x1a107000;
+    // uint32_t * pad_cfg = (uint32_t *)0x1a107020;
+    // // (*pad_mux) |= 0x3F00; //pad 8-13
+    // (*pad_mux) |= 0x2700; //pad 8-13,no 11 12
 
-    pad_cfg += 2; //8-11;
-    *pad_cfg =0x01010100; //pin 9-11 pull up
-    pad_cfg += 1;
-    *pad_cfg = 0x01; //12-13 pull up
+//    pad_cfg += 2; //8-11;
+//    *pad_cfg =0x01010100; //pin 9-11 pull up
+//    pad_cfg += 1;
+//    *pad_cfg = 0x01; //12-13 pull up
+
+    set_pin_function(8,1);
+    set_pin_function(9,1);
+    set_pin_function(10,1);
+    set_pin_function(13,1);
+
+    uint32_t * pad_cfg = (uint32_t *)0x1a107020;
+    (*pad_cfg) |= (1<<8);
+    (*pad_cfg) |= (1<<9);
+    (*pad_cfg) |= (1<<10);
+
+
+    // rt_kprintf("gpio 8:%d\n",get_pin_function(8));
+    // rt_kprintf("gpio 9:%d\n",get_pin_function(9));
+    // rt_kprintf("gpio 12:%d\n",get_pin_function(12));
 }
 
 
@@ -90,10 +106,10 @@ void spim_read_fifo(int *data, int datalen) {
     if ( (datalen & 0x1F) != 0)
         num_words++;
     i = 0;
-    while (1){    
+    while (1){
         do {
             j = (((*(volatile int*) (SPIM_REG_STATUS)) >> 16) & 0xFF);
-        } while (j==0);   
+        } while (j==0);
         do {
             data[i++] = *(volatile int*) (SPIM_REG_RXFIFO);
             j--;
@@ -105,4 +121,3 @@ void spim_read_fifo(int *data, int datalen) {
 /* last function in spi lib, linked to bootstrap code.
  * calling this cause cache to fill 2nd block, so we have
  * 2 blocks of code in cache */
-

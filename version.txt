@@ -4,4 +4,34 @@ v0.01修改如下：
 	3、增加wiota退出接口，解决wiota退出后的内存泄漏问题
 	4、独立uc_wiota_interface_test.c的例子，已test_开头
 	5、增加频点设置接口，uc_wiota_set_frequency_point()
-	
+v0.02修改如下：
+	1、修改连接态生存时间设置不生效问题
+	2、增加大数据发送case，见test_send_broadcast_data()
+	3、动态参数增加ap最大功率ap_max_power和频谱spectrum_idx参数
+	4、增加获取dcxo和频点的接口
+	5、修改一些bug
+v0.03修改如下：
+	1、增加硬件timer
+	2、开启watchdog功能，默认未开启，如需开启请在project文件中打开宏_WATCHDOG_APP_
+	3、开启at指令功能，具体at命令请参考wiota_AP_AT v0.00.md文档，替换串口配置文件sscom51(ap).ini，默认开启，如需关闭请关闭宏UC8088_MODULE
+	4、新增静态数据读写功能，静态数据1小时写入一次flash，默认开启
+	5、去除了多余的串口log信息
+	6、AP应用接口更改：
+		1）新增ap8288射频功率设置接口：uc_wiota_set_rf_power();可设置的范围为-1~34，具体用法参照uc_wiota_interface_test.c的例子test_set_ap8288_rf_power();
+		2）新增查询ap8288芯片温度接口：uc_wiota_read_temperatuer();读取温度需要两个子帧，有业务处理时不允许读取，具体用法参照uc_wiota_interface_test.c的例子test_read_temp();
+		3）新增扫频接口：uc_wiota_scan_freq();具体用法参照uc_wiota_interface_test.c的例子test_handle_scan_freq();
+		4）合并uc_wiota_reinit()和uc_wiota_first_init()为一个接口uc_wiota_init();
+		5）修改发送数据（广播和正常数据发送）接口回调函数参数，具体请自行对比差异；
+		6）修改超时时间类型为s32_t；
+	7、修改一些已知bug
+v0.04修改如下：
+	1、AP应用接口更改
+		1）新增获取版本接口：uc_wiota_get_version();
+	2、增加crc校验
+	3、paging功能可使用，使用uc_wiota_paging_and_send_normal_data()；接口即可，终端需至少随机接入后才能paging
+	4、优化at指令扫频接口，详见差异
+	5、修改已知bug：
+		1）wiota 退出死机问题
+		2）定时写入flash死机问题
+		3）广播数据发送与接收不一致问题
+	6、at使用uart1，默认关闭，如需打开请关闭宏AT_USING_UART1

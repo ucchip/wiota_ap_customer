@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CodeLite_Workspace Database="" Name="uc8088_wiota_ap" Version="10000">
-  <Project Active="Yes" Name="uc8088_wiota_ap" Path="uc8088_wiota_ap.project"/>
-  <Project Name="uc8088_wiota_ap_win" Path="uc8088_wiota_ap_win.project" Active="No"/>
+  <Project Active="No" Name="uc8088_wiota_ap" Path="uc8088_wiota_ap.project"/>
+  <Project Name="uc8088_wiota_ap_win" Path="uc8088_wiota_ap_win.project" Active="Yes"/>
   <BuildMatrix>
     <WorkspaceConfiguration Name="Debug" Selected="yes">
       <Environment/>
