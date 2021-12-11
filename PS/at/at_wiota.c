@@ -267,7 +267,7 @@ static at_result_t at_iote_info_exec(void)
     iote_info_t *ioteInfo = NULL;
     iote_info_t *tempNode = NULL;
 
-    ioteInfo = uc_wiota_query_info_of_currently_connected_iote(&ioteNum);
+    ioteInfo = uc_wiota_query_active_iotes(&ioteNum);
     tempNode = ioteInfo->next;
 
     while (tempNode != NULL)

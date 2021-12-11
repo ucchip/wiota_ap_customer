@@ -35,3 +35,6 @@ v0.04修改如下：
 		2）定时写入flash死机问题
 		3）广播数据发送与接收不一致问题
 	6、at使用uart1，默认关闭，如需打开请关闭宏AT_USING_UART1
+v0.04修改如下：
+	1、修改查询iote信息接口名称为uc_wiota_query_active_iotes()
+	2、修改发送100字节的数据时crc校验不过的问题

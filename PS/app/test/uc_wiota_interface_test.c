@@ -291,7 +291,7 @@ void test_query_iote_info(void)
     u16_t ioteNum = 0;
     iote_info_t *ioteInfo = NULL;
 
-    ioteInfo = uc_wiota_query_info_of_currently_connected_iote(&ioteNum);
+    ioteInfo = uc_wiota_query_active_iotes(&ioteNum);
     uc_wiota_print_iote_info(ioteInfo, ioteNum);
     if (ioteInfo != NULL)
     {

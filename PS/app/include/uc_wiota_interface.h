@@ -467,7 +467,7 @@ uc_result_e uc_wiota_print_iote_info(iote_info_t *head_node, u16_t iote_num);
  return:
         iote_info_t:pointer of iote information linked list header.
 **********************************************************************************/
-iote_info_t* uc_wiota_query_info_of_currently_connected_iote(u16_t *iote_num);
+iote_info_t* uc_wiota_query_active_iotes(u16_t *iote_num);
 
 /*********************************************************************************
  This function is to sending broadcast data.
