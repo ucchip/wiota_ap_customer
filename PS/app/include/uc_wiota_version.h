@@ -2,8 +2,8 @@
 #ifndef _UC_WIOTA_VERSION_H__
 #define _UC_WIOTA_VERSION_H__
 
-#define GIT_TAIL_TAG   "v0.03"
-#define GIT_UPDATE_VERSION_TIME  "Sat Dec 4 09:27:48 2021"
+#define GIT_TAIL_TAG   "v0.041"
+#define GIT_UPDATE_VERSION_TIME  "Tue Dec 14 18:54:43 2021"
 #define TIMESTAMP   (__DATE__ " " __TIME__)
 
 #endif
