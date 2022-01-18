@@ -26,6 +26,12 @@ typedef enum
     AT_WIOTA_REMOVE_BLACKLIST = 1,
 } at_blacklist_mode_e;
 
+typedef enum
+{
+    AT_WIOTA_HOPPING_SET_FREQ = 0,
+    AT_WIOTA_HOPPING_SET_MODE = 1,
+} at_hopping_type_e;
+
 static int wiota_state = AT_WIOTA_DEFAULT;
 
 static at_result_t at_freq_query(void)
@@ -131,19 +137,26 @@ static at_result_t at_wiota_init_exec(void)
 #if 1
 void uc_wiota_show_access_func(u32_t user_id)
 {
-    rt_kprintf("uc_wiota_show_access_func user_id 0x%x accessed\n", user_id);
+    rt_kprintf("user_id 0x%x accessed\n", user_id);
 }
 
 void uc_wiota_show_drop_func(u32_t user_id)
 {
-    rt_kprintf("uc_wiota_show_drop_func user_id 0x%x dropped\n", user_id);
+    rt_kprintf("user_id x%x dropped\n", user_id);
 }
 
 #if WIOTA_TEST_AUTO_SEND_SM
 extern u8_t *generate_fake_data(u32_t data_len, u8_t repeat_num);
 void uc_wiota_show_result(uc_send_recv_t *result)
 {
-    rt_kprintf("uc_wiota_show_result result %d\n", result->result);
+    if (result->result == 0)
+    {
+        rt_kprintf("send dl sucessed!\n");
+    }
+    else
+    {
+        rt_kprintf("send dl failed or timeout! %d\n", result->result);
+    }
 }
 #endif
 
@@ -152,8 +165,8 @@ void uc_wiota_show_report_data(u32_t user_id, u8_t *report_data, u32_t report_da
 #if WIOTA_TEST_AUTO_SEND_SM
     u8_t *fake_data = NULL;
 
-    fake_data = generate_fake_data(120, 10);
-    uc_wiota_paging_and_send_normal_data(fake_data, 120, &user_id, 1, 100, uc_wiota_show_result);
+    fake_data = generate_fake_data(130, 10);
+    uc_wiota_paging_and_send_normal_data(fake_data, 130, &user_id, 1, 10000, uc_wiota_show_result);
     rt_free(fake_data);
     fake_data = NULL;
     //for test send two
@@ -175,7 +188,7 @@ void uc_wiota_register_callback(void)
 {
     uc_wiota_register_iote_access_callback(uc_wiota_show_access_func);
     uc_wiota_register_iote_dropped_callback(uc_wiota_show_drop_func);
-    uc_wiota_register_proactively_report_data_callback(uc_wiota_show_report_data);
+    uc_wiota_register_report_ul_data_callback(uc_wiota_show_report_data);
 }
 #endif
 
@@ -377,15 +390,15 @@ static at_result_t at_broadcast_setup(const char *args)
             dataLen--;
             pSendBuf++;
         }
-
-        if (UC_SUCCESS == uc_wiota_send_broadcast_data(sendBuf, pSendBuf - sendBuf, mode, timeout > 0 ? timeout : WIOTA_SEND_TIMEOUT, RT_NULL))
+        u8_t res = uc_wiota_send_broadcast_data(sendBuf, pSendBuf - sendBuf, mode, timeout > 0 ? timeout : WIOTA_SEND_TIMEOUT, RT_NULL);
+        if (UC_SUCCESS == res)
         {
-            at_server_printfln("send data suc");
+            at_server_printfln("send bc suc");
             ret = AT_RESULT_OK;
         }
         else
         {
-            at_server_printfln("send data failed");
+            at_server_printfln("send bc failed or timeout %d", res);
             ret = AT_RESULT_NULL;
         }
     }
@@ -447,17 +460,12 @@ static at_result_t at_paging_setup(const char *args)
         result = uc_wiota_paging_and_send_normal_data(sendBuf, pSendBuf - sendBuf, &userId, userIdNum, timeout > 0 ? timeout : WIOTA_SEND_TIMEOUT, RT_NULL);
         if (UC_SUCCESS == result)
         {
-            at_server_printfln("send data suc");
-            ret = AT_RESULT_OK;
-        }
-        else if (UC_PAGING == result)
-        {
-            at_server_printfln("wait 0x%x response paging request\n", userId);
+            at_server_printfln("send pdu suc");
             ret = AT_RESULT_OK;
         }
         else
         {
-            at_server_printfln("send data failed");
+            at_server_printfln("send pdu failed or timeout %d", result);
             ret = AT_RESULT_NULL;
         }
     }
@@ -652,7 +660,7 @@ static at_result_t at_scan_freq_exec(void)
         return AT_RESULT_REPETITIVE_FAILE;
     }
 
-    uc_wiota_scan_freq(NULL, 0, 0, NULL, &scan_info);
+    uc_wiota_scan_freq(NULL, 0, -1, NULL, &scan_info);
     if (UC_SUCCESS == scan_info.result)
     {
         uc_scan_freq_t *freqList = (uc_scan_freq_t *)scan_info.data;
@@ -681,7 +689,7 @@ static at_result_t at_scan_freq_exec(void)
     }
     else
     {
-        at_server_printfln("scan timeout or failed!");
+        at_server_printfln("scan failed or timeout %d", scan_info.result);
         ret = AT_RESULT_NULL;
     }
 
@@ -707,7 +715,7 @@ static at_result_t at_read_temp_exec(void)
     }
     else
     {
-        at_server_printfln("read failed!");
+        at_server_printfln("read failed or timeout %d", read_temp.result);
         return AT_RESULT_FAILE;
     }
 }
@@ -735,6 +743,71 @@ static at_result_t at_version_exec(void)
     return AT_RESULT_OK;
 }
 
+static at_result_t at_hopping_setup(const char *args)
+{
+    int argc = 0;
+    u32_t type = 0;
+    u32_t value = 0;
+
+    const char *req_expr = "=%d,%d";
+
+    argc = at_req_parse_args(args, req_expr, &type, &value);
+    if (argc != 2)
+    {
+        return AT_RESULT_PARSE_FAILE;
+    }
+
+    switch (type)
+    {
+    case AT_WIOTA_HOPPING_SET_FREQ:
+        uc_wiota_set_hopping_freq(value);
+        break;
+
+    case AT_WIOTA_HOPPING_SET_MODE:
+        uc_wiota_set_hopping_mode(value);
+        break;
+
+    default:
+        break;
+    }
+
+    return AT_RESULT_OK;
+}
+
+static at_result_t at_max_iote_num_setup(const char *args)
+{
+    int argc = 0;
+    u32_t maxIoteNum = 0;
+
+    const char *req_expr = "=%d";
+
+    argc = at_req_parse_args(args, req_expr, &maxIoteNum);
+    if (argc != 1)
+    {
+        return AT_RESULT_PARSE_FAILE;
+    }
+    uc_wiota_set_max_active_iote_num_in_the_same_subframe(maxIoteNum);
+
+    return AT_RESULT_OK;
+}
+
+static at_result_t at_bc_mcs_setup(const char *args)
+{
+    int argc = 0;
+    u32_t bcMcs = 0;
+
+    const char *req_expr = "=%d";
+
+    argc = at_req_parse_args(args, req_expr, &bcMcs);
+    if (argc != 1)
+    {
+        return AT_RESULT_PARSE_FAILE;
+    }
+    uc_wiota_set_broadcast_mcs(bcMcs);
+
+    return AT_RESULT_OK;
+}
+
 AT_CMD_EXPORT("AT+WIOTAINIT", RT_NULL, RT_NULL, RT_NULL, RT_NULL, at_wiota_init_exec);
 AT_CMD_EXPORT("AT+WIOTAFREQ", "=<freqpoint>", RT_NULL, at_freq_query, at_freq_setup, RT_NULL);
 AT_CMD_EXPORT("AT+WIOTADCXO", "=<dcxo>", RT_NULL, at_dcxo_query, at_dcxo_setup, RT_NULL);
@@ -749,4 +822,7 @@ AT_CMD_EXPORT("AT+WIOTASCANFREQ", "=<timeout>,<dataLen>,<freqnum>", RT_NULL, RT_
 AT_CMD_EXPORT("AT+WIOTATEMP", RT_NULL, RT_NULL, RT_NULL, RT_NULL, at_read_temp_exec);
 AT_CMD_EXPORT("AT+WIOTAPOWER", "=<power>", RT_NULL, RT_NULL, at_rf_power_setup, RT_NULL);
 AT_CMD_EXPORT("AT+WIOTAVERSION", RT_NULL, RT_NULL, RT_NULL, RT_NULL, at_version_exec);
+AT_CMD_EXPORT("AT+WIOTAHOPPING", "=<type>,<value>", RT_NULL, RT_NULL, at_hopping_setup, RT_NULL);
+AT_CMD_EXPORT("AT+WIOTAIOTENUM", "=<maxNum>", RT_NULL, RT_NULL, at_max_iote_num_setup, RT_NULL);
+AT_CMD_EXPORT("AT+WIOTABCMCS", "=<bcMcs>", RT_NULL, RT_NULL, at_bc_mcs_setup, RT_NULL);
 #endif

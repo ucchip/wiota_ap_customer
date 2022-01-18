@@ -30,11 +30,21 @@ typedef unsigned char boolean;
 #define NULL ((void*) 0)
 #endif
 
+#ifndef TRUE
+#define TRUE    1
+#endif
+
+#ifndef FALSE
+#define FALSE   0
+#endif
+
 //period of time writing to flash
 #define UC_WRITE_FLASH_PERIOD ((1000) * (60) * (60))
 
 //max length of broadcast data sent
 #define UC_WIOTA_MAX_SEND_BROADCAST_DATA_LEN  1024
+
+#define UC_WIOTA_MAX_SEND_NORMAL_DATA_LEN  300
 
 //max num of frequency point
 #define UC_WIOTA_MAX_FREQUENCE_POINT 201
@@ -56,14 +66,19 @@ typedef enum
     UC_SUCCESS = 0,
     UC_TIMEOUT = 1,
     UC_FAILED = 2,
-    UC_PAGING = 3,
 }uc_result_e;
 
 typedef struct
 {
     void *semaphore;
     u8_t result;
-}uc_send_result_t;
+}uc_send_pdu_result_t;
+
+typedef struct
+{
+    void *semaphore;
+    u8_t result;
+}uc_send_bc_result_t;
 
 typedef struct
 {
@@ -134,10 +149,14 @@ typedef struct iote_info
     struct iote_info *next;
 }iote_info_t;
 
-typedef struct
+typedef enum
 {
-    //TODO:
-}exception_info_t;
+    HOPPING_MODE_0 = 0, //default mode, not hopping
+    HOPPING_MODE_1 = 1, //010101010101...
+    HOPPING_MODE_2 = 2, //001100110011...
+    HOPPING_MODE_3 = 3, //000111000111000111...
+    HOPPING_MODE_INVALID,
+}hopping_mode_e;
 
 typedef enum
 {
@@ -177,6 +196,19 @@ typedef enum
     OTA_BROADCAST    = 1, //OTA broadcast data,large amount of data,faster transmission rate
     INVALID_BROACAST,
 }broadcast_mode_e;
+
+typedef enum
+{
+    UC_MCS_LEVEL_0 = 0,
+    UC_MCS_LEVEL_1,
+    UC_MCS_LEVEL_2,
+    UC_MCS_LEVEL_3,
+    UC_MCS_LEVEL_4,
+    UC_MCS_LEVEL_5,
+    UC_MCS_LEVEL_6,
+    UC_MCS_LEVEL_7,
+    UC_MCS_LEVEL_INVALID = 8,
+}uc_mcs_level_e;
 
 typedef void (*uc_send_callback)(uc_send_recv_t *result);
 typedef void (*uc_scan_callback)(uc_scan_recv_t *result);
@@ -385,6 +417,56 @@ uc_result_e uc_wiota_set_frequency_point(u32_t frequency_point);
 u32_t uc_wiota_get_frequency_point(void);
 
 /*********************************************************************************
+ This function is to set frequency point of hopping.
+
+ param:
+        in:
+            hopping_freq_t:frequency point of hopping.
+        out:NULL.
+
+ return:
+    uc_result_e.
+**********************************************************************************/
+uc_result_e uc_wiota_set_hopping_freq(u8_t hopping_freq);
+
+/*********************************************************************************
+ This function is to set mode of hopping frequency.
+
+ param:
+        in:
+            hopping_mode:mode of hopping frequency(hopping_mode_e).
+        out:NULL.
+
+ return:
+    uc_result_e.
+**********************************************************************************/
+uc_result_e uc_wiota_set_hopping_mode(hopping_mode_e hopping_mode);
+
+/**********************************************************************************
+ This function is to set max iote num of active state in the same subframe.
+
+ param:
+        in:
+            iote_num:max iote num of active state.
+        out:NULL.
+ return:
+    uc_result_e.
+**********************************************************************************/
+uc_result_e uc_wiota_set_max_active_iote_num_in_the_same_subframe(u8_t max_iote_num);
+
+/**********************************************************************************
+ This function is to set mcs of broadcast.
+
+ param:
+        in:
+            mcs:mcs of broadcast(uc_mcs_level_e).
+        out:NULL.
+ return:
+    uc_result_e.
+**********************************************************************************/
+uc_result_e uc_wiota_set_broadcast_mcs(uc_mcs_level_e bc_mcs);
+
+/*********************************************************************************
  This function is to get the header of the blacklist linked list.(Need to release
     the head pointer after use)
 
@@ -579,7 +661,7 @@ uc_result_e uc_wiota_register_iote_dropped_callback(uc_iote_drop callback);
  return:
     uc_result_e.
 **********************************************************************************/
-uc_result_e uc_wiota_register_proactively_report_data_callback(uc_report_data callback);
+uc_result_e uc_wiota_register_report_ul_data_callback(uc_report_data callback);
 
 /*********************************************************************************
  This function is to wiota to init.
@@ -651,7 +733,7 @@ u32_t uc_wiota_get_active_time(void);
 
  return:uc_result_e.
 **********************************************************************************/
-uc_result_e uc_wiota_read_temperature(uc_temp_callback callback, uc_temp_recv_t *read_temp, u16_t timeout);
+uc_result_e uc_wiota_read_temperature(uc_temp_callback callback, uc_temp_recv_t *read_temp, s32_t timeout);
 #ifdef __cplusplus
 }
 #endif

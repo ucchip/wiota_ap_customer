@@ -103,9 +103,9 @@ static void rt_hw_systick_init(void)
     // IER |= (1<<29);
 }
 
-#define TI_OVF_TIMER_TEST
+//#define TI_OVF_TIMER_TEST
 #ifdef TI_OVF_TIMER_TEST
-__attribute__((used))static void rt_hw_systick_init_timerB(void)//OVF  timerB
+static void rt_hw_systick_init_timerB(void)//OVF  timerB
 {
     /* Setup Timer B */
     TIMER_CFG_Type TIMERX_InitStructure;
