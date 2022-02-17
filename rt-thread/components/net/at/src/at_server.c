@@ -18,9 +18,7 @@
 
 #define LOG_TAG "at.svr"
 #include <at_log.h>
-#ifndef AT_USING_UART1
 #include <rtdevice.h>
-#endif
 #ifdef AT_USING_SERVER
 
 #define AT_CMD_CHAR_0                  '0'
@@ -578,17 +576,16 @@ int at_server_init(void)
 
     /* Find and open command device */
     at_server_local->device = rt_device_find(AT_SERVER_DEVICE);
+
     if (at_server_local->device)
     {
-#ifndef AT_USING_UART1
         struct serial_configure config  = RT_SERIAL_CONFIG_DEFAULT; /* init default parment*/
-#endif
         RT_ASSERT(at_server_local->device->type == RT_Device_Class_Char);
-#ifndef AT_USING_UART1
+
         // config baud rate 115200
         config.baud_rate = BAUD_RATE_115200;
         rt_device_control(at_server_local->device, RT_DEVICE_CTRL_CONFIG, &config);
-#endif
+
         /* using DMA mode first */
         //open_result = rt_device_open(at_server_local->device, RT_DEVICE_OFLAG_RDWR | RT_DEVICE_FLAG_DMA_RX);
         /* using interrupt mode when DMA mode not supported */

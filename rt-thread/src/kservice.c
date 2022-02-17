@@ -456,7 +456,7 @@ RTM_EXPORT(rt_strncmp);
 rt_int32_t rt_strcmp(const char *cs, const char *ct)
 {
     while (*cs && *cs == *ct)
-    {        
+    {
         cs++;
         ct++;
     }
@@ -1127,10 +1127,10 @@ rt_device_t rt_console_set_device(const char *name)
 
     /* find new console device */
     new_device = rt_device_find(name);
-    
+
     /* check whether it's a same device */
     if (new_device == old_device) return RT_NULL;
-    
+
     if (new_device != RT_NULL)
     {
         if (_console_device != RT_NULL)
@@ -1182,6 +1182,17 @@ void rt_kputs(const char *str)
 #endif
 }
 
+#ifdef UC8088_MODULE
+unsigned char printf_switch = 1;
+
+void set_rt_kprintf_switch(unsigned char sw)
+{
+    printf_switch = sw;
+}
+
+RTM_EXPORT(set_rt_kprintf_switch);
+#endif
+
 /**
  * This function will print a formatted string on system console
  *
@@ -1192,6 +1203,13 @@ void rt_kprintf(const char *fmt, ...)
     va_list args;
     rt_size_t length;
     static char rt_log_buf[RT_CONSOLEBUF_SIZE];
+
+#ifdef UC8088_MODULE
+    if (0 == printf_switch)
+    {
+        return ;
+    }
+#endif
 
     va_start(args, fmt);
     /* the return value of vsnprintf is the number of bytes that would be

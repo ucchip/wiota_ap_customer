@@ -288,7 +288,6 @@
         <Preprocessor Value="__RTTHREAD__"/>
         <Preprocessor Value="RT_USING_NEWLIB"/>
         <Preprocessor Value="UC8088_MODULE"/>
-        <Preprocessor Value="AT_USING_UART1"/>
       </Compiler>
       <Linker Options="-nostartfiles -Wl,--gc-sections  -T ./board/linker_scripts/link.flash.ld -Wl,-Map=rtthread.map" Required="yes">
         <LibraryPath Value="./PS/lib"/>
@@ -296,7 +295,6 @@
       </Linker>
       <ResourceCompiler Options="" Required="no"/>
       <General OutputFile="$(IntermediateDirectory)/$(ProjectName)" IntermediateDirectory="./Debug" Command="$(OutputFile)" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="" PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
-      <BuildSystem Name="Default"/>
       <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
         <![CDATA[]]>
       </Environment>

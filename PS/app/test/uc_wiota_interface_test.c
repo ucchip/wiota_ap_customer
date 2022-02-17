@@ -443,7 +443,7 @@ void test_read_temp(void)
 void test_set_ap8288_rf_power(void)
 {
     s8_t rf_power = 24; //value range:-1~34
-    uc_wiota_set_rf_power(rf_power);
+    uc_wiota_set_ap_max_power(rf_power);
 }
 
 // test! get version of sw

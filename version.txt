@@ -46,5 +46,13 @@ v0.05修改如下：
 	8、修改AP端activeTime时间和终端不同步的问题
 	9、增加ota交叉流程，现在发送ota时可同时进行上下行业务
 	10、增加nack回退策略
-		
+v0.06版本无修改，为了和终端版本保持一致；
+v0.07修改如下：
+	1、添加dl：ul = 1 : 2时muti sm模式，可在两个group上同时发上行，提高传输速率，默认开启，可通过接口uc_wiota_set_muti_sm_mode();开启或关闭
+	2、修改activeTime计算错误问题
+	3、增加同一子帧位置上连接态终端最大数量的限制，默认为4个，最大8个，可通过接口uc_wiota_set_max_active_iote_num_in_the_same_subframe();设置
+	4、增加log模式接口，可设置关闭或开启trace log或spi log，接口uc_wiota_log_switch();
+	5、at串口和 trace log串口默认分开，at使用uart0，波特率默认115200；trace log使用uart1，波特率460800；
+	6、默认开启上下行主要流程log，便于后续问题分析，如需关闭请参照第5条说明关闭
+	7、新增at命令，请对比at_wiota.c
 		

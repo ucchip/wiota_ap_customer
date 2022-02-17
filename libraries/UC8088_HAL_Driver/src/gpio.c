@@ -127,11 +127,8 @@ int get_gpio_irq_status()
 {
     return *(volatile int*) (GPIO_REG_INTSTATUS);
 }
-#ifndef AT_USING_UART1
+
 #define PIN_NUMBER  11
-#else
-#define PIN_NUMBER  11
-#endif
 void gpio_init(void)
 {
     int_enable();

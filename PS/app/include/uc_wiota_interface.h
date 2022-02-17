@@ -63,6 +63,12 @@ typedef unsigned char boolean;
 
 typedef enum
 {
+    UC_LOG_UART = 0,
+    UC_LOG_SPI = 1,
+}uc_log_type_e;
+
+typedef enum
+{
     UC_SUCCESS = 0,
     UC_TIMEOUT = 1,
     UC_FAILED = 2,
@@ -391,7 +397,7 @@ u32_t uc_wiota_get_dcxo(void);
  return:
     uc_result_e.
 **********************************************************************************/
-uc_result_e uc_wiota_set_rf_power(s8_t rf_power);
+uc_result_e uc_wiota_set_ap_max_power(u8_t rf_power);
 
 /*********************************************************************************
  This function is to set single frequency point.
@@ -465,6 +471,18 @@ uc_result_e uc_wiota_set_max_active_iote_num_in_the_same_subframe(u8_t max_iote_
     uc_result_e.
 **********************************************************************************/
 uc_result_e uc_wiota_set_broadcast_mcs(uc_mcs_level_e bc_mcs);
+
+/**********************************************************************************
+ This function is to set muti sm mode, when dlul_ratio is 1:2.
+
+ param:
+        in:
+            isOpen: TRUE: open, FALSE:close,default TRUE.
+        out:NULL.
+ return:
+    uc_result_e.
+**********************************************************************************/
+uc_result_e uc_wiota_set_muti_sm_mode(boolean isOpen);
 
 /*********************************************************************************
  This function is to get the header of the blacklist linked list.(Need to release
@@ -734,6 +752,21 @@ u32_t uc_wiota_get_active_time(void);
  return:uc_result_e.
 **********************************************************************************/
 uc_result_e uc_wiota_read_temperature(uc_temp_callback callback, uc_temp_recv_t *read_temp, s32_t timeout);
+
+/*********************************************************************************
+ This function is to set log type.
+
+ param:
+        in:
+            timeout:execution timeout.
+            callback:when call==NULL,is blocking call;
+                     Non-blocking call when callback != NULL
+        out:
+            read_temp:temperature result.
+
+ return:uc_result_e.
+**********************************************************************************/
+void uc_wiota_log_switch(uc_log_type_e log_type, u8_t is_open);
 #ifdef __cplusplus
 }
 #endif

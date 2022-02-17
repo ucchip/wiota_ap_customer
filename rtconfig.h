@@ -41,7 +41,7 @@
 #define RT_USING_DEVICE
 #define RT_USING_CONSOLE
 #define RT_CONSOLEBUF_SIZE 256
-#define RT_CONSOLE_DEVICE_NAME "uart0"
+#define RT_CONSOLE_DEVICE_NAME "uart1"
 #define RT_VER_NUM 0x40003
 
 /* RT-Thread Components */
@@ -71,11 +71,7 @@
 
 #define RT_USING_AT
 #define AT_USING_SERVER
-#ifndef AT_USING_UART1
-#define AT_SERVER_DEVICE "uart1"
-#else
 #define AT_SERVER_DEVICE "uart0"
-#endif
 #define AT_SERVER_RECV_BUFF_LEN 256
 #define AT_CMD_END_MARK_CRLF
 #define AT_CMD_MAX_LEN 128
