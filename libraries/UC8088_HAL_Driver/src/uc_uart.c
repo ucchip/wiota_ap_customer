@@ -10,7 +10,7 @@
 
 #include "uc_uart.h"
 #include "uc_utils.h"
-#include "uc_gpio.h"
+#include "gpio.h"
 #include "pulpino.h"
 #include "sectdefs.h"
 /**

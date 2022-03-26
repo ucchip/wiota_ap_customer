@@ -5,20 +5,34 @@
       <![CDATA[00010001N0005Debug000000000000]]>
     </Plugin>
   </Plugins>
+  <VirtualDirectory Name="boot">
+    <VirtualDirectory Name="inc">
+      <File Name="boot/inc/uc_boot_spim2flash.h"/>
+      <File Name="boot/inc/uc_print.h"/>
+      <File Name="boot/inc/uc_boot_ymodem.h"/>
+      <File Name="boot/inc/uc_boot_uart.h"/>
+      <File Name="boot/inc/uc_boot_download.h"/>
+    </VirtualDirectory>
+  </VirtualDirectory>
   <VirtualDirectory Name="PS">
     <VirtualDirectory Name="app">
       <VirtualDirectory Name="include">
-        <File Name="PS/app/include/uc_wiota_interface.h"/>
         <File Name="PS/app/include/uc_wiota_version.h"/>
+        <File Name="PS/app/include/uc_wiota_api.h"/>
       </VirtualDirectory>
       <VirtualDirectory Name="test">
-        <File Name="PS/app/test/uc_wiota_interface_test.c"/>
-        <File Name="PS/app/test/uc_wiota_interface_test.h"/>
+        <File Name="PS/app/test/test_wiota_api.c"/>
+        <File Name="PS/app/test/test_wiota_api.h"/>
       </VirtualDirectory>
     </VirtualDirectory>
     <VirtualDirectory Name="at">
       <File Name="PS/at/at_wiota.c"/>
+      <File Name="PS/at/at_factory.c"/>
+      <File Name="PS/at/at_boot.c"/>
+      <File Name="PS/at/ati_prs.h"/>
     </VirtualDirectory>
+    <File Name="PS/Kconfig"/>
+    <File Name="PS/SConscript"/>
   </VirtualDirectory>
   <Description/>
   <Dependencies/>
@@ -27,6 +41,7 @@
     <File Name="applications/SConscript"/>
     <File Name="applications/uc_watchdog_app.c"/>
     <File Name="applications/uc_watchdog_app.h"/>
+    <File Name="applications/Kconfig"/>
   </VirtualDirectory>
   <VirtualDirectory Name="rt-thread">
     <VirtualDirectory Name="libcpu">
@@ -115,15 +130,6 @@
           <File Name="rt-thread/components/drivers/hwtimer/hwtimer.c"/>
         </VirtualDirectory>
       </VirtualDirectory>
-      <VirtualDirectory Name="finsh">
-        <File Name="rt-thread/components/finsh/shell.c"/>
-        <File Name="rt-thread/components/finsh/cmd.c"/>
-        <File Name="rt-thread/components/finsh/msh.c"/>
-        <File Name="rt-thread/components/finsh/finsh.h"/>
-        <File Name="rt-thread/components/finsh/finsh_api.h"/>
-        <File Name="rt-thread/components/finsh/msh.h"/>
-        <File Name="rt-thread/components/finsh/shell.h"/>
-      </VirtualDirectory>
       <VirtualDirectory Name="libc">
         <VirtualDirectory Name="compilers">
           <VirtualDirectory Name="newlib">
@@ -200,6 +206,7 @@
       <File Name="libraries/HAL_Drivers/drv_usart.c"/>
       <File Name="libraries/HAL_Drivers/drv_hwtimer.c"/>
       <File Name="libraries/HAL_Drivers/drv_wdt.c"/>
+      <File Name="libraries/HAL_Drivers/SConscript"/>
     </VirtualDirectory>
     <VirtualDirectory Name="UC8088_HAL_Driver">
       <VirtualDirectory Name="inc">
@@ -242,7 +249,9 @@
         <File Name="libraries/UC8088_HAL_Driver/src/uc_watchdog.c"/>
         <File Name="libraries/UC8088_HAL_Driver/inc/sectdefs.h"/>
       </VirtualDirectory>
+      <File Name="libraries/UC8088_HAL_Driver/SConscript"/>
     </VirtualDirectory>
+    <File Name="libraries/SConscript"/>
   </VirtualDirectory>
   <VirtualDirectory Name="uc8088_wiota_ap">
     <File Name="cconfig.h"/>
@@ -255,8 +264,8 @@
     <File Name="board/board.c"/>
     <File Name="board/board.h"/>
     <File Name="board/crt0.flash.S"/>
+    <File Name="board/SConscript"/>
   </VirtualDirectory>
-  <Dependencies Name="Debug"/>
   <Settings Type="Executable">
     <GlobalSettings>
       <Compiler Options="" C_Options="" Assembler="">
@@ -268,15 +277,15 @@
       <ResourceCompiler Options=""/>
     </GlobalSettings>
     <Configuration Name="Debug" CompilerType="riscv( riscv32-unknown-elf )" DebuggerType="GNU gdb debugger" Type="Executable" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
-      <Compiler Options="-g; -Os; -Wall  -march=rv32imfc;  -ffunction-sections  -Iplatform -Ilibraries/inc " C_Options="-g; -Os; -Wall  -march=rv32imfc; -ffunction-sections;-Iplatform;-Ilibraries/inc;-D _RT_THREAD_;-D _ASIC_;-D UC_DEBUG;-D MEM_OPT;-D _FPGA_;-DLO_TYPE=H_LO;-DIF_VALUE=100;-DHB_COE=1;-DFILTER_TAG=240;-D __AFC_SWITCH__;-D _FPGA_TRACE_TEST_" Assembler="-c; -g;  -march=rv32imfc;  -Iplatform -Ilibraries/inc " Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="0">
+      <Compiler Options="-g; -Os; -Wall  -march=rv32imfc;  -ffunction-sections  -Iplatform -Ilibraries/inc " C_Options="-g; -Os; -Wall  -march=rv32imfc; -ffunction-sections;-Iplatform;-Ilibraries/inc;-D _ASIC_;-D UC_DEBUG;-D MEM_OPT;-DLO_TYPE=H_LO;-DIF_VALUE=100;-DHB_COE=1;-DFILTER_TAG=240;-D __AFC_SWITCH__" Assembler="-c; -g;  -march=rv32imfc;  -Iplatform -Ilibraries/inc " Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="0">
         <IncludePath Value="."/>
         <IncludePath Value="/opt/riscv/riscv32-unknown-elf/include"/>
         <IncludePath Value="applications"/>
         <IncludePath Value="board"/>
+        <IncludePath Value="boot/inc"/>
         <IncludePath Value="libraries/HAL_Drivers"/>
         <IncludePath Value="libraries/UC8088_HAL_Driver/inc"/>
         <IncludePath Value="rt-thread/components/drivers/include"/>
-        <IncludePath Value="rt-thread/components/finsh"/>
         <IncludePath Value="rt-thread/components/net/at/include"/>
         <IncludePath Value="rt-thread/components/libc/compilers/common"/>
         <IncludePath Value="rt-thread/components/libc/compilers/newlib"/>
@@ -284,10 +293,9 @@
         <IncludePath Value="rt-thread/libcpu/risc-v/uc8088"/>
         <IncludePath Value="PS/app/include"/>
         <IncludePath Value="PS/app/test/"/>
+        <IncludePath Value="PS/at/"/>
         <Preprocessor Value="HAVE_CCONFIG_H"/>
-        <Preprocessor Value="__RTTHREAD__"/>
         <Preprocessor Value="RT_USING_NEWLIB"/>
-        <Preprocessor Value="UC8088_MODULE"/>
       </Compiler>
       <Linker Options="-nostartfiles -Wl,--gc-sections  -T ./board/linker_scripts/link.flash.ld -Wl,-Map=rtthread.map" Required="yes">
         <LibraryPath Value="./PS/lib"/>
@@ -306,7 +314,7 @@ load</PostConnectCommands>
         <StartupCommands/>
       </Debugger>
       <PreBuild>
-        <Command Enabled="yes">./Other/packages/current_version.sh PS/app/include/uc_wiota_version.h</Command>
+        <Command Enabled="yes"/>
       </PreBuild>
       <PostBuild>
         <Command Enabled="yes">riscv32-unknown-elf-objdump -d $(IntermediateDirectory)/$(ProjectName) &gt;$(IntermediateDirectory)/$(ProjectName).asm</Command>
@@ -335,4 +343,5 @@ load</PostConnectCommands>
       </Completion>
     </Configuration>
   </Settings>
+  <Dependencies Name="Debug"/>
 </CodeLite_Project>

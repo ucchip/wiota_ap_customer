@@ -1,0 +1,20 @@
+from building import *
+
+cwd = GetCurrentDir()
+
+path = [cwd + '/app/include']
+path += [cwd + '/test']
+
+src = Glob('app/test/*.c')
+if GetDepend(['RT_USING_AT','UC8088_MODULE']):
+    src += ['at/at_wiota.c', 'at/at_boot.c']
+
+if GetDepend(['WIOTA_FACTORY_FUNC']):
+    src += ['at/at_factory.c']
+
+lib = ['libPS_gcc']
+libpath = [cwd + '/lib']
+
+group = DefineGroup('PS', src, depend = [''], CPPPATH = path, LIBS = lib, LIBPATH = libpath)
+
+Return('group')

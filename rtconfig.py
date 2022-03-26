@@ -5,8 +5,8 @@ CPU      = 'uc8088'
 CROSS_TOOL  = 'gcc'
 
 #------- toolchains path -------------------------------------------------------
-if os.getenv('RTT_CC'):
-    CROSS_TOOL = os.getenv('RTT_CC')
+# if os.getenv('RTT_CC'):
+#     CROSS_TOOL = os.getenv('RTT_CC')
 
 if  CROSS_TOOL == 'gcc':
     PLATFORM    = 'gcc'
@@ -23,7 +23,7 @@ BUILD = 'debug'
 
 CORE = 'risc-v'
 MAP_FILE = 'rtthread.map'
-LINK_FILE = './libraries/link.flash.ld'
+LINK_FILE = './board/linker_scripts/link.flash.ld'
 TARGET_NAME = 'rtthread.bin'
 
 #------- GCC settings ----------------------------------------------------------
@@ -41,25 +41,14 @@ if PLATFORM == 'gcc':
     OBJDUMP = PREFIX + 'objdump'
     OBJCPY = PREFIX + 'objcopy'
 
-    #DEVICE = ' -march=rv32imac -mabi=ilp32 -DUSE_PLIC -DUSE_M_TIME -DNO_INIT -mcmodel=medany -msmall-data-limit=8 -L.  -nostartfiles  -lc '
-    #CFLAGS = DEVICE
-    #CFLAGS += ' -save-temps=obj'
-    #AFLAGS = '-c'+ DEVICE + ' -x assembler-with-cpp'
-    #AFLAGS += ' -Iplatform -Ilibraries/n22/include -Ilibraries/n22/env_Eclipse'
-    #AFLAGS += ' -Iplatform -Ilibraries/inc'
-    #LFLAGS = DEVICE
-    #LFLAGS += ' -Wl,--gc-sections,-cref,-Map=' + MAP_FILE
-    #LFLAGS += ' -T ' + LINK_FILE
-    #LFLAGS += ' -Wl,-wrap=memset'
-    
     DEVICE = ' -march=rv32imfc '
     #DEVICE = ' -march=rv32imc '
     CFLAGS = '-g -Os -Wall '+ DEVICE
     #CFLAGS += ' -ffunction-sections -fdata-sections '
     CFLAGS += ' -ffunction-sections '
-    CFLAGS += ' -Iplatform -Ilibraries/inc '
+    # CFLAGS += ' -Iplatform -Ilibraries/inc '
     AFLAGS = '-c -g '+ DEVICE
-    AFLAGS += ' -Iplatform -Ilibraries/inc '
+    # AFLAGS += ' -Iplatform -Ilibraries/inc '
     LFLAGS = ' -nostartfiles -Wl,--gc-sections '
     LFLAGS += ' -T ' + LINK_FILE
     LFLAGS += ' -Wl,-Map=' + MAP_FILE
@@ -73,11 +62,6 @@ if PLATFORM == 'gcc':
     #else:
     #    CFLAGS += ' -O2'
 
-    #POST_ACTION = OBJCPY + ' -O binary $TARGET ' + TARGET_NAME + '\n'
     POST_ACTION = SIZE + ' $TARGET\n'
-    POST_ACTION += 'bintools -d -u $TARGET ' + TARGET_NAME + '\n'
-    # POST_ACTION += 'elf2bin.exe $TARGET\n'
-    #POST_ACTION += 'elf2bin.exe -s 19000 $TARGET\n'
-    # POST_ACTION += 'cp.exe -f flat.bin ' + TARGET_NAME + '\n'
-    # POST_ACTION += 'rm.exe -f flat.bin \n'
+    POST_ACTION += './bintools -u $TARGET ' + TARGET_NAME + '\n'
     POST_ACTION += 'mv -f flat.bin ' + TARGET_NAME + '\n'

@@ -8,10 +8,11 @@
  * 2020-11-26     RT-Thread    first version
  */
 
+#include <rtthread.h>
 #ifdef UC8088_MODULE
 #include "at.h"
 #else
-#include "uc_wiota_interface_test.h"
+#include "test_wiota_api.h"
 #endif
 #ifdef _WATCHDOG_APP_
 #include "uc_watchdog_app.h"
@@ -38,4 +39,5 @@ int main(void)
 #else
     app_task_init();
 #endif
+    rt_kprintf("! main ok !\n");
 }

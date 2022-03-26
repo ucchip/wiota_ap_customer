@@ -17,7 +17,7 @@
 #ifdef RT_USING_PIN
 
 #include <rtdevice.h>
-#include "uc_gpio.h"
+#include "gpio.h"
 #include "uc_event.h"
 
 
@@ -236,7 +236,7 @@ static rt_err_t uc8088_pin_irq_enable(struct rt_device *device, rt_base_t pin,
             break;
         }
         set_gpio_pin_irq_en(UC_GPIO, pin, 1);
-        
+
         //int_enable();
         IER |= 1 << 25;
 
@@ -256,8 +256,8 @@ static rt_err_t uc8088_pin_irq_enable(struct rt_device *device, rt_base_t pin,
         {
             IER &= ~(1 << 25);
         }
-        
-        rt_hw_interrupt_enable(level);  
+
+        rt_hw_interrupt_enable(level);
     }
     else
     {
@@ -282,7 +282,7 @@ rt_inline void pin_irq_hdr(int irqno)
     {
         return;
     }
-    
+
     if (pin_irq_hdr_tab[irqno].hdr)
     {
         pin_irq_hdr_tab[irqno].hdr(pin_irq_hdr_tab[irqno].args);
@@ -292,14 +292,14 @@ rt_inline void pin_irq_hdr(int irqno)
 void ISR_GPIO(void)
 {
     uint32_t irq_status = 0;
-    
+
     rt_interrupt_enter();
-    
+
     irq_status = get_gpio_irq_status(UC_GPIO);
     pin_irq_hdr(bit2bitno(irq_status));
-    
+
     ICP |= 1<<25;
-    
+
     rt_interrupt_leave();
 }
 
@@ -311,4 +311,3 @@ int rt_hw_pin_init(void)
 }
 
 #endif /* RT_USING_PIN */
-

@@ -13,7 +13,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <uc_uart.h>
-#include <uc_gpio.h>
+#include <gpio.h>
 
 #if 0
 // exit loop

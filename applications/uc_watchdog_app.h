@@ -5,7 +5,7 @@
 #define WATCHDOG_KEEP_TIMEOUT 1
 
 int watchdog_app_init(void);
-int watchdog_app_disalbe(void);
+int watchdog_app_disable(void);
 int watchdog_app_enable(void);
 void watchdog_app_close(void);
 

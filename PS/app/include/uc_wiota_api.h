@@ -1,5 +1,5 @@
 /*
- * uc_wiota_interface.h
+ * uc_wiota_api.h
  *
  *  Created on: 2021.07.20
  *  Author: jpwang
@@ -69,15 +69,16 @@ typedef enum
 
 typedef enum
 {
-    UC_SUCCESS = 0,
-    UC_TIMEOUT = 1,
-    UC_FAILED = 2,
+    UC_OP_SUCC = 0,
+    UC_OP_TIMEOUT = 1,
+    UC_OP_FAIL = 2,
 }uc_result_e;
 
 typedef struct
 {
     void *semaphore;
     u8_t result;
+    u32_t user_id;
 }uc_send_pdu_result_t;
 
 typedef struct
@@ -88,6 +89,7 @@ typedef struct
 
 typedef struct
 {
+    u32_t user_id;
     u8_t result;
 }uc_send_recv_t;
 
@@ -129,18 +131,18 @@ typedef struct
 
 typedef struct
 {
-    u32_t system_id;
-    u32_t subsystem_id;
-    u8_t  id_len;
+    u8_t  ap_max_power;    //21, 30
+    u8_t  id_len;          // id len
     u8_t  pn_num;          // 0: 1, 1: 2, 2: 4, 3: not use
     u8_t  symbol_length;   //128,256,512,1024
     u8_t  dlul_ratio;      //0 1:1,  1 1:2
     u8_t  bt_value;         //bt from rf 1: 0.3, 0: 1.2
     u8_t  group_number;    //frame ul group number: 1,2,4,8
-    u8_t  ap_max_power;    //21, 30
     u8_t  spectrum_idx;    //default value:3(470M-510M)
+    u32_t system_id;
+    u32_t subsystem_id;
     u8_t  na[48];
-}dynamic_para_t;
+}sub_system_config_t;
 
 typedef struct blacklist
 {
@@ -151,9 +153,30 @@ typedef struct blacklist
 typedef struct iote_info
 {
     u32_t user_id;
-    // u8_t signal_quality;
     struct iote_info *next;
 }iote_info_t;
+
+typedef struct uc_state_info
+{
+    u32_t user_id;
+    u32_t ul_recv_len;
+    u32_t dl_send_len;
+    u32_t ul_recv_suc;
+    u32_t dl_send_suc;
+    u32_t dl_send_fail;
+    struct uc_state_info *next;
+}uc_state_info_t;
+
+typedef enum
+{
+    //not be 0
+    TYPE_UL_RECV_LEN = 1,
+    TYPE_UL_RECV_SUC = 2,
+    TYPE_DL_SEND_LEN = 3,
+    TYPE_DL_SEND_SUC = 4,
+    TYPE_DL_SEND_FAIL = 5,
+    UC_STATE_TYPE_MAX
+}uc_state_type_e;
 
 typedef enum
 {
@@ -163,38 +186,6 @@ typedef enum
     HOPPING_MODE_3 = 3, //000111000111000111...
     HOPPING_MODE_INVALID,
 }hopping_mode_e;
-
-typedef enum
-{
-    SYMBOL_LENGTH_128 = 0,  //symbol length is 128.
-    SYMBOL_LENGTH_256 = 1,  //symbol length is 256.
-    SYMBOL_LENGTH_512 = 2,  //symbol length is 512.
-    SYMBOL_LENGTH_1024 = 3, //symbol length is 1024.
-    SYMBOL_LENGTH_INVALID,
-}symblo_length_e;
-
-typedef enum
-{
-    DL_UL_ONE_TO_ONE = 0, //1:1
-    DL_UL_ONE_TO_TWO = 1, //1:2
-    DL_UL_INVALID,
-}dl_ul_ratio_e;
-
-typedef enum
-{
-    BT_VALUE_0_POINT_3 = 0,//0.3:only GMSK is supported,but all symbol lengths are supported.
-    BT_VALUE_1_POINT_2 = 1,//1.2:symbol length only supports 128 and 256,but supports GMSK,4PSK and 8PSK.
-    BT_VALUE_INVALID,
-}bt_value_e;
-
-typedef enum
-{
-    GROUP_NUMBER_1 = 0, //group is 1.
-    GROUP_NUMBER_2 = 1, //group is 2.
-    GROUP_NUMBER_4 = 2, //group is 4.
-    GROUP_NUMBER_8 = 3, //group is 8.
-    GROUP_NUMBER_INVALID,
-}group_number_e;
 
 typedef enum
 {
@@ -216,12 +207,17 @@ typedef enum
     UC_MCS_LEVEL_INVALID = 8,
 }uc_mcs_level_e;
 
+extern boolean ap_pgw_get_grant_mode(void);
+extern void scheduler_reset(void);
+
 typedef void (*uc_send_callback)(uc_send_recv_t *result);
 typedef void (*uc_scan_callback)(uc_scan_recv_t *result);
 typedef void (*uc_temp_callback)(uc_temp_recv_t *result);
 typedef void (*uc_iote_access)(u32_t user_id);
 typedef void (*uc_iote_drop)(u32_t user_id);
-typedef void (*uc_report_data)(u32_t user_id, u8_t *report_data, u32_t report_data_len);
+typedef void (*uc_recv)(u32_t user_id, u8_t *data, u32_t data_len);
+
+u8_t uc_wiota_get_state(void);
 
 /*********************************************************************************
  This function is get version of sw
@@ -229,162 +225,38 @@ typedef void (*uc_report_data)(u32_t user_id, u8_t *report_data, u32_t report_da
  param:
         in:NULL.
         out:
-            version:version of sw.
+            wiota_version:version of sw.
+            git_info:current wiota git info.
             time:build time.
 
  return:NULL.
 **********************************************************************************/
-void uc_wiota_get_version(u8_t *version, u8_t *time);
+void uc_wiota_get_version(u8_t *wiota_version, u8_t *git_info, u8_t *make_time);
 
 /*********************************************************************************
- This function is to set all dynamic parameter
+ This function is to set system config
 
  param:
         in:
-            dyna_para:struct of dynamic parameter.
+            config:struct of sub_system_config_t.
         out:NULL.
 
  return:
-    uc_result_e.
+    NULL.
 **********************************************************************************/
-uc_result_e uc_wiota_set_all_dynamic_parameter(dynamic_para_t *dyna_para);
+void uc_wiota_set_system_config(sub_system_config_t *config);
 
 /*********************************************************************************
- This function is to get all dynamic parameter(need be manually released after use)
-
- param:NULL.
-
- return:
-    dynamic_para_t.
-**********************************************************************************/
-dynamic_para_t *uc_wiota_get_all_dynamic_parameter(void);
-
-/*********************************************************************************
- This function is to set system id.
+ This function is to get system config
 
  param:
-        in:
-            system_id:the value of the system id to be set.
-        out:NULL.
-
+        in:NULL
+        out:
+            config: struct of sub_system_config_t.
  return:
-    uc_result_e.
+    NULL.
 **********************************************************************************/
-uc_result_e uc_wiota_set_system_id(u32_t system_id);
-
-/*********************************************************************************
- This function is to set user id length.
-
- param:
-        in:
-            user_id_len:the value of the user id lenth to be set.
-        out:NULL.
-
- return:
-    uc_result_e.
-**********************************************************************************/
-uc_result_e uc_wiota_set_user_id_len(u8_t user_id_len);
-
-/*********************************************************************************
- This function is to set subsystem id.
-
- param:
-        in:
-            subsystem_id:the value of the subsystem id to be set.
-        out:NULL.
-
- return:
-    uc_result_e.
-**********************************************************************************/
-uc_result_e uc_wiota_set_subsystem_id(u32_t subsystem_id);
-
-/*********************************************************************************
- This function is to set pn number.
-
- param:
-        in:
-            pn_num:the value of the pn number to be set.
-        out:NULL.
-
- return:
-    uc_result_e.
-**********************************************************************************/
-uc_result_e uc_wiota_set_pn_number(u8_t pn_num);
-
-/*********************************************************************************
- This function is to set symbol length.
-
- param:
-        in:
-            symbol_length:the value of the symbol length to be set.
-        out:NULL.
-
- return:
-    uc_result_e.
-**********************************************************************************/
-uc_result_e uc_wiota_set_symbol_length(symblo_length_e symbol_length);
-
-/*********************************************************************************
- This function is to set dl-ul ratio.
-
- param:
-        in:
-            dlul_ratio:the value of the dl-ul ratio to be set.
-        out:NULL.
-
- return:
-    uc_result_e.
-**********************************************************************************/
-uc_result_e uc_wiota_set_dlul_ratio(dl_ul_ratio_e dlul_ratio);
-
-/*********************************************************************************
- This function is to set bt value.
-
- param:
-        in:
-            bt_value:the value of the bt value to be set.
-        out:NULL.
-
- return:
-    uc_result_e.
-**********************************************************************************/
-uc_result_e uc_wiota_set_bt_value(bt_value_e bt_value);
-
-/*********************************************************************************
- This function is to set group number.
-
- param:
-        in:
-            group_number:the value of the group number to be set.
-        out:NULL.
-
- return:
-    uc_result_e.
-**********************************************************************************/
-uc_result_e uc_wiota_set_group_number(group_number_e group_number);
-
-/*********************************************************************************
- This function is to set dcxo.
-
- param:
-        in:
-            dcxo:the value of the frequency offset to be set.
-        out:NULL.
-
- return:
-    uc_result_e.
-**********************************************************************************/
-uc_result_e uc_wiota_set_dcxo(u32_t dcxo);
-
-/*********************************************************************************
- This function is to get dcxo.
-
- param:NULL
-
- return:
-    dcxo.
-**********************************************************************************/
-u32_t uc_wiota_get_dcxo(void);
+void uc_wiota_get_system_config(sub_system_config_t *config);
 
 /*********************************************************************************
  This function is to set ap8288 rf power.
@@ -397,20 +269,20 @@ u32_t uc_wiota_get_dcxo(void);
  return:
     uc_result_e.
 **********************************************************************************/
-uc_result_e uc_wiota_set_ap_max_power(u8_t rf_power);
+uc_result_e uc_wiota_set_ap_max_power(s8_t rf_power);
 
 /*********************************************************************************
  This function is to set single frequency point.
 
  param:
         in:
-            frequency_point:single frequency point.
+            freq_idx:single frequency point.
         out:NULL.
 
  return:
-    uc_result_e.
+    NULL.
 **********************************************************************************/
-uc_result_e uc_wiota_set_frequency_point(u32_t frequency_point);
+void uc_wiota_set_freq_info(u8_t freq_idx);
 
 /*********************************************************************************
  This function is to get frequency point.
@@ -418,9 +290,9 @@ uc_result_e uc_wiota_set_frequency_point(u32_t frequency_point);
  param:NULL.
 
  return:
-    frequency point.
+    freq_idx.
 **********************************************************************************/
-u32_t uc_wiota_get_frequency_point(void);
+u8_t uc_wiota_get_freq_info(void);
 
 /*********************************************************************************
  This function is to set frequency point of hopping.
@@ -431,9 +303,9 @@ u32_t uc_wiota_get_frequency_point(void);
         out:NULL.
 
  return:
-    uc_result_e.
+    NULL.
 **********************************************************************************/
-uc_result_e uc_wiota_set_hopping_freq(u8_t hopping_freq);
+void uc_wiota_set_hopping_freq(u8_t hopping_freq);
 
 /*********************************************************************************
  This function is to set mode of hopping frequency.
@@ -444,9 +316,9 @@ uc_result_e uc_wiota_set_hopping_freq(u8_t hopping_freq);
         out:NULL.
 
  return:
-    uc_result_e.
+    NULL.
 **********************************************************************************/
-uc_result_e uc_wiota_set_hopping_mode(hopping_mode_e hopping_mode);
+void uc_wiota_set_hopping_mode(hopping_mode_e hopping_mode);
 
 /**********************************************************************************
  This function is to set max iote num of active state in the same subframe.
@@ -456,9 +328,9 @@ uc_result_e uc_wiota_set_hopping_mode(hopping_mode_e hopping_mode);
             iote_num:max iote num of active state.
         out:NULL.
  return:
-    uc_result_e.
+    NULL.
 **********************************************************************************/
-uc_result_e uc_wiota_set_max_active_iote_num_in_the_same_subframe(u8_t max_iote_num);
+void uc_wiota_set_max_active_iote_num_in_the_same_subframe(u8_t max_iote_num);
 
 /**********************************************************************************
  This function is to set mcs of broadcast.
@@ -468,9 +340,9 @@ uc_result_e uc_wiota_set_max_active_iote_num_in_the_same_subframe(u8_t max_iote_
             mcs:mcs of broadcast(uc_mcs_level_e).
         out:NULL.
  return:
-    uc_result_e.
+    NULL.
 **********************************************************************************/
-uc_result_e uc_wiota_set_broadcast_mcs(uc_mcs_level_e bc_mcs);
+void uc_wiota_set_broadcast_mcs(uc_mcs_level_e bc_mcs);
 
 /**********************************************************************************
  This function is to set muti sm mode, when dlul_ratio is 1:2.
@@ -484,9 +356,31 @@ uc_result_e uc_wiota_set_broadcast_mcs(uc_mcs_level_e bc_mcs);
 **********************************************************************************/
 uc_result_e uc_wiota_set_muti_sm_mode(boolean isOpen);
 
+/**********************************************************************************
+ This function is to set whether to open crc16 verification and length of verification.
+
+ param:
+        in:
+            crc_limit: 0: close crc16 verification, > 0:open crc16 verification.
+        out:NULL.
+ return:
+    NULL.
+**********************************************************************************/
+void uc_wiota_set_crc(u16_t crc_limit);
+
+/**********************************************************************************
+ This function is to get crcLimit value.
+
+ param:
+        in:NULL.
+        out:NULL.
+ return:
+    crc_limit.
+**********************************************************************************/
+u16_t uc_wiota_get_crc(void);
+
 /*********************************************************************************
- This function is to get the header of the blacklist linked list.(Need to release
-    the head pointer after use)
+ This function is to get the header of the blacklist linked list.
 
  param:
         in:NULL.
@@ -499,8 +393,7 @@ uc_result_e uc_wiota_set_muti_sm_mode(boolean isOpen);
 blacklist_t *uc_wiota_get_blacklist(u16_t *blacklist_num);
 
 /*********************************************************************************
- This function is to print all the information in the blacklist.(Need to release
-    the head pointer after use)
+ This function is to print all the information in the blacklist.
 
  param:
         in:
@@ -509,12 +402,12 @@ blacklist_t *uc_wiota_get_blacklist(u16_t *blacklist_num);
         out:NULL.
 
  return:
-    uc_result_e.
+    NULL.
 **********************************************************************************/
-uc_result_e uc_wiota_print_blacklist(blacklist_t *head_node, u16_t blacklist_num);
+void uc_wiota_print_blacklist(blacklist_t *head_node, u16_t blacklist_num);
 
 /*********************************************************************************
- This function is to add one or more iotes to the blacklist linked lcist.
+ This function is to add one or more iotes to the blacklist linked list.
 
  param:
         in:
@@ -523,9 +416,9 @@ uc_result_e uc_wiota_print_blacklist(blacklist_t *head_node, u16_t blacklist_num
         out:NULL.
 
  return:
-    uc_result_e.
+    NULL.
 **********************************************************************************/
-uc_result_e uc_wiota_add_iote_to_blacklist(u32_t *user_id, u16_t user_id_num);
+void uc_wiota_add_iote_to_blacklist(u32_t *user_id, u16_t user_id_num);
 
 /*********************************************************************************
  This function is to removed one or more iotes from the blacklist linked list.
@@ -537,9 +430,9 @@ uc_result_e uc_wiota_add_iote_to_blacklist(u32_t *user_id, u16_t user_id_num);
         out:NULL.
 
  return:
-    uc_result_e.
+    NULL.
 **********************************************************************************/
-uc_result_e uc_wiota_remove_iote_from_blacklist(u32_t *user_id, u16_t user_id_num);
+void uc_wiota_remove_iote_from_blacklist(u32_t *user_id, u16_t user_id_num);
 
 /*********************************************************************************
  This function is to printing all iote information.
@@ -551,13 +444,12 @@ uc_result_e uc_wiota_remove_iote_from_blacklist(u32_t *user_id, u16_t user_id_nu
         out:NULL.
 
  return:
-    uc_result_e.
+    NULL.
 **********************************************************************************/
-uc_result_e uc_wiota_print_iote_info(iote_info_t *head_node, u16_t iote_num);
+void uc_wiota_print_iote_info(iote_info_t *head_node, u16_t iote_num);
 
 /*********************************************************************************
- This function is to query the information of all connected iotes.(Need to release
-    the head pointer after use)
+ This function is to query the information of all connected iotes.
 
  param:
         in:NULL.
@@ -567,7 +459,100 @@ uc_result_e uc_wiota_print_iote_info(iote_info_t *head_node, u16_t iote_num);
  return:
         iote_info_t:pointer of iote information linked list header.
 **********************************************************************************/
-iote_info_t* uc_wiota_query_active_iotes(u16_t *iote_num);
+iote_info_t* uc_wiota_get_connected_iotes(u16_t *iote_num);
+
+/*********************************************************************************
+ This function is to query the information of all disconnected iotes.
+
+ param:
+        in:NULL.
+        out:
+            iote_num:number of iote information linked list nodes.
+
+ return:
+        iote_info_t:pointer of iote information linked list header.
+**********************************************************************************/
+iote_info_t *uc_wiota_get_disconnected_iotes(u16_t *iote_num);
+
+#ifdef WIOTA_AP_STATE_INFO
+/*********************************************************************************
+ This function is to query single state of single iote.
+
+ param:
+        in:
+            user_id:user_id of iote.
+            state_type:uc_state_type_e.
+        out:NULL
+
+ return:
+        single state value.
+**********************************************************************************/
+u32_t uc_wiota_get_single_state_info_of_iote(u32_t user_id, uc_state_type_e state_type);
+
+/*********************************************************************************
+ This function is to query all state of single iote.
+
+ param:
+        in:
+            user_id:user_id of iote.
+        out:NULL
+
+ return:
+        uc_state_info_t.
+**********************************************************************************/
+uc_state_info_t *uc_wiota_get_all_state_info_of_iote(u32_t user_id);
+
+/*********************************************************************************
+ This function is to query all state of all iote.
+
+ param:
+        in:NULL
+        out:NULL
+
+ return:
+        uc_state_info_t.
+**********************************************************************************/
+uc_state_info_t * uc_wiota_get_all_state_info(void);
+
+/*********************************************************************************
+ This function is to reset single state of single iote.
+
+ param:
+        in:
+            user_id:user_id of iote.
+            state_type:uc_state_type_e.
+        out:NULL
+
+ return:
+        NULL.
+**********************************************************************************/
+void uc_wiota_reset_single_state_info_of_iote(u32_t user_id, uc_state_type_e state_type);
+
+/*********************************************************************************
+ This function is to reset all state of single iote.
+
+ param:
+        in:
+            user_id:user_id of iote.
+        out:NULL
+
+ return:
+        NULL.
+**********************************************************************************/
+void uc_wiota_reset_all_state_info_of_iote(u32_t user_id);
+
+/*********************************************************************************
+ This function is to reset all state of all iote.
+
+ param:
+        in:NULL
+        out:NULL
+
+ return:
+        NULL.
+**********************************************************************************/
+void uc_wiota_reset_all_state_info(void);
+#endif
 
 /*********************************************************************************
  This function is to sending broadcast data.
@@ -591,9 +576,9 @@ iote_info_t* uc_wiota_query_active_iotes(u16_t *iote_num);
 
  note:
         1.if the callback is NULL,the data sent is larger than 1k,and the next
-    packet can be sent only after the function return value is UC_SUCCESS.
+    packet can be sent only after the function return value is UC_OP_SUCC.
         2..if the callback is not NULL,the data sent is larger than 1k,you need to
-    wait until the registered callback returns UC_SUCCESS before sending the next
+    wait until the registered callback returns UC_OP_SUCC before sending the next
     packet.
 **********************************************************************************/
 uc_result_e uc_wiota_send_broadcast_data(u8_t *send_data, u16_t send_data_len, broadcast_mode_e mode, s32_t timeout, uc_send_callback callback);
@@ -616,7 +601,7 @@ uc_result_e uc_wiota_send_broadcast_data(u8_t *send_data, u16_t send_data_len, b
  return:
     uc_result_e.
 **********************************************************************************/
-uc_result_e uc_wiota_paging_and_send_normal_data(u8_t *send_data, u16_t send_data_len, u32_t *user_id, u32_t user_id_num, s32_t timeout, uc_send_callback callback);
+uc_result_e uc_wiota_send_data(u8_t *send_data, u16_t send_data_len, u32_t *user_id, u32_t user_id_num, s32_t timeout, uc_send_callback callback);
 
 /*********************************************************************************
  This function is to scaning frequency point collection.(Not supported at the moment)
@@ -647,9 +632,9 @@ uc_result_e uc_wiota_scan_freq(u8_t *freq, u8_t freq_num, s32_t timeout, uc_scan
         out:NULL.
 
  return:
-    uc_result_e.
+    void.
 **********************************************************************************/
-uc_result_e uc_wiota_register_iote_access_callback(uc_iote_access callback);
+void uc_wiota_register_iote_access_callback(uc_iote_access callback);
 
 /*********************************************************************************
  This function is to register iote drop prompt callback.
@@ -661,9 +646,9 @@ uc_result_e uc_wiota_register_iote_access_callback(uc_iote_access callback);
         out:NULL.
 
  return:
-    uc_result_e.
+    NULL.
 **********************************************************************************/
-uc_result_e uc_wiota_register_iote_dropped_callback(uc_iote_drop callback);
+void uc_wiota_register_iote_dropped_callback(uc_iote_drop callback);
 
 /*********************************************************************************
  This function is to register uplink data prompt callback.
@@ -672,14 +657,14 @@ uc_result_e uc_wiota_register_iote_dropped_callback(uc_iote_drop callback);
         in:
             callback:function pointer,the parameter is the user id of the iote that
                 report the data.
-            report_data:data content report.
-            report_data_len:data length reported
+            data:data content report.
+            data_len:data length reported
         out:NULL.
 
  return:
-    uc_result_e.
+    NULL.
 **********************************************************************************/
-uc_result_e uc_wiota_register_report_ul_data_callback(uc_report_data callback);
+void uc_wiota_register_recv_data_callback(uc_recv callback);
 
 /*********************************************************************************
  This function is to wiota to init.
@@ -693,7 +678,7 @@ uc_result_e uc_wiota_register_report_ul_data_callback(uc_report_data callback);
 void uc_wiota_init(void);
 
 /*********************************************************************************
- This function is to wiota to start.
+ This function is to wiota to run.
 
  param:
         in:NULL.
@@ -701,10 +686,10 @@ void uc_wiota_init(void);
 
  return:NULL.
 **********************************************************************************/
-void uc_wiota_start(void);
+void uc_wiota_run(void);
 
 /*********************************************************************************
- This function is to wiota to exit.(Empty function,not implemented)
+ This function is to wiota to exit.
 
  param:
         in:NULL.
@@ -723,9 +708,9 @@ void uc_wiota_exit(void);
         out:NULL.
 
  return:
-    uc_result_e.
+    NULL.
 **********************************************************************************/
-uc_result_e uc_wiota_set_active_time(u32_t active_time);
+void uc_wiota_set_active_time(u32_t active_s);
 
 /*********************************************************************************
  This function is to get the connection timeout of iote in idle state.
@@ -767,6 +752,32 @@ uc_result_e uc_wiota_read_temperature(uc_temp_callback callback, uc_temp_recv_t 
  return:uc_result_e.
 **********************************************************************************/
 void uc_wiota_log_switch(uc_log_type_e log_type, u8_t is_open);
+
+/*********************************************************************************
+ This function is to set grant limit.
+
+ param:
+        in:
+            grant_limit:grant limit.
+        out:
+            NULL.
+
+ return:NULL.
+**********************************************************************************/
+void uc_wiota_set_grant_limit(u16_t grant_limit);
+
+/*********************************************************************************
+ This function is to get grant limit.
+
+ param:
+        in:
+            NULL.
+        out:
+            NULL.
+
+ return:NULL.
+**********************************************************************************/
+u16_t uc_wiota_get_grant_limit(void);
 #ifdef __cplusplus
 }
 #endif

@@ -21,7 +21,7 @@
 #include "drv_spi.h"
 //#include "drv_config.h"
 #include "uc_spim.h"
-#include "uc_gpio.h"
+#include "gpio.h"
 
 //#define DRV_DEBUG
 #define LOG_TAG              "drv.spi"
@@ -72,7 +72,7 @@ static rt_err_t uc8088_spi_init(struct rt_spi_configuration *cfg)
     spim_init(UC_SPIM, &SPI_ConfigStruc);
 
     LOG_D("%s init done", "spim");
-    
+
     return RT_EOK;
 }
 
@@ -129,7 +129,7 @@ static rt_uint32_t spixfer(struct rt_spi_device *device, struct rt_spi_message *
         {
             //rt_kprintf("spixfer 1 len = %d\r\n", send_length);
             uint32_t offset = 0;
-            
+
             spim_setup_cmd_addr(UC_SPIM,0,0,0,0);
             while(offset < send_length)
             {
@@ -155,9 +155,9 @@ static rt_uint32_t spixfer(struct rt_spi_device *device, struct rt_spi_message *
                 spim_set_datalen(UC_SPIM,data_len);
                 spim_setup_dummy(UC_SPIM,0,0);
                 spim_write_fifo(UC_SPIM,(int *)data_buf,data_len);
-                for(int i=0;i<10;i++) 
+                for(int i=0;i<10;i++)
                     for(int j=0;j<1000;j++);
-                    
+
                 //spim_start_transaction(UC_SPIM,SPIM_CMD_WR, cs->GPIO_Pin);
                 spim_start_transaction(UC_SPIM,SPIM_CMD_WR, SPIM_CSN0);
                 while ((spim_get_status(UC_SPIM) & 0xFFFF) != 1);
@@ -176,10 +176,10 @@ static rt_uint32_t spixfer(struct rt_spi_device *device, struct rt_spi_message *
                     }
                     for (index = index_offset; index < (index_offset+count); index++)
                     {
-                        recv_buf[index] = data_buf[(index/count)*count + ((count-1)-index%count)]; 
+                        recv_buf[index] = data_buf[(index/count)*count + ((count-1)-index%count)];
                     }
                 }
-                
+
                 offset += order_size;
             }
         }
@@ -187,7 +187,7 @@ static rt_uint32_t spixfer(struct rt_spi_device *device, struct rt_spi_message *
         {
             //rt_kprintf("spixfer 2 len = %d\r\n", send_length);
             uint32_t offset = 0;
-            
+
             spim_setup_cmd_addr(UC_SPIM,0,0,0,0);
             while(offset < send_length)
             {
@@ -212,24 +212,24 @@ static rt_uint32_t spixfer(struct rt_spi_device *device, struct rt_spi_message *
                 spim_set_datalen(UC_SPIM,data_len);
                 spim_setup_dummy(UC_SPIM,0,0);
                 spim_write_fifo(UC_SPIM,(int *)data_buf,data_len);
-                for(int i=0;i<10;i++) 
+                for(int i=0;i<10;i++)
                     for(int j=0;j<1000;j++);
-                    
+
                 //spim_start_transaction(UC_SPIM,SPIM_CMD_WR, cs->GPIO_Pin);
                 spim_start_transaction(UC_SPIM,SPIM_CMD_WR, SPIM_CSN0);
                 while ((spim_get_status(UC_SPIM) & 0xFFFF) != 1);
-                
+
                 offset += order_size;
             }
         }
         else
         {
-            //rt_kprintf("spixfer 3 len = %d\r\n", send_length);   
+            //rt_kprintf("spixfer 3 len = %d\r\n", send_length);
             uint32_t offset = 0;
-            
+
             spim_setup_cmd_addr(UC_SPIM,0,0,0,0);
             while(offset < send_length)
-            {         
+            {
                 uint8_t index = 0;
                 uint8_t order_size = 0;
                 uint32_t data_len = 0;
@@ -263,10 +263,10 @@ static rt_uint32_t spixfer(struct rt_spi_device *device, struct rt_spi_message *
                     }
                     for (index = index_offset; index < (index_offset+count); index++)
                     {
-                        recv_buf[index] = data_buf[(index/count)*count + ((count-1)-index%count)]; 
+                        recv_buf[index] = data_buf[(index/count)*count + ((count-1)-index%count)];
                     }
                 }
-                
+
                 offset += order_size;
             }
         }
@@ -308,7 +308,7 @@ static const struct rt_spi_ops uc8088_spi_ops =
 static int rt_hw_spi_bus_init(void)
 {
     rt_err_t result;
-    
+
     result = rt_spi_bus_register(&uc8088_spi_bus, "spim", &uc8088_spi_ops);
     RT_ASSERT(result == RT_EOK);
 
@@ -329,8 +329,8 @@ rt_err_t rt_hw_spi_device_attach(const char *bus_name, const char *device_name, 
     struct rt_spi_device *spi_device;
     struct uc8088_hw_spi_cs *cs_pin;
 
-    /* initialize the cs pin && select the slave*/  
-    cs_gpiox = UC_GPIO;  
+    /* initialize the cs pin && select the slave*/
+    cs_gpiox = UC_GPIO;
     set_pin_function(cs_gpio_pin, 0);
 	set_gpio_pin_direction(cs_gpiox, cs_gpio_pin, PIN_OUT);
     set_gpio_pin_value(cs_gpiox, cs_gpio_pin, PIN_OUT_HIGH);
@@ -378,4 +378,3 @@ INIT_COMPONENT_EXPORT(rt_hw_spi_flash_init);
 #endif
 
 #endif /* RT_USING_SPI */
-

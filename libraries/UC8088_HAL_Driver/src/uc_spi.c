@@ -8,7 +8,7 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 #include <uc_spi.h>
-#include <uc_gpio.h>
+#include <gpio.h>
 #include <sectdefs.h>
 
 void spi_send_data_noaddr(int cmd, char *data, int datalen, int useQpi);

@@ -1,0 +1,15 @@
+Import('RTT_ROOT')
+Import('rtconfig')
+from building import *
+
+cwd = GetCurrentDir()
+
+path = [cwd]
+src = Glob('*.c')
+
+if rtconfig.CROSS_TOOL == 'gcc':
+    src += ['crt0.flash.S']
+
+group = DefineGroup('board', src, depend = [''], CPPPATH = path)
+
+Return('group')

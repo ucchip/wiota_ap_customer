@@ -1,0 +1,47 @@
+menu "wiota PS"
+
+config _FPGA_
+    bool "default open(_FPGA_)"
+    default y
+
+config _RT_THREAD_
+    bool "RT_Thread default open(_RT_THREAD_)"
+    default y
+
+config _FPGA_TRACE_TEST_
+    bool "default open(_FPGA_TRACE_TEST_)"
+    default y
+
+config WIOTA_ULDL_PROCESS_TRACE
+    bool "ul and dl process log, default open(WIOTA_ULDL_PROCESS_TRACE)"
+    default y
+
+config WIOTA_RECORD_TEST
+    bool "release version colse(WIOTA_RECORD_TEST)"
+    default y
+
+config WIOTA_ONE_TO_TWO_DEBUG_TRACE
+    bool "1:2 new mode, default close(WIOTA_ONE_TO_TWO_DEBUG_TRACE)"
+    default n
+
+config WIOTA_AP_STATE_INFO
+    bool "query ap state info, default open(WIOTA_AP_STATE_INFO)"
+    default n
+
+config LI_RF_TEST
+    bool "rf test func, default close(LI_RF_TEST)"
+    default n
+
+config UART_CMD
+    bool "uart cmd, default close(UART_CMD)"
+    default n
+
+config TEST_CASE
+    bool "test case, default close(TEST_CASE)"
+    default n
+
+config _ACTIVE_IOTE_TEST_
+    bool "test func, default close(_ACTIVE_IOTE_TEST_)"
+    default n
+
+endmenu

@@ -12,12 +12,11 @@ MEMORY
     instrram    : ORIGIN = 0x00003000, LENGTH = 0xFD000  /* 1M - 0x3000 */
     datarom     : ORIGIN = 0x00200000, LENGTH = 0xFE000  /* 1M - 0x2000*/
     staticdata  : ORIGIN = 0x002FE000, LENGTH = 0x2000   /* 8K */
-    dataram     : ORIGIN = 0x00300000, LENGTH = 0x39C00  /* d_sram ends at 256K 340000  0x3B490 */
-    toolram     : ORIGIN = 0x00339800, LENGTH = 0x800    /* 2K */
+    dataram     : ORIGIN = 0x00300000, LENGTH = 0x3A000  /* d_sram ends at 256K 340000  0x3B490 */
     ccetraceram : ORIGIN = 0x0033A000, LENGTH = 0x1490   /* 5k temp */
-    rvtraceram  : ORIGIN = 0x0033B490, LENGTH = 0x1770
+    rvtraceram  : ORIGIN = 0x0033B490, LENGTH = 0x1770   /* 6000 byte */
     stack       : ORIGIN = 0x0033CC00, LENGTH = 0x2000   /* stack and 32ec00 is reserved for trace buffer */
-
+    share       : ORIGIN = 0x0033EC00, LENGTH = 0x10     /*16 byte*/
 }
 
 /* Stack information variables */
@@ -48,6 +47,7 @@ SECTIONS
         . = ALIGN(4);
 		*(.crt0);
         *(.reset)
+        *(.download);
         . += 80;
         . = ALIGN(2048);
         _stbl_end = .;
@@ -221,6 +221,12 @@ SECTIONS
         _stack = . ;
     } > stack
 
+    .share :
+    {
+        . = ALIGN(4);
+        *(.share_data)
+    } > share
+
     .stab  0 (NOLOAD) :
     {
         [ .stab ]
@@ -230,12 +236,6 @@ SECTIONS
     {
         [ .stabstr ]
     }
-
-    .tool_buff :
-    {
-        . = ALIGN(4);
-        *(.tool_buff)
-    } > toolram
 
     .cce_trace_buff :
     {

@@ -1,18 +1,15 @@
-# RT-Thread building script for component
-
-Import('rtconfig')
+# for module compiling
+import os
 Import('RTT_ROOT')
 from building import *
 
-cwd = GetCurrentDir()
+objs = []
+cwd  = GetCurrentDir()
+list = os.listdir(cwd)
 
-src = Glob('src/*.c')
-src += ['crt0.flash.S']
+for d in list:
+    path = os.path.join(cwd, d)
+    if os.path.isfile(os.path.join(path, 'SConscript')):
+        objs = objs + SConscript(os.path.join(d, 'SConscript'))
 
-CPPPATH = [ cwd + '/inc']
-
-CPPDEFINES = []
-
-group = DefineGroup('Libraries', src, depend = [''], CPPPATH = CPPPATH, CPPDEFINES=CPPDEFINES)
-
-Return('group')
+Return('objs')

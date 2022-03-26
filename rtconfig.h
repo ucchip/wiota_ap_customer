@@ -19,21 +19,19 @@
 #define RT_USING_TIMER_SOFT
 #define RT_TIMER_THREAD_PRIO 4
 #define RT_TIMER_THREAD_STACK_SIZE 512
-
-#define RT_USING_HWTIMER
+#define RT_DEBUG
 
 /* Inter-Thread communication */
 
 #define RT_USING_SEMAPHORE
 #define RT_USING_MUTEX
 #define RT_USING_EVENT
-#define RT_USING_MAILBOX
 #define RT_USING_MESSAGEQUEUE
 
 /* Memory Management */
 
-#define RT_USING_MEMPOOL
 #define RT_USING_SMALL_MEM
+#define RT_USING_MEMTRACE
 #define RT_USING_HEAP
 
 /* Kernel Device Object */
@@ -49,12 +47,13 @@
 #define RT_USING_COMPONENTS_INIT
 #define RT_USING_USER_MAIN
 #define RT_MAIN_THREAD_STACK_SIZE 2048
-#define RT_MAIN_THREAD_PRIORITY 10
+#define RT_MAIN_THREAD_PRIORITY 4
 
 /* C++ features */
 
 
 /* Command shell */
+
 
 /* Device virtual file system */
 
@@ -64,18 +63,8 @@
 #define RT_USING_DEVICE_IPC
 #define RT_PIPE_BUFSZ 512
 #define RT_USING_SERIAL
-#define RT_SERIAL_RB_BUFSZ 4096
-//#define RT_USING_PIN
-
-/* AT commands */
-
-#define RT_USING_AT
-#define AT_USING_SERVER
-#define AT_SERVER_DEVICE "uart0"
-#define AT_SERVER_RECV_BUFF_LEN 256
-#define AT_CMD_END_MARK_CRLF
-#define AT_CMD_MAX_LEN 128
-#define AT_SW_VERSION_NUM 0x10301
+#define RT_SERIAL_RB_BUFSZ 1024
+#define RT_USING_HWTIMER
 #define RT_USING_WDT
 
 /* Using USB */
@@ -98,6 +87,13 @@
 
 /* AT commands */
 
+#define RT_USING_AT
+#define AT_USING_SERVER
+#define AT_SERVER_DEVICE "uart0"
+#define AT_SERVER_RECV_BUFF_LEN 256
+#define AT_CMD_END_MARK_CRLF
+#define AT_CMD_MAX_LEN 128
+#define AT_SW_VERSION_NUM 0x10301
 
 /* VBUS(Virtual Software BUS) */
 
@@ -105,53 +101,16 @@
 /* Utilities */
 
 
-/* RT-Thread online packages */
+/* wiota APP */
 
-/* IoT - internet of things */
+#define UC8088_MODULE
+#define _WATCHDOG_APP_
 
+/* wiota PS */
 
-/* Wi-Fi */
-
-/* Marvell WiFi */
-
-
-/* Wiced WiFi */
-
-
-/* IoT Cloud */
-
-
-/* security packages */
-
-
-/* language packages */
-
-
-/* multimedia packages */
-
-
-/* tools packages */
-
-
-/* system packages */
-
-
-/* Micrium: Micrium software products porting for RT-Thread */
-
-
-/* peripheral libraries and drivers */
-
-
-/* AI packages */
-
-
-/* miscellaneous packages */
-
-
-/* samples: kernel and components samples */
-
-
-/* entertainment: terminal games and other interesting software packages */
-
+#define _FPGA_
+#define _RT_THREAD_
+#define _FPGA_TRACE_TEST_
+#define WIOTA_AP_STATE_INFO
 
 #endif

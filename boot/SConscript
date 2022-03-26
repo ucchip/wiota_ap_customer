@@ -1,0 +1,9 @@
+from building import *
+
+cwd = GetCurrentDir()
+
+path = [cwd + '/inc']
+
+group = DefineGroup('boot', '', depend = [''], CPPPATH = path)
+
+Return('group')
