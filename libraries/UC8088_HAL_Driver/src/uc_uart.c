@@ -36,7 +36,7 @@ __crt0 void uart_set_cfg(int parity, uint16_t clk_counter) {
   *(volatile unsigned int*)(UART_REG_IER) = ((*(volatile unsigned int*)(UART_REG_IER)) & 0xF0) | 0x01;
 
     /* Enable TA IRQ */
-    IER |= (1 << 23); 
+    IER |= (1 << 23);
 }
 
 void uart_send(const char* str, unsigned int len) {
@@ -84,7 +84,7 @@ void uart_wait_tx_done(void) {
   while( (*(volatile unsigned int*)(UART_REG_LSR) & 0x40) == 0);
 }
 
-void uc_uart_init(UART_TYPE *uartx, uint32_t baud_rate, uint8_t data_bits, uint8_t stop_bits, uint8_t parity) 
+void uc_uart_init(UART_TYPE *uartx, uint32_t baud_rate, uint8_t data_bits, uint8_t stop_bits, uint8_t parity)
 {
     uint32_t integerdivider;
     uint32_t line_reg = 0;
@@ -94,7 +94,7 @@ void uc_uart_init(UART_TYPE *uartx, uint32_t baud_rate, uint8_t data_bits, uint8
         set_pin_function(24, 1);
         set_pin_function(25, 1);
     }
-    
+
     CGREG |= (1 << CGUART); // don't clock gate UART
     //integerdivider = (SYSTEM_CLK/15)/baud_rate - 1;
     integerdivider = (SYSTEM_CLK/16)/baud_rate;
@@ -125,7 +125,7 @@ void uc_uart_init(UART_TYPE *uartx, uint32_t baud_rate, uint8_t data_bits, uint8
         //Enable parity
         line_reg |= 1 << 3;
     }
-    
+
     *(volatile unsigned int*)((uint32_t)uartx - UART_BASE_ADDR + UART_REG_LCR) = line_reg | 0x80; //sets 8N1 and set DLAB to 1
     *(volatile unsigned int*)((uint32_t)uartx - UART_BASE_ADDR + UART_REG_DLM) = (integerdivider >> 8) & 0xFF;
     *(volatile unsigned int*)((uint32_t)uartx - UART_BASE_ADDR + UART_REG_DLL) =  integerdivider       & 0xFF;
@@ -134,7 +134,7 @@ void uc_uart_init(UART_TYPE *uartx, uint32_t baud_rate, uint8_t data_bits, uint8
 
 }
 
-char uc_uart_getchar(UART_TYPE *uartx, uint8_t *get_char) 
+char uc_uart_getchar(UART_TYPE *uartx, uint8_t *get_char)
 {
     //while((*((volatile int*)UART_REG_LSR) & 0x1) != 0x1);
 
@@ -151,7 +151,7 @@ char uc_uart_getchar(UART_TYPE *uartx, uint8_t *get_char)
     }
 }
 
-void uc_uart_sendchar(UART_TYPE *uartx, const char c) 
+void uc_uart_sendchar(UART_TYPE *uartx, const char c)
 {
     // wait until there is space in the fifo
     while( (*(volatile unsigned int*)((uint32_t)uartx - UART_BASE_ADDR + UART_REG_LSR) & 0x20) == 0);
@@ -160,7 +160,7 @@ void uc_uart_sendchar(UART_TYPE *uartx, const char c)
     *(volatile unsigned int*)((uint32_t)uartx - UART_BASE_ADDR + UART_REG_THR) = c;
 }
 
-uint8_t uc_uart_get_intrxflag(UART_TYPE *uartx) 
+uint8_t uc_uart_get_intrxflag(UART_TYPE *uartx)
 {
     //if ((*((volatile int*)((uint32_t)uartx - UART_BASE_ADDR + UART_REG_IIR)) & 0x5) == 0x5)
     if (*((volatile int*)((uint32_t)uartx - UART_BASE_ADDR + UART_REG_IIR)) & 0x5)
@@ -173,7 +173,7 @@ uint8_t uc_uart_get_intrxflag(UART_TYPE *uartx)
     }
 }
 
-void uc_uart_enable_intrx(UART_TYPE *uartx, uint8_t ctrl) 
+void uc_uart_enable_intrx(UART_TYPE *uartx, uint8_t ctrl)
 {
     if (ctrl)
     {
@@ -184,5 +184,3 @@ void uc_uart_enable_intrx(UART_TYPE *uartx, uint8_t ctrl)
         *(volatile unsigned int*)((uint32_t)uartx - UART_BASE_ADDR + UART_REG_IER) = 0x00;
     }
 }
-
-

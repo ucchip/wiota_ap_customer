@@ -10,23 +10,22 @@
 
 #include <uc_i2c.h>
 
-void I2C_Setup(I2C_TYPE *I2C, I2C_CFG_Type *I2CconfigStruct)
+void i2c_setup(I2C_TYPE *I2C, I2C_CFG_Type *I2CconfigStruct)
 {
     CHECK_PARAM(PARAM_I2C(I2C));
     CHECK_PARAM(PARAM_I2C_TRANSFER_RATE(I2CconfigStruct->prescaler));
-    
+
     I2C->CPR = I2CconfigStruct->prescaler & I2C_PRESCALER_MASK;
-    
+
     I2C->CTR |= (I2C_ENABLE_MASK);
 }
 
-
-void I2C_Cmd(I2C_TYPE *I2C, FunctionalState NewState)
+void i2c_cmd(I2C_TYPE *I2C, FunctionalState NewState)
 {
     CHECK_PARAM(PARAM_I2C(I2C));
     CHECK_PARAM(PARAM_I2C_ENBIT(NewState));
-    
-    if(NewState)
+
+    if (NewState)
     {
         I2C->CTR |= (I2C_ENABLE_MASK);
     }
@@ -36,68 +35,68 @@ void I2C_Cmd(I2C_TYPE *I2C, FunctionalState NewState)
     }
 }
 
-void I2C_Send_Command(I2C_TYPE *I2C, I2C_CMD cmd)
+void i2c_send_command(I2C_TYPE *I2C, I2C_CMD cmd)
 {
     CHECK_PARAM(PARAM_I2C(I2C));
     CHECK_PARAM(PARAM_I2C_CMD(cmd));
-    
+
     I2C->CDR = cmd;
 }
 
-void I2C_Send_Data(I2C_TYPE *I2C, uint8_t data)
+void i2c_send_data(I2C_TYPE *I2C, uint8_t data)
 {
     CHECK_PARAM(PARAM_I2C(I2C));
-    
+
     I2C->TXR = data;
 }
 
 uint32_t I2C_Get_Status(I2C_TYPE *I2C)
 {
     uint32_t temreg;
-    
+
     CHECK_PARAM(PARAM_I2C(I2C));
-    
+
     temreg = I2C->STR;
-    
+
     return temreg;
 }
 
 I2CTXStatus I2C_Get_TXStatus(I2C_TYPE *I2C)
 {
     I2CTXStatus temstatus;
-    
+
     CHECK_PARAM(PARAM_I2C(I2C));
-    
+
     temstatus = (I2CTXStatus)(I2C->STR & I2C_TIP_MASK);
-    
+
     return temstatus;
 }
 
-I2CACK I2C_Get_ACK(I2C_TYPE *I2C)
+I2CACK i2c_get_ack(I2C_TYPE *I2C)
 {
-	while((I2C->STR & I2C_STATUS_TIP) == 0);
-	while((I2C->STR & I2C_STATUS_TIP) != 0);
-	return !(I2C->STR & I2C_STATUS_RXACK);
+    while ((I2C->STR & I2C_STATUS_TIP) == 0)
+        ;
+    while ((I2C->STR & I2C_STATUS_TIP) != 0)
+        ;
+    return !(I2C->STR & I2C_STATUS_RXACK);
 }
 
-
-uint32_t I2C_Get_Data(I2C_TYPE *I2C)
-{	
-	volatile int tempdata;
+uint32_t i2c_get_data(I2C_TYPE *I2C)
+{
+    volatile int tempdata;
     CHECK_PARAM(PARAM_I2C(I2C));
-    
-    tempdata = *(volatile int*)(I2C->RXR);
-	return tempdata;
+
+    tempdata = *(volatile int *)(I2C->RXR);
+    return tempdata;
 }
 
-I2CStatus I2C_Busy(I2C_TYPE *I2C)
+I2CStatus i2c_busy(I2C_TYPE *I2C)
 {
     uint32_t temreg;
-    
-    CHECK_PARAM(PARAM_I2C(I2C));
-    
-    temreg = (I2C->STR&I2C_BUSY_MASK);
- 
-    return (temreg==I2C_BUSY_MASK);
-}
 
+    CHECK_PARAM(PARAM_I2C(I2C));
+
+    temreg = (I2C->STR & I2C_BUSY_MASK);
+
+    return (temreg == I2C_BUSY_MASK);
+}

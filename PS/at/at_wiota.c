@@ -17,6 +17,16 @@
 
 #define WIOTA_TEST_AUTO_SEND_SM 0
 
+const u8_t CRC_SEND[4][8] = {{1, 1, 4, 4, 4, 0, 0, 0},
+                             {1, 1, 1, 4, 4, 4, 4, 0},
+                             {1, 1, 1, 1, 4, 4, 4, 4},
+                             {1, 1, 1, 1, 4, 4, 4, 4}};
+
+const u32_t U_FRAME_LEN[4][4] = {{73120, 145696, 291232, 582176},
+                                 {73392, 145968, 291504, 582448},
+                                 {105888, 211232, 422304, 844320},
+                                 {106160, 211504, 422576, 844592}};
+
 typedef enum
 {
     AT_WIOTA_DEFAULT = 0,
@@ -53,6 +63,7 @@ enum at_test_communication_command
     AT_TEST_COMMAND_UP_TEST,
     AT_TEST_COMMAND_DOWN_TEST,
     AT_TEST_COMMAND_LOOP_TEST,
+    AT_TEST_COMMAND_IOTE_STOP,
 };
 
 typedef struct at_test_statistical_data
@@ -79,22 +90,21 @@ typedef struct at_test_statistical_data
 } t_at_test_statistical_data;
 
 #define AT_TEST_COMMUNICATION_HEAD "The test mode."
-#define AT_TEST_COMMUNICATION_HEAD_LEN 18
-#define AT_TEST_COMMUNICATION_RESERVED_LEN 206
+#define AT_TEST_COMMUNICATION_HEAD_LEN 16
 
 typedef struct at_test_communication
 {
     char head[AT_TEST_COMMUNICATION_HEAD_LEN];
-    char num; /*1 -- */
+    //char num; /*1 -- */
     char command;
-    // 1: iote report statistical_data to ap
-    char report;
+    //char report; //reserved
     // iote  statistical time
     char timeout;
+    char mcs_num;
     short all_len;
-    short data_len;
-    t_at_test_statistical_data data;
-    char reserved[AT_TEST_COMMUNICATION_RESERVED_LEN];
+    //short data_len;
+    //t_at_test_statistical_data data;
+    char *reserved;
 } t_at_test_communication;
 
 typedef enum
@@ -110,14 +120,13 @@ typedef struct iote_info_managerlist
     // recv number data to determine whether it is duplicate data.
     // sending sequence number starts form 1.
     // now default is 0.
-    u32_t recv_num;
+    u32_t send_num;
     // record the number of times it was sent.
     // prevent sending full or timeout, always send data memory is not enough.
     u32_t send_all_counter;
     // start test ap send the start command to iote.
     // send a successful flag.
     u32_t send_manager_flag;
-
     struct iote_info_managerlist *next;
 } t_iote_info_managerlist;
 
@@ -125,18 +134,25 @@ typedef struct at_test_data
 {
     int type;
     int time;
-    int iote_reprot;
+    int general_report;
+    int num;
+    int flag;
+    short test_data_len;
+    int mcs_num;
+    u32_t send_num;
+    u32_t time_delay;
     rt_timer_t test_mode_timer;
     rt_thread_t test_mode_task;
     rt_mq_t test_queue;
     rt_sem_t test_sem;
     char tast_state;
+    char clean_parenm_flag;
     t_iote_info_managerlist iote_info_list;
+    t_at_test_statistical_data statistical;
 } t_at_test_data;
 
 enum at_test_mode_data_type
 {
-    AT_TEST_MODE_TIMEOUT,
     AT_TEST_MODE_RECVDATA,
     AT_TEST_MODE_QUEUE_EXIT,
 };
@@ -148,18 +164,27 @@ typedef struct at_test_queue_data
     void *data;
 } t_at_test_queue_data;
 
-#define AT_TEST_GET_RATE(TIME, LEN, CURRENT, AVER, MIN, MAX) \
-    {                                                        \
-        CURRENT = LEN / TIME;                                \
-        if (AVER == 0)                                       \
-            AVER = CURRENT;                                  \
-        else                                                 \
-            AVER = (AVER + CURRENT) / 2;                     \
-        if (MIN > CURRENT || MIN == 0)                       \
-            MIN = CURRENT;                                   \
-        if (MAX < CURRENT || MAX == 0)                       \
-            MAX = CURRENT;                                   \
+#define AT_TEST_GET_RATE(TIME, NUM, LEN, CURRENT, AVER, MIN, MAX) \
+    {                                                             \
+        CURRENT = LEN * 1000 / TIME;                              \
+        if (AVER == 0)                                            \
+        {                                                         \
+            AVER = CURRENT;                                       \
+        }                                                         \
+        else                                                      \
+        {                                                         \
+            AVER = (AVER * NUM + CURRENT) / (NUM + 1);            \
+        }                                                         \
+        if (MIN > CURRENT || MIN == 0)                            \
+        {                                                         \
+            MIN = CURRENT;                                        \
+        }                                                         \
+        if (MAX < CURRENT || MAX == 0)                            \
+        {                                                         \
+            MAX = CURRENT;                                        \
+        }                                                         \
     }
+
 #define AT_TEST_CALCUTLATE(RESULT, ALL, BASE)                \
     {                                                        \
         if (0 != ALL)                                        \
@@ -237,7 +262,7 @@ static at_result_t at_system_config_setup(const char *args)
     config.dlul_ratio = (u8_t)temp[2];
     config.bt_value = (u8_t)temp[3];
     config.group_number = (u8_t)temp[4];
-    config.ap_max_power = (u8_t)temp[5];
+    config.ap_max_power = (u8_t)temp[5] - 20;
     config.spectrum_idx = (u8_t)temp[6];
     config.pn_num = 1;
 
@@ -277,9 +302,9 @@ void uc_wiota_show_access_func(u32_t user_id)
                 t_iote_info_managerlist *node = rt_malloc(sizeof(t_iote_info_managerlist));
                 if (node == RT_NULL)
                     return;
-                node->recv_num = 0;
+                node->send_num = 1;
                 node->send_all_counter = 0;
-                node->send_manager_flag = AT_TEST_FIRST_COMMAND_WAIT_SEND;
+                node->send_manager_flag = AT_TEST_FIRST_COMMAND_SU;
                 node->user_id = user_id;
                 node->next = RT_NULL;
                 temp_all_list->next = node;
@@ -296,7 +321,7 @@ void uc_wiota_show_access_func(u32_t user_id)
 
 void uc_wiota_show_drop_func(u32_t user_id)
 {
-    at_server_printfln("user_id 0x%x dropped\n", user_id);
+    rt_kprintf("user_id 0x%x dropped\n", user_id);
 }
 
 #if WIOTA_TEST_AUTO_SEND_SM
@@ -320,41 +345,65 @@ static int at_fitering_test_data(u32_t user_id, u8_t *recv_data, u32_t data_len)
     unsigned int send_data_address = 0;
     t_at_test_queue_data *queue_data;
     char *copy_recv_data;
+    rt_err_t res;
 
+    rt_kprintf("%s line %d ap recv id 0x%x head %s\n", __FUNCTION__, __LINE__, user_id, communication->head);
     // check head
-    if (data_len < AT_TEST_COMMUNICATION_RESERVED_LEN || 0 != strcmp(communication->head, AT_TEST_COMMUNICATION_HEAD))
+    if (0 != strcmp(communication->head, AT_TEST_COMMUNICATION_HEAD))
         return 0;
+    rt_kprintf("%s line %d ap recv id 0x%x command %d\n", __FUNCTION__, __LINE__, user_id, communication->command);
 
     //send queue data
     copy_recv_data = rt_malloc(data_len);
+    if (RT_NULL == copy_recv_data)
+    {
+        rt_kprintf("%s line %d rt_malloc\n", __FUNCTION__, __LINE__);
+        return 1;
+    }
     memcpy(copy_recv_data, recv_data, data_len);
 
     queue_data = rt_malloc(sizeof(t_at_test_queue_data));
+    if (RT_NULL == queue_data)
+    {
+        rt_kprintf("%s line %d rt_malloc\n", __FUNCTION__, __LINE__);
+        return 1;
+    }
     queue_data->type = AT_TEST_MODE_RECVDATA;
     queue_data->usrid = user_id;
-    queue_data->data = recv_data;
+    queue_data->data = copy_recv_data;
 
-    rt_kprintf("%s line %d ap recv id 0x%x\n", __FUNCTION__, __LINE__, user_id);
     send_data_address = (unsigned int)queue_data;
 
-    //at_send_queue(g_test_data.test_queue, data,  2000);
-    rt_mq_send_wait(g_t_test_data.test_queue, &send_data_address, 4, 1000);
+#if 0
+    res = rt_mq_send_wait(g_t_test_data.test_queue, &send_data_address, 4, 1000);
+    if (RT_EOK != res)
+    {
+        rt_kprintf("%s line %d rt_mq_send_wait err %d\n", __FUNCTION__, __LINE__, res);
+    }
+#else
+    res = rt_mq_send(g_t_test_data.test_queue, &send_data_address, 4);
+    if (RT_EOK != res)
+    {
+        rt_kprintf("%s line %d rt_mq_send_wait err %d\n", __FUNCTION__, __LINE__, res);
+    }
+#endif
+    rt_kprintf("%s line %d\n", __FUNCTION__, __LINE__);
 
     return 1;
 }
 
-void uc_wiota_show_recv_data(u32_t user_id, u8_t *recv_data, u32_t data_len)
+void uc_wiota_show_recv_data(u32_t user_id, u8_t *recv_data, u32_t data_len, u8_t type)
 {
 #if WIOTA_TEST_AUTO_SEND_SM
     if (!ap_pgw_get_grant_mode())
     {
-        u8_t *fake_data = NULL;
+        // u8_t *fake_data = NULL;
 
-        fake_data = generate_fake_data(8, 2);
+        // fake_data = generate_fake_data(8, 2);
         // for (u8_t i = 0; i < 16; i++)
-        uc_wiota_send_data(fake_data, 8, &user_id, 1, 10000, uc_wiota_show_result);
-        rt_free(fake_data);
-        fake_data = NULL;
+        uc_wiota_send_data(recv_data, data_len, &user_id, 1, 10000, uc_wiota_show_result);
+        // rt_free(fake_data);
+        // fake_data = NULL;
         //for test send two
         // rt_thread_mdelay(100);
         // fake_data = generate_fake_data(80, 10);
@@ -363,11 +412,13 @@ void uc_wiota_show_recv_data(u32_t user_id, u8_t *recv_data, u32_t data_len)
         // fake_data = NULL;
     }
 #endif //WIOTA_TEST_AUTO_SEND_SM
+    rt_kprintf("%s line %d ap recv id 0x%x\n", __FUNCTION__, __LINE__, user_id);
+
     if (g_t_test_data.time > 0 && at_fitering_test_data(user_id, recv_data, data_len))
     {
         return;
     }
-    at_server_printf("+WIOTARECV,0x%x,%d,", user_id, data_len);
+    at_server_printf("+WIOTARECV,%d,0x%x,%d,", type, user_id, data_len);
     at_send_data(recv_data, data_len);
     at_server_printf("\r\n");
 }
@@ -400,8 +451,14 @@ static at_result_t at_wiota_func_setup(const char *args)
     }
     else if (0 == state && wiota_state == AT_WIOTA_RUN)
     {
-        uc_wiota_exit();
-        wiota_state = AT_WIOTA_EXIT;
+        if (UC_OP_SUCC == uc_wiota_exit())
+        {
+            wiota_state = AT_WIOTA_EXIT;
+        }
+        else
+        {
+            return AT_RESULT_FAILE;
+        }
     }
     else
     {
@@ -464,11 +521,10 @@ static at_result_t at_blacklist_setup(const char *args)
     return AT_RESULT_OK;
 }
 
-static at_result_t at_iote_info_setup(const char *args)
+static at_result_t at_iote_info_query(void)
 {
-    u32_t type = 0;
-    u16_t iote_num = 0;
     iote_info_t *iote_info = NULL;
+    u16_t con_num, discon_num;
 
     if (wiota_state < AT_WIOTA_INIT && wiota_state != AT_WIOTA_EXIT)
     {
@@ -476,29 +532,11 @@ static at_result_t at_iote_info_setup(const char *args)
         return AT_RESULT_REPETITIVE_FAILE;
     }
 
-    args = parse((char *)(++args), "d", &type);
-    if (!args)
-    {
-        return AT_RESULT_PARSE_FAILE;
-    }
-
-    if (type == 0)
-    {
-        iote_info = uc_wiota_get_connected_iotes(&iote_num);
-    }
-    else if (type == 1)
-    {
-        iote_info = uc_wiota_get_disconnected_iotes(&iote_num);
-    }
-    else
-    {
-        // type error
-        return AT_RESULT_FAILE;
-    }
+    iote_info = uc_wiota_get_iote_info(&con_num, &discon_num);
 
     while (iote_info != NULL)
     {
-        at_server_printfln("+WIOTAIOTEINFO=%d,0x%x,%d", type, iote_info->user_id, iote_num);
+        at_server_printfln("+WIOTAIOTEINFO=0x%x,%d,%d,%d", iote_info->user_id, iote_info->iote_status, con_num, discon_num);
         iote_info = iote_info->next;
     }
     return AT_RESULT_OK;
@@ -923,21 +961,26 @@ static at_result_t at_rf_power_setup(const char *args)
         return AT_RESULT_PARSE_FAILE;
     }
 
-    uc_wiota_set_ap_max_power(rf_power);
+    uc_wiota_set_ap_max_power(rf_power - 20);
 
     return AT_RESULT_OK;
 }
 
 static at_result_t at_version_exec(void)
 {
-    u8_t wiota_version[8] = {0};
-    u8_t git_info[36] = {0};
-    u8_t make_time[36] = {0};
+    u8_t wiota_version_8088[15] = {0};
+    u8_t git_info_8088[36] = {0};
+    u8_t make_time_8088[36] = {0};
+    u8_t wiota_version_8288[15] = {0};
+    u8_t git_info_8288[36] = {0};
+    u8_t make_time_8288[36] = {0};
+    u32_t cce_version = 0;
 
-    uc_wiota_get_version(wiota_version, git_info, make_time);
-    at_server_printfln("+WIOTAVERSION:%s", wiota_version);
-    at_server_printfln("+GITINFO:%s", git_info);
-    at_server_printfln("+TIME:%s", make_time);
+    uc_wiota_get_version(wiota_version_8088, git_info_8088, make_time_8088, wiota_version_8288, git_info_8288, make_time_8288, &cce_version);
+    at_server_printfln("+WIOTAVERSION:%s,%s", wiota_version_8088, wiota_version_8288);
+    at_server_printfln("+GITINFO:%s,%s", git_info_8088, git_info_8288);
+    at_server_printfln("+TIME:%s,%s", make_time_8088, make_time_8288);
+    at_server_printfln("+CCEVERSION:%x\n", cce_version);
 
     return AT_RESULT_OK;
 }
@@ -996,21 +1039,6 @@ static at_result_t at_bc_mcs_setup(const char *args)
     }
 
     uc_wiota_set_broadcast_mcs(bc_mcs);
-
-    return AT_RESULT_OK;
-}
-
-static at_result_t at_muti_sm_mode_setup(const char *args)
-{
-    u32_t is_open = 0;
-
-    args = parse((char *)(++args), "d", &is_open);
-    if (!args)
-    {
-        return AT_RESULT_PARSE_FAILE;
-    }
-
-    uc_wiota_set_muti_sm_mode(is_open);
 
     return AT_RESULT_OK;
 }
@@ -1105,23 +1133,100 @@ static at_result_t at_wiotacrc_setup(const char *args)
     return AT_RESULT_OK;
 }
 
-static at_result_t at_wiotagrant_query(void)
+static at_result_t at_wiota_loop_test_setup(const char *args)
 {
-    at_server_printfln("+WIOTAGRANT=%d", uc_wiota_get_grant_limit());
-    return AT_RESULT_OK;
-}
+    int cmd = 0;
+    int data_len = 0;
+    int mcs = 0;
+    int packet_num = 0;
 
-static at_result_t at_wiotagrant_setup(const char *args)
-{
-    int grant_limit = 0;
-
-    args = parse((char *)(++args), "d", &grant_limit);
+    args = parse((char *)(++args), "d,d,d,d", &cmd, &data_len, &mcs, &packet_num);
     if (!args)
     {
         return AT_RESULT_PARSE_FAILE;
     }
 
-    uc_wiota_set_grant_limit(grant_limit);
+    if (cmd == 0)
+    {
+        ap_pgw_set_save_loop_test_id_flag(TRUE);
+    }
+    else if (cmd == 1)
+    {
+        u8_t *send_buf = NULL;
+        u8_t *p_send_buf = NULL;
+
+        if (data_len > 0)
+        {
+            send_buf = (u8_t *)rt_malloc(data_len);
+            if (send_buf == NULL)
+            {
+                at_server_printfln("rt_malloc failed!");
+                return AT_RESULT_NULL;
+            }
+            rt_memset(send_buf, 0, data_len);
+
+            p_send_buf = send_buf;
+            at_server_printfln("OK");
+            at_server_printf(">");
+            while (data_len)
+            {
+                if (get_char_timeout(rt_tick_from_millisecond(WIOTA_WAIT_DATA_TIMEOUT), (char *)p_send_buf) != RT_EOK)
+                {
+                    at_server_printfln("get char failed!");
+                    rt_free(send_buf);
+                    send_buf = NULL;
+                    return AT_RESULT_NULL;
+                }
+                data_len--;
+                p_send_buf++;
+            }
+            // for (int i = 0; i < 10; i++)
+            // {
+            u32_t tick1 = uc_wiota_read_def_counter();
+            if (0 == ap_pgw_handle_loop_test_msg(send_buf, p_send_buf - send_buf, mcs, packet_num))
+            {
+                u32_t tick2 = uc_wiota_read_def_counter();
+                at_server_printfln("loop test end %d\n", tick2 - tick1);
+            }
+            // }
+            rt_free(send_buf);
+            send_buf = NULL;
+        }
+    }
+    else
+    {
+        return AT_RESULT_FAILE;
+    }
+
+    return AT_RESULT_OK;
+}
+
+static at_result_t at_wiota_mem_setup(const char *args)
+{
+    u32_t addr = 0;
+    u32_t type = 0;
+
+    args = parse((char *)(++args), "d,y", &type, &addr);
+    if (!args)
+    {
+        return AT_RESULT_PARSE_FAILE;
+    }
+    at_server_printfln("+WIOTAMEM=0x%x", uc_wiota_query_addr_content(type, addr));
+
+    return AT_RESULT_OK;
+}
+
+static at_result_t at_wiota_rate_setup(const char *args)
+{
+    u32_t rate_mode = 0;
+    u32_t rate_value = 0;
+
+    args = parse((char *)(++args), "d,d", &rate_mode, &rate_value);
+    if (!args)
+    {
+        return AT_RESULT_PARSE_FAILE;
+    }
+    uc_wiota_set_data_rate(rate_mode, rate_value);
 
     return AT_RESULT_OK;
 }
@@ -1214,62 +1319,53 @@ static at_result_t at_wiota_state_setup(const char *args)
 }
 #endif
 
+static void at_test_clean_list(void)
+{
+    t_iote_info_managerlist *temp_all_list = g_t_test_data.iote_info_list.next;
+
+    while (temp_all_list != RT_NULL)
+    {
+        rt_free(temp_all_list);
+        temp_all_list = temp_all_list->next;
+    }
+}
+
 static void at_test_get_devid_list(void)
 {
     iote_info_t *read_iote_info = RT_NULL;
     t_iote_info_managerlist *temp_all_list = &g_t_test_data.iote_info_list;
     iote_info_t *tem_iote_info = RT_NULL;
-    u16_t num;
+    u16_t con_num, discon_num;
 
-    read_iote_info = uc_wiota_get_disconnected_iotes(&num);
-    tem_iote_info = read_iote_info;
-
-    while (tem_iote_info != RT_NULL)
-    {
-        t_iote_info_managerlist *node = rt_malloc(sizeof(t_iote_info_managerlist));
-        rt_kprintf("connect user_id=%x\n", tem_iote_info->user_id);
-        if (node == RT_NULL)
-            return;
-        node->recv_num = 0;
-        node->send_all_counter = 0;
-        node->send_manager_flag = AT_TEST_FIRST_COMMAND_WAIT_SEND;
-        node->user_id = tem_iote_info->user_id;
-        node->next = RT_NULL;
-        // add list
-        temp_all_list->next = node;
-
-        temp_all_list = temp_all_list->next;
-        tem_iote_info = tem_iote_info->next;
-    }
-    //rt_free(read_iote_info);
-
-    read_iote_info = uc_wiota_get_connected_iotes(&num);
+    read_iote_info = uc_wiota_get_iote_info(&con_num, &discon_num);
     tem_iote_info = read_iote_info;
     while (tem_iote_info != RT_NULL)
     {
-        t_iote_info_managerlist *node = rt_malloc(sizeof(t_iote_info_managerlist));
-        if (node == RT_NULL)
-            return;
-        rt_kprintf("disconnect user_id=%x\n", tem_iote_info->user_id);
-        //get usrid
-        node->recv_num = 0;
-        node->send_all_counter = 0;
-        node->send_manager_flag = AT_TEST_FIRST_COMMAND_WAIT_SEND;
-        node->user_id = tem_iote_info->user_id;
-        node->next = RT_NULL;
-        // add list
-        temp_all_list->next = node;
-
-        temp_all_list = temp_all_list->next;
+        if (read_iote_info->iote_status == STATUS_CONNECTED)
+        {
+            t_iote_info_managerlist *node = rt_malloc(sizeof(t_iote_info_managerlist));
+            if (node == RT_NULL)
+                return;
+            rt_kprintf("disconnect user_id=%x\n", tem_iote_info->user_id);
+            //get usrid
+            node->send_num = 1;
+            node->send_all_counter = 0;
+            node->send_manager_flag = AT_TEST_FIRST_COMMAND_WAIT_SEND;
+            node->user_id = tem_iote_info->user_id;
+            node->next = RT_NULL;
+            // add list
+            temp_all_list->next = node;
+            temp_all_list = temp_all_list->next;
+        }
         tem_iote_info = tem_iote_info->next;
     }
 
     //rt_free(read_iote_info);
 }
-void at_test_send_callback(uc_send_recv_t *result)
+void at_test_down_callback(uc_send_recv_t *result)
 {
     t_iote_info_managerlist *temp_all_list = (&g_t_test_data.iote_info_list)->next;
-    //rt_kprintf("======> id %x res %d\n", result->user_id, result->result);
+    rt_kprintf("======> id %x res %d\n", result->user_id, result->result);
 
     while (temp_all_list != RT_NULL)
     {
@@ -1277,204 +1373,410 @@ void at_test_send_callback(uc_send_recv_t *result)
         {
             if (UC_OP_SUCC == result->result)
                 temp_all_list->send_manager_flag = AT_TEST_FIRST_COMMAND_SU;
-            temp_all_list->send_all_counter--;
-            rt_kprintf("======> id %x res %d have send counter %d\n", result->user_id, result->result, temp_all_list->send_all_counter);
+            if (temp_all_list->send_all_counter > 0)
+                temp_all_list->send_all_counter--;
+            //rt_kprintf("======> id %x res %d have send counter %d\n", result->user_id, result->result, temp_all_list->send_all_counter);
             return;
-        }
-    }
-}
-
-static int at_test_filter_page(t_at_test_queue_data *page)
-{
-    t_iote_info_managerlist *temp_all_list = (&g_t_test_data.iote_info_list)->next;
-    t_at_test_communication *communication = page->data;
-
-    while (temp_all_list != RT_NULL)
-    {
-        if (temp_all_list->user_id == page->usrid &&
-            communication->num != temp_all_list->recv_num)
-        {
-            temp_all_list->recv_num = communication->num;
-            return 1;
         }
         temp_all_list = temp_all_list->next;
     }
-
-    return 0;
 }
 
-static void at_test_report_statistical(u32_t type, u32_t userid, u32_t dev, t_at_test_statistical_data statistical)
+void at_test_loop_callback(uc_send_recv_t *result)
 {
-    at_server_printfln("+THROUGHT=%d,%d,0x%x,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d", type, dev, userid,
-                       statistical.upcurrentrate, statistical.upaverate, statistical.upminirate, statistical.upmaxrate,
-                       statistical.downcurrentrate, statistical.downaverate, statistical.downminirate, statistical.downmaxrate,
-                       statistical.send_fail, statistical.recv_fail,
-                       statistical.msc, statistical.power, statistical.rssi, statistical.snr);
+    t_iote_info_managerlist *temp_all_list = (&g_t_test_data.iote_info_list)->next;
+    rt_kprintf("======> id %x res %d\n", result->user_id, result->result);
+
+    while (temp_all_list != RT_NULL)
+    {
+        if (temp_all_list->user_id == result->user_id)
+        {
+            if (UC_OP_SUCC == result->result)
+            {
+                temp_all_list->send_manager_flag = AT_TEST_FIRST_COMMAND_SU;
+            }
+            else
+            {
+                temp_all_list->send_all_counter = 1; // send fail ,resend data.
+            }
+            rt_kprintf("%s line %d id %x res %d have send counter %d\n", __FUNCTION__, __LINE__, result->user_id, result->result, temp_all_list->send_all_counter);
+            return;
+        }
+        temp_all_list = temp_all_list->next;
+    }
+}
+
+static void at_test_report_statistical_fun(u32_t type, u32_t userid, t_at_test_statistical_data statistical)
+{
+    switch (type)
+    {
+
+    case AT_TEST_COMMAND_DEFAULT:
+        at_server_printfln("+STATISTICS:0x%x,  %dbps,  %dbps,  %dbps,  %dbps,  %d%", userid,
+                           statistical.upcurrentrate / 1000 * 8, statistical.upmaxrate / 1000 * 8,
+                           statistical.downcurrentrate / 1000 * 8, statistical.downmaxrate / 1000 * 8, statistical.send_fail);
+        break;
+    case AT_TEST_COMMAND_UP_TEST:
+        at_server_printfln("+UP:0x%x,  %dbps,  %dbps  %d%", userid,
+                           statistical.upcurrentrate / 1000 * 8, statistical.upmaxrate / 1000 * 8, statistical.send_fail);
+        break;
+    case AT_TEST_COMMAND_DOWN_TEST:
+        at_server_printfln("+DOWN:0x%x,  %dbps,  %dbps  %d%", userid,
+                           statistical.downcurrentrate / 1000 * 8, statistical.downmaxrate / 1000 * 8, statistical.send_fail);
+        break;
+    case AT_TEST_COMMAND_LOOP_TEST:
+        at_server_printfln("+LOOP:0x%x,  %dbps,  %dbps,  %dbps,  %dbps  %d%", userid,
+                           statistical.upcurrentrate / 1000 * 8, statistical.upmaxrate / 1000 * 8,
+                           statistical.downcurrentrate / 1000 * 8, statistical.downmaxrate / 1000 * 8, statistical.send_fail);
+        break;
+    default:
+        break;
+    }
 }
 
 #ifdef WIOTA_AP_STATE_INFO
 static void at_test_get_statistical(void)
 {
-    t_at_test_statistical_data statistical;
+    t_at_test_statistical_data statistical = {0};
     uc_state_info_t *tmp_statistical_list = uc_wiota_get_all_state_info();
 
     while (tmp_statistical_list != RT_NULL)
     {
-        rt_kprintf("id %x ul_recv_len %d dl_send_len %d ul_recv_suc %d dl_send_suc %d dl_send_fail %d\n",
-                   tmp_statistical_list->user_id,
-                   tmp_statistical_list->ul_recv_len, tmp_statistical_list->dl_send_len,
-                   tmp_statistical_list->ul_recv_suc, tmp_statistical_list->dl_send_suc,
-                   tmp_statistical_list->dl_send_fail);
-
-        memset(&statistical, 0, sizeof(t_at_test_statistical_data));
         // statistical data
-        AT_TEST_GET_RATE(g_t_test_data.time, tmp_statistical_list->ul_recv_len,
-                         statistical.upcurrentrate, statistical.upaverate, statistical.upminirate, statistical.upmaxrate)
+        AT_TEST_GET_RATE(g_t_test_data.time, 1, tmp_statistical_list->ul_recv_len,
+                         statistical.upcurrentrate, statistical.upaverate, statistical.upminirate, tmp_statistical_list->ul_recv_max);
+        statistical.upmaxrate = tmp_statistical_list->ul_recv_max;
+        AT_TEST_GET_RATE(g_t_test_data.time, 1, tmp_statistical_list->dl_send_len,
+                         statistical.downcurrentrate, statistical.downaverate, statistical.downminirate, tmp_statistical_list->dl_send_max);
+        statistical.downmaxrate = tmp_statistical_list->dl_send_max;
+        rt_kprintf("statistical.send_fail = %d\n", statistical.send_fail);
+        AT_TEST_CALCUTLATE(statistical.send_fail, tmp_statistical_list->dl_send_suc + tmp_statistical_list->dl_send_fail, tmp_statistical_list->dl_send_fail);
+        // rt_kprintf("statistical.send_fail = %d\n", statistical.recv_fail);
 
-        AT_TEST_GET_RATE(g_t_test_data.time, tmp_statistical_list->dl_send_len,
-                         statistical.downcurrentrate, statistical.downaverate, statistical.downminirate, statistical.downmaxrate)
-
-        AT_TEST_CALCUTLATE(statistical.send_fail, tmp_statistical_list->dl_send_suc + tmp_statistical_list->dl_send_fail, tmp_statistical_list->dl_send_fail)
-
-        at_test_report_statistical(g_t_test_data.type, tmp_statistical_list->user_id, 0, statistical);
+        at_test_report_statistical_fun(g_t_test_data.type, tmp_statistical_list->user_id, statistical);
         tmp_statistical_list = tmp_statistical_list->next;
     }
-    // rt_kprintf("%s line %d \n", __FUNCTION__, __LINE__);
-    //uc_wiota_reset_all_state_info();
-    //rt_kprintf("%s line %d \n", __FUNCTION__, __LINE__);
+}
+
+static void at_test_get_statistical_general_report(void)
+{
+
+    int send_flag = 0;
+    t_iote_info_managerlist *temp_all_list = (&g_t_test_data.iote_info_list)->next;
+
+    while (temp_all_list != RT_NULL)
+    {
+        if (temp_all_list->send_num > 0)
+        {
+            send_flag = 1;
+            break;
+        }
+        temp_all_list = temp_all_list->next;
+    }
+
+    int flag = 0;
+    uc_state_info_t state_info = {0};
+    uc_state_info_t *tmp_statistical_list = uc_wiota_get_all_state_info();
+    while (tmp_statistical_list != RT_NULL && 1 == send_flag)
+    {
+        flag = 1;
+        state_info.ul_recv_len += tmp_statistical_list->ul_recv_len;
+        state_info.dl_send_len += tmp_statistical_list->dl_send_len;
+        state_info.ul_recv_suc += tmp_statistical_list->ul_recv_suc;
+        state_info.dl_send_suc += tmp_statistical_list->dl_send_suc;
+        state_info.dl_send_fail += tmp_statistical_list->dl_send_fail;
+        tmp_statistical_list = tmp_statistical_list->next;
+    }
+
+    if (1 == flag)
+    {
+        AT_TEST_GET_RATE(g_t_test_data.time, g_t_test_data.num, state_info.ul_recv_len,
+                         g_t_test_data.statistical.upcurrentrate, g_t_test_data.statistical.upaverate,
+                         g_t_test_data.statistical.upminirate, g_t_test_data.statistical.upmaxrate)
+
+        AT_TEST_GET_RATE(g_t_test_data.time, g_t_test_data.num, state_info.dl_send_len,
+                         g_t_test_data.statistical.downcurrentrate, g_t_test_data.statistical.downaverate,
+                         g_t_test_data.statistical.downminirate, g_t_test_data.statistical.downmaxrate)
+
+        AT_TEST_CALCUTLATE(g_t_test_data.statistical.send_fail, state_info.dl_send_suc + state_info.dl_send_fail, state_info.dl_send_fail)
+
+        AT_TEST_CALCUTLATE(g_t_test_data.statistical.recv_fail, state_info.dl_send_suc, state_info.dl_send_suc - state_info.ul_recv_suc)
+
+        at_test_report_statistical_fun(g_t_test_data.type, 0, g_t_test_data.statistical);
+
+        if (0 != g_t_test_data.statistical.upaverate)
+            g_t_test_data.num++;
+    }
+}
+
+static void at_test_get_statistical_data_loop()
+{
+
+    sub_system_config_t config;
+    uc_wiota_get_system_config(&config);
+    u32_t only_time = 128 * (1 << config.symbol_length) * 8 * 4 * g_t_test_data.send_num / 1000;
+    u32_t m_time = U_FRAME_LEN[(1 << config.dlul_ratio) - 1][config.symbol_length] * g_t_test_data.send_num / 8 / 1000;
+
+    int send_flag = 0;
+    t_iote_info_managerlist *temp_all_list = (&g_t_test_data.iote_info_list)->next;
+
+    while (temp_all_list != RT_NULL)
+    {
+        if (temp_all_list->send_num > 0)
+        {
+            send_flag = 1;
+            break;
+        }
+        temp_all_list = temp_all_list->next;
+    }
+
+    int flag = 0;
+    uc_state_info_t state_info = {0};
+    uc_state_info_t *tmp_statistical_list = uc_wiota_get_all_state_info();
+    while (tmp_statistical_list != RT_NULL && 1 == send_flag)
+    {
+        flag = 1;
+        state_info.ul_recv_len += tmp_statistical_list->ul_recv_len;
+        state_info.dl_send_len += tmp_statistical_list->dl_send_len;
+        state_info.ul_recv_suc += tmp_statistical_list->ul_recv_suc;
+        state_info.dl_send_suc += tmp_statistical_list->dl_send_suc;
+        // statistical data
+        tmp_statistical_list = tmp_statistical_list->next;
+    }
+
+    uc_wiota_reset_all_state_info();
+
+    if (1 == flag)
+    {
+        state_info.dl_send_len += (CRC_SEND[config.symbol_length][g_t_test_data.mcs_num]) * g_t_test_data.send_num,
+            state_info.ul_recv_len += (CRC_SEND[config.symbol_length][g_t_test_data.mcs_num]) * g_t_test_data.send_num;
+
+        u32_t thoeretical_rate = state_info.ul_recv_len * 8 * 1000 / only_time;
+
+        AT_TEST_GET_RATE(m_time, g_t_test_data.num, state_info.ul_recv_len,
+                         g_t_test_data.statistical.upcurrentrate, g_t_test_data.statistical.upaverate,
+                         g_t_test_data.statistical.upminirate, g_t_test_data.statistical.upmaxrate)
+
+        AT_TEST_GET_RATE(m_time, g_t_test_data.num, state_info.dl_send_len,
+                         g_t_test_data.statistical.downcurrentrate, g_t_test_data.statistical.downaverate,
+                         g_t_test_data.statistical.downminirate, g_t_test_data.statistical.downmaxrate)
+
+        AT_TEST_CALCUTLATE(g_t_test_data.statistical.recv_fail, state_info.dl_send_suc, state_info.dl_send_suc - state_info.ul_recv_suc)
+
+        at_server_printfln("+DATA:0x%x,  %dbps,  %dbps,  %dbps,  %dbps,  %dbps,  %d%", 0,
+                           g_t_test_data.statistical.upcurrentrate * 8, g_t_test_data.statistical.upmaxrate * 8,
+                           g_t_test_data.statistical.downcurrentrate * 8, g_t_test_data.statistical.downmaxrate * 8, thoeretical_rate, g_t_test_data.statistical.recv_fail);
+    }
 }
 
 static void at_test_mode_time_fun(void *parameter)
 {
-    at_test_get_statistical();
+    if (1 == g_t_test_data.general_report)
+        at_test_get_statistical_general_report();
+    else
+        at_test_get_statistical();
+    g_t_test_data.clean_parenm_flag = 1;
 }
 #endif
 
 static void at_test_send_to_iote(t_at_test_communication *data)
 {
-    t_iote_info_managerlist *temp_all_list = (&g_t_test_data.iote_info_list)->next;
-
-    data->num++;
-    //rt_kprintf("%s line %d\n", __FUNCTION__, __LINE__);
-
-    // send test data to iote. down and loopback tests.
-    if (g_t_test_data.type == AT_TEST_COMMAND_DOWN_TEST ||
-        g_t_test_data.type == AT_TEST_COMMAND_LOOP_TEST)
+    if (1 == g_t_test_data.flag)
     {
-        while (temp_all_list != RT_NULL)
-        {
-            // send data
-            uc_wiota_send_data((u8_t *)data, data->all_len, &(temp_all_list->user_id), 1, 0, at_test_send_callback);
-            temp_all_list = temp_all_list->next;
-        }
+        rt_kprintf("%s line %d data->all_len: %d  g_t_test_data.mcs_num: %d\n", __FUNCTION__, __LINE__, data->all_len, g_t_test_data.mcs_num);
+        rt_tick_t data_reserved;
+        data_reserved = rt_tick_get();
+        memcpy(&data->reserved + 4, &data_reserved, sizeof(rt_tick_t));
+
+        ap_pgw_handle_loop_test_msg((unsigned char *)data, data->all_len, g_t_test_data.mcs_num, g_t_test_data.send_num);
+
+        at_test_get_statistical_data_loop();
+
+        rt_kprintf("%s line %d\n", __FUNCTION__, __LINE__);
+        return;
     }
-    else
+
+    t_iote_info_managerlist *temp_all_list = (&g_t_test_data.iote_info_list)->next;
+    while (temp_all_list != RT_NULL)
     {
-        while (temp_all_list != RT_NULL)
+        if (0 == temp_all_list->send_num)
         {
-            if (temp_all_list->send_manager_flag == AT_TEST_FIRST_COMMAND_WAIT_SEND)
+            temp_all_list = temp_all_list->next;
+            continue;
+        }
+
+        if (temp_all_list->send_manager_flag == AT_TEST_FIRST_COMMAND_WAIT_SEND)
+        {
+            uc_result_e res;
+            rt_kprintf("%s line %d command %d timeout %d id 0x%x\n", __FUNCTION__, __LINE__, data->command, data->timeout, temp_all_list->user_id);
+            res = uc_wiota_send_data((unsigned char *)data, data->all_len, &(temp_all_list->user_id), 1, 60000, RT_NULL);
+            rt_kprintf("%s line %d ap send command result %d\n", __FUNCTION__, __LINE__, res);
+            if (UC_OP_SUCC == res)
             {
-                // send data
-                if (temp_all_list->send_all_counter < 5)
+                temp_all_list->send_manager_flag = AT_TEST_FIRST_COMMAND_SU;
+                if (4 == g_t_test_data.type)
                 {
-                    uc_result_e res = uc_wiota_send_data((unsigned char *)data, data->all_len, &(temp_all_list->user_id), 1, 0, at_test_send_callback);
-                    temp_all_list->send_all_counter++;
-                    rt_kprintf("%s line %d send %x result %d\n", __FUNCTION__, __LINE__, temp_all_list->user_id, res);
+                    uc_wiota_reset_all_state_info();
+                    rt_kprintf("%s line %d ap send command result\n", __FUNCTION__, __LINE__);
+                    g_t_test_data.flag = 1;
+                    return;
                 }
-                temp_all_list = temp_all_list->next;
             }
         }
-        rt_kprintf("%s line %d\n", __FUNCTION__, __LINE__);
+        else if (g_t_test_data.type == AT_TEST_COMMAND_DOWN_TEST)
+        {
+            rt_kprintf("%s line %d command %d timeout %d id 0x%x send_all_counter %d\n", __FUNCTION__, __LINE__, data->command, data->timeout, temp_all_list->user_id, temp_all_list->send_all_counter);
+            if (temp_all_list->send_all_counter < 3)
+            {
+                temp_all_list->send_num = 1;
+                uc_wiota_send_data((unsigned char *)data, data->all_len, &(temp_all_list->user_id), 1, 60000, at_test_down_callback);
+                temp_all_list->send_all_counter++;
+            }
+            else
+            {
+                temp_all_list->send_num++;
+            }
+
+            if (temp_all_list->send_num > 50000)
+                temp_all_list->send_num = 0;
+        }
+        else if (g_t_test_data.type == AT_TEST_COMMAND_LOOP_TEST)
+        {
+            if (temp_all_list->send_all_counter)
+            {
+                uc_wiota_send_data((unsigned char *)data, data->all_len, &(temp_all_list->user_id), 1, 60000, at_test_loop_callback);
+                temp_all_list->send_all_counter = 0;
+            }
+        }
+        temp_all_list = temp_all_list->next;
+    }
+}
+void at_test_clean_loop_flag(u32_t user_id)
+{
+    t_iote_info_managerlist *temp_all_list = (&g_t_test_data.iote_info_list)->next;
+    while (temp_all_list != RT_NULL)
+    {
+        if (user_id == temp_all_list->user_id)
+        {
+            temp_all_list->send_all_counter = 1;
+            break;
+        }
+        temp_all_list = temp_all_list->next;
     }
 }
 
 static void at_test_mode_task_fun(void *parameter)
 {
-    //t_at_test_queue_data time_queue_data;
     unsigned int queue_data = 0;
     t_at_test_queue_data *pqueue_data = RT_NULL;
-    t_at_test_communication communication = {0};
 
-    //time_queue_data.type = AT_TEST_MODE_TIMEOUT;
+    t_at_test_communication *communication = rt_malloc(
+        (sizeof(t_at_test_communication) + 4) > g_t_test_data.test_data_len ? (sizeof(t_at_test_communication) + 4) : g_t_test_data.test_data_len);
+
+    if (4 == g_t_test_data.type)
+    {
+        ap_pgw_set_save_loop_test_id_flag(TRUE);
+    }
+
 #ifdef WIOTA_AP_STATE_INFO
     uc_wiota_reset_all_state_info();
 #endif
-    // get iote userid list
     at_test_get_devid_list();
+    memset(communication->head, 0, AT_TEST_COMMUNICATION_HEAD_LEN);
+    memcpy(communication->head, AT_TEST_COMMUNICATION_HEAD, strlen(AT_TEST_COMMUNICATION_HEAD));
+    communication->command = g_t_test_data.type;
+    communication->timeout = g_t_test_data.time;
+    communication->mcs_num = g_t_test_data.mcs_num;
+    communication->all_len = sizeof(t_at_test_communication) > g_t_test_data.test_data_len ? sizeof(t_at_test_communication) : g_t_test_data.test_data_len;
 
-    // send first page to iote
-    memcpy(communication.head, AT_TEST_COMMUNICATION_HEAD, strlen(AT_TEST_COMMUNICATION_HEAD));
-    communication.command = g_t_test_data.type;
-    communication.report = g_t_test_data.iote_reprot;
-    communication.timeout = g_t_test_data.time;
-    communication.all_len = sizeof(t_at_test_communication);
-
-    at_test_send_to_iote(&communication);
-
-    // create timer
-    g_t_test_data.test_mode_timer = rt_timer_create("teMode",
-                                                    at_test_mode_time_fun,
-                                                    RT_NULL,
-                                                    g_t_test_data.time * 1000,
-                                                    RT_TIMER_FLAG_PERIODIC);
-    if (RT_NULL == g_t_test_data.test_mode_timer)
+    if (g_t_test_data.type != 4)
     {
-        rt_kprintf("%s line %d rt_timer_create error\n", __FUNCTION__, __LINE__);
-        return;
+        g_t_test_data.test_mode_timer = rt_timer_create("teMode",
+                                                        at_test_mode_time_fun,
+                                                        RT_NULL,
+                                                        g_t_test_data.time * 1000,
+                                                        RT_TIMER_FLAG_PERIODIC);
+        if (RT_NULL == g_t_test_data.test_mode_timer)
+        {
+            rt_kprintf("%s line %d rt_timer_create error\n", __FUNCTION__, __LINE__);
+            return;
+        }
+        rt_timer_start(g_t_test_data.test_mode_timer);
     }
-    rt_timer_start(g_t_test_data.test_mode_timer);
 
     while (1)
     {
+        //rt_kprintf("%s line %d heap size %d\n", __FUNCTION__, __LINE__, uc_heap_size());
         //recv queue data from timer or wiota callback
-        if (RT_EOK == rt_mq_recv(g_t_test_data.test_queue, &queue_data, 4, 100)) // RT_WAITING_NO
+        if (RT_EOK == rt_mq_recv(g_t_test_data.test_queue, &queue_data, 4, g_t_test_data.flag == 1 ? 0 : 200)) // RT_WAITING_NO
         {
             pqueue_data = (t_at_test_queue_data *)queue_data;
-            //rt_kprintf("pqueue_data->type = %d\n", pqueue_data->type);
-
+            rt_kprintf("queue recv data type = %d\n", pqueue_data->type);
             switch ((int)pqueue_data->type)
             {
-            case AT_TEST_MODE_TIMEOUT:
-            {
-                // get wiota ap state
-#ifdef WIOTA_AP_STATE_INFO
-                at_test_get_statistical();
-#endif
-                break;
-            }
             case AT_TEST_MODE_RECVDATA:
             {
-                t_at_test_communication *communication = pqueue_data->data;
-                // pasre page
-                if (at_test_filter_page(pqueue_data))
-                {
-                    // report iote data to uart
-                    at_test_report_statistical(communication->command, pqueue_data->usrid, 1, communication->data);
-                }
+                t_at_test_communication *recv_communication = pqueue_data->data;
 
+                if (AT_TEST_COMMAND_LOOP_TEST == recv_communication->command)
+                    at_test_clean_loop_flag(pqueue_data->usrid);
+                else if (AT_TEST_COMMAND_DEFAULT == recv_communication->command)
+                {
+                    t_iote_info_managerlist *temp_all_list = (&g_t_test_data.iote_info_list)->next;
+                    while (temp_all_list != RT_NULL)
+                    {
+                        if (pqueue_data->usrid == temp_all_list->user_id)
+                        {
+                            temp_all_list->send_manager_flag = AT_TEST_FIRST_COMMAND_WAIT_SEND;
+                            temp_all_list->send_num = 1;
+                            break;
+                        }
+                        temp_all_list = temp_all_list->next;
+                    }
+                }
+                else if (AT_TEST_COMMAND_IOTE_STOP == recv_communication->command)
+                {
+                    t_iote_info_managerlist *temp_all_list = (&g_t_test_data.iote_info_list)->next;
+                    while (temp_all_list != RT_NULL)
+                    {
+                        if (pqueue_data->usrid == temp_all_list->user_id)
+                        {
+                            temp_all_list->send_num = 0;
+                            break;
+                        }
+                        temp_all_list = temp_all_list->next;
+                    }
+                }
                 // free buffer
-                rt_free(communication);
+                rt_free(recv_communication);
                 rt_free(pqueue_data);
                 break;
             }
             case AT_TEST_MODE_QUEUE_EXIT:
             {
                 rt_free(pqueue_data);
+                rt_free(communication);
                 rt_sem_release(g_t_test_data.test_sem);
                 return;
             }
             }
         }
-        //rt_kprintf("%s line %d \n", __FUNCTION__, __LINE__);
+
+        if (g_t_test_data.clean_parenm_flag)
+        {
+            uc_wiota_reset_all_state_info();
+            g_t_test_data.clean_parenm_flag = 0;
+        }
+
         // send data
-        at_test_send_to_iote(&communication);
+        if (AT_TEST_COMMAND_DEFAULT != g_t_test_data.type)
+            at_test_send_to_iote(communication);
     }
 }
 
 static at_result_t at_test_mode_start(const char *args)
 {
-    rt_kprintf("%s line %d\n", __FUNCTION__, __LINE__);
-
+    g_t_test_data.flag = 0;
     if (g_t_test_data.time > 0)
         return AT_RESULT_PARSE_FAILE;
 
@@ -1483,12 +1785,27 @@ static at_result_t at_test_mode_start(const char *args)
         rt_kprintf("at_test_mode_start wiota_state error\n");
         return AT_RESULT_REPETITIVE_FAILE;
     }
-
     // parse at parament
-    args = parse((char *)(++args), "d,d", &g_t_test_data.type, &g_t_test_data.time);
+    args = parse((char *)(++args), "d,d,d,d,d,d", &g_t_test_data.type, &g_t_test_data.time,
+                 &g_t_test_data.general_report, &g_t_test_data.test_data_len, &g_t_test_data.mcs_num, &g_t_test_data.send_num);
     if (!args)
     {
         rt_kprintf("at_req_parse_args wiota_state error\n");
+        return AT_RESULT_PARSE_FAILE;
+    }
+
+    if (g_t_test_data.mcs_num < 0)
+        g_t_test_data.mcs_num = 0;
+    if (g_t_test_data.mcs_num > 8)
+        g_t_test_data.mcs_num = 8;
+
+    if (g_t_test_data.send_num < 10)
+        g_t_test_data.send_num = 10;
+    rt_kprintf("type = %d, timeout = %d\n", g_t_test_data.type, g_t_test_data.time);
+
+    if (g_t_test_data.type > 4)
+    {
+        rt_kprintf("at_test_mode_start type>4 is error\n");
         return AT_RESULT_PARSE_FAILE;
     }
 
@@ -1500,6 +1817,7 @@ static at_result_t at_test_mode_start(const char *args)
     if (RT_NULL == g_t_test_data.test_sem)
     {
         rt_kprintf("%s line %d rt_sem_create error\n", __FUNCTION__, __LINE__);
+        memset(&g_t_test_data, 0, sizeof(g_t_test_data));
         return AT_RESULT_PARSE_FAILE;
     }
 
@@ -1508,11 +1826,13 @@ static at_result_t at_test_mode_start(const char *args)
     if (RT_NULL == g_t_test_data.test_queue)
     {
         rt_kprintf("%s line %d at_create_queue error\n", __FUNCTION__, __LINE__);
+        rt_sem_delete(g_t_test_data.test_sem);
+        memset(&g_t_test_data, 0, sizeof(g_t_test_data));
         return AT_RESULT_PARSE_FAILE;
     }
 
     //create task
-    g_t_test_data.test_mode_task = rt_thread_create("test_mode",
+    g_t_test_data.test_mode_task = rt_thread_create("teMode",
                                                     at_test_mode_task_fun,
                                                     RT_NULL,
                                                     2048,
@@ -1521,6 +1841,9 @@ static at_result_t at_test_mode_start(const char *args)
     if (RT_NULL == g_t_test_data.test_mode_task)
     {
         rt_kprintf("%s line %d rt_thread_create error\n", __FUNCTION__, __LINE__);
+        rt_sem_delete(g_t_test_data.test_sem);
+        rt_mq_delete(g_t_test_data.test_queue);
+        memset(&g_t_test_data, 0, sizeof(g_t_test_data));
         return AT_RESULT_PARSE_FAILE;
     }
     rt_thread_startup(g_t_test_data.test_mode_task);
@@ -1532,8 +1855,7 @@ static at_result_t at_test_mode_stop_exec(void)
 {
     unsigned int send_data_address;
     t_at_test_queue_data *data;
-
-    if (g_t_test_data.time == 0 || g_t_test_data.test_mode_timer == RT_NULL)
+    if (g_t_test_data.time == 0) //|| g_t_test_data.test_mode_timer == RT_NULL
     {
         rt_kprintf("%s line %d no start\n", __FUNCTION__, __LINE__);
         return AT_RESULT_FAILE;
@@ -1547,35 +1869,33 @@ static at_result_t at_test_mode_stop_exec(void)
     }
     send_data_address = (unsigned int)data;
 
-    rt_kprintf("%s line %d\n", __FUNCTION__, __LINE__);
-
     data->type = AT_TEST_MODE_QUEUE_EXIT;
 
     // send queue data
     rt_mq_send_wait(g_t_test_data.test_queue, &send_data_address, 4, 1000);
-
     // wait sem 1s
-    if (RT_EOK != rt_sem_take(g_t_test_data.test_sem, 10000))
+    if (RT_EOK != rt_sem_take(g_t_test_data.test_sem, 190000))
     {
         rt_kprintf("%s line %d rt_sem_take error\n", __FUNCTION__, __LINE__);
         return AT_RESULT_PARSE_FAILE;
     }
-
     //del sem
     if (RT_NULL != g_t_test_data.test_sem)
         rt_sem_delete(g_t_test_data.test_sem);
-
     // delet timer
-    rt_timer_stop(g_t_test_data.test_mode_timer);
-    rt_timer_delete(g_t_test_data.test_mode_timer);
-
+    if (g_t_test_data.test_mode_timer != RT_NULL)
+    {
+        rt_timer_stop(g_t_test_data.test_mode_timer);
+        rt_timer_delete(g_t_test_data.test_mode_timer);
+    }
+    rt_kprintf("%s line %d\n", __FUNCTION__, __LINE__);
     // del queue
     if (RT_NULL != g_t_test_data.test_queue)
         rt_mq_delete(g_t_test_data.test_queue);
-
     // del task
     if (RT_NULL != g_t_test_data.test_mode_task)
         rt_thread_delete(g_t_test_data.test_mode_task);
+    at_test_clean_list();
 
     //clean test parament
     memset(&g_t_test_data, 0, sizeof(g_t_test_data));
@@ -1589,7 +1909,7 @@ AT_CMD_EXPORT("AT+WIOTAACTIVETIME", "=<active_time>", RT_NULL, at_active_time_qu
 AT_CMD_EXPORT("AT+WIOTACONFIG", "=<id_len>,<symbol_len>,<dlul_ratio>,<bt_value>,<group_num>,<ap_max_pow>,<spectrum_idx>,<system_id>,<subsystem_id>", RT_NULL, at_system_config_query, at_system_config_setup, RT_NULL);
 AT_CMD_EXPORT("AT+WIOTARUN", "=<state>", RT_NULL, RT_NULL, at_wiota_func_setup, RT_NULL);
 AT_CMD_EXPORT("AT+WIOTABLACKLIST", "=<user_id>,<mode>", RT_NULL, at_blacklist_query, at_blacklist_setup, RT_NULL);
-AT_CMD_EXPORT("AT+WIOTAIOTEINFO", "=<type>", RT_NULL, RT_NULL, at_iote_info_setup, RT_NULL);
+AT_CMD_EXPORT("AT+WIOTAIOTEINFO", RT_NULL, RT_NULL, at_iote_info_query, RT_NULL, RT_NULL);
 AT_CMD_EXPORT("AT+WIOTABC", "=<len>,<mode>,<timeout>", RT_NULL, RT_NULL, at_broadcast_setup, RT_NULL);
 AT_CMD_EXPORT("AT+WIOTASEND", "=<len>,<user_id>,<user_id_num>,<timeout>", RT_NULL, RT_NULL, at_send_data_setup, RT_NULL);
 AT_CMD_EXPORT("AT+WIOTASCANFREQ", "=<timeout>,<data_len>,<freq_num>", RT_NULL, RT_NULL, at_scan_freq_setup, at_scan_freq_exec);
@@ -1599,14 +1919,15 @@ AT_CMD_EXPORT("AT+WIOTAVERSION", RT_NULL, RT_NULL, RT_NULL, RT_NULL, at_version_
 AT_CMD_EXPORT("AT+WIOTAHOPPING", "=<type>,<value>", RT_NULL, RT_NULL, at_hopping_setup, RT_NULL);
 AT_CMD_EXPORT("AT+WIOTAIOTENUM", "=<max_num>", RT_NULL, RT_NULL, at_max_iote_num_setup, RT_NULL);
 AT_CMD_EXPORT("AT+WIOTABCMCS", "=<bc_mcs>", RT_NULL, RT_NULL, at_bc_mcs_setup, RT_NULL);
-AT_CMD_EXPORT("AT+WIOTAMUTISMMODE", "=<is_open>", RT_NULL, RT_NULL, at_muti_sm_mode_setup, RT_NULL);
 AT_CMD_EXPORT("AT+WIOTALOG", "=<mode>", RT_NULL, RT_NULL, at_wiotalog_setup, RT_NULL);
 AT_CMD_EXPORT("AT+WIOTACRC", "=<crc_limit>", RT_NULL, at_wiotacrc_query, at_wiotacrc_setup, RT_NULL);
-AT_CMD_EXPORT("AT+WIOTAGRANT", "=<grant_limit>", RT_NULL, at_wiotagrant_query, at_wiotagrant_setup, RT_NULL);
+AT_CMD_EXPORT("AT+WIOTALOOPTEST", "=<cmd>,<data_len>,<mcs>,<packet_num>", RT_NULL, RT_NULL, at_wiota_loop_test_setup, RT_NULL);
+AT_CMD_EXPORT("AT+WIOTAMEM", "=<type>,<addr>", RT_NULL, RT_NULL, at_wiota_mem_setup, RT_NULL);
+AT_CMD_EXPORT("AT+WIOTARATE", "=<rate_mode>,<rate_value>", RT_NULL, RT_NULL, at_wiota_rate_setup, RT_NULL);
 #ifdef WIOTA_AP_STATE_INFO
 AT_CMD_EXPORT("AT+WIOTASTATE", "=<get_or_reset>,<user_id>,<state_type>", RT_NULL, RT_NULL, at_wiota_state_setup, RT_NULL);
 #endif
-AT_CMD_EXPORT("AT+THROUGHTSTART", "=<type>,<time>,<iote_report>", RT_NULL, RT_NULL, at_test_mode_start, RT_NULL);
+AT_CMD_EXPORT("AT+THROUGHTSTART", "=<type>,<time>,<general_report>,<test_data_len>,<mcs_num>,<send_num>", RT_NULL, RT_NULL, at_test_mode_start, RT_NULL);
 AT_CMD_EXPORT("AT+THROUGHTSTOP", RT_NULL, RT_NULL, RT_NULL, RT_NULL, at_test_mode_stop_exec);
 
 #endif

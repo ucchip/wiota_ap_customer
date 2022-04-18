@@ -3,7 +3,7 @@
 #include <pulpino.h>
 #include <uc_event.h>
 #include <sectdefs.h>
-
+#include <uc_print.h>
 
 int check_spi_flash();
 void load_block(unsigned int addr, unsigned int len, int* dest);
@@ -133,13 +133,7 @@ __reset void boot_strap()
 	//  spi_setup_cmd_addr(0xF0, 8, 0, 0);
 	//  spi_set_datalen(0);
 	//  spi_start_transaction(SPI_CMD_WR, SPI_CSN0);
-	//  while ((spi_get_status() & 0xFFFF) != 1);
-	// read ID
-	spi_setup_cmd_addr(0x9F, 8, 0, 0);
-	spi_set_datalen(32);
-	spi_start_transaction(SPI_CMD_RD, SPI_CSN0);
-	spi_read_fifo((int *) &data,32);
-    
+	//  while ((spi_get_status() & 0xFFFF) != 1);    
 
   /* now safe to kickin mode switch spi cmd */
   // enables QPI

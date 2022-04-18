@@ -9,7 +9,7 @@ path = [cwd + '/inc']
 src = Split('''
 src/gpio.c
 src/spim.c
-src/uc_addc.c
+src/uc_adda.c
 src/uc_boot_strap.c
 src/uc_exceptions.c
 src/uc_i2c.c

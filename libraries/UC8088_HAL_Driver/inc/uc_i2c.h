@@ -24,7 +24,7 @@
 #define I2C_PRESCALER_MASK    0xffff
 #define I2C_RXDATA_MASK       0xff
 #define I2C_ENABLE_MASK       0x80
-#define I2C_BUSY_MASK         0x40 
+#define I2C_BUSY_MASK         0x40
 #define I2C_AL_MASK           0x20
 #define I2C_TIP_MASK          0x02
 #define I2C_IF_MASK           0x01
@@ -69,7 +69,7 @@ typedef enum {
 #define PARAM_I2C_CMD(cmd)  ((cmd==I2C_STOP_READ) || (cmd==I2C_START_WRITE ) \
         || (cmd==I2C_START_READ) || (cmd==I2C_WRITE) || (cmd==I2C_CLR_INT) \
         || (cmd==I2C_STOP) || (cmd==I2C_START) || (cmd==I2C_READ) \
-        || (cmd==I2C_STOP_WRITE)) 
+        || (cmd==I2C_STOP_WRITE))
 
 typedef struct{
     uint32_t            prescaler;
@@ -79,15 +79,15 @@ typedef struct{
 
 
 void I2C_Init(I2C_TYPE *I2C);
-void I2C_Setup(I2C_TYPE *I2C, I2C_CFG_Type *I2CconfigStruct);
-void I2C_Cmd(I2C_TYPE *I2C, FunctionalState NewState);
-void I2C_Send_Command(I2C_TYPE *I2C, I2C_CMD cmd);
-void I2C_Send_Data(I2C_TYPE *I2C, uint8_t data);
+void i2c_setup(I2C_TYPE *I2C, I2C_CFG_Type *I2CconfigStruct);
+void i2c_cmd(I2C_TYPE *I2C, FunctionalState NewState);
+void i2c_send_command(I2C_TYPE *I2C, I2C_CMD cmd);
+void i2c_send_data(I2C_TYPE *I2C, uint8_t data);
 uint32_t I2C_Get_Status(I2C_TYPE *I2C);
 I2CTXStatus I2C_Get_TXStatus(I2C_TYPE *I2C);
-I2CACK I2C_Get_ACK(I2C_TYPE *I2C);
-uint32_t I2C_Get_Data(I2C_TYPE *I2C);
-I2CStatus I2C_Busy(I2C_TYPE *I2C);
+I2CACK i2c_get_ack(I2C_TYPE *I2C);
+uint32_t i2c_get_data(I2C_TYPE *I2C);
+I2CStatus i2c_busy(I2C_TYPE *I2C);
 
 
 

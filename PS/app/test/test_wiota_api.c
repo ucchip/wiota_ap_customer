@@ -11,70 +11,8 @@
 
 #define BAN_8288_FREQ (135)
 
-typedef struct connected_iote
-{
-    u32_t user_id;
-    struct connected_iote *next;
-} connected_iote_t;
-
 u8_t g_freqPoint = 0xff;
 boolean is_need_to_restart = FALSE;
-connected_iote_t *g_userHead = NULL;
-
-void user_id_list_init(void)
-{
-    g_userHead = (connected_iote_t *)rt_malloc(sizeof(connected_iote_t));
-    if (g_userHead == NULL)
-    {
-        return;
-    }
-    rt_memset(g_userHead, 0, sizeof(connected_iote_t));
-    g_userHead->next = NULL;
-}
-
-void user_id_list_deinit(void)
-{
-    connected_iote_t *pNodeNext = g_userHead->next;
-    connected_iote_t *pNode = g_userHead;
-
-    while (pNodeNext != NULL)
-    {
-        pNode->next = pNodeNext->next;
-        rt_free(pNodeNext);
-        pNodeNext = NULL;
-        pNodeNext = pNode->next;
-    }
-    rt_free(pNode);
-    pNode = NULL;
-}
-
-void save_user_id_of_connected_iote(u32_t user_id)
-{
-    connected_iote_t *pNodeNext = g_userHead->next;
-    connected_iote_t *pNode = g_userHead;
-
-    while (pNodeNext != NULL)
-    {
-        if (pNodeNext->user_id == user_id)
-        {
-            pNode->next = pNodeNext->next;
-            rt_free(pNodeNext);
-            pNodeNext = NULL;
-            break;
-        }
-        pNodeNext = pNode->next;
-    }
-    connected_iote_t *pNewNode = (connected_iote_t *)rt_malloc(sizeof(connected_iote_t));
-    if (pNewNode == NULL)
-    {
-        return;
-    }
-    rt_memset(pNewNode, 0, sizeof(connected_iote_t));
-
-    pNewNode->user_id = user_id;
-    pNewNode->next = g_userHead->next;
-    g_userHead->next = pNewNode;
-}
 
 u8_t *generate_fake_data(u32_t data_len, u8_t repeat_num)
 {
@@ -115,9 +53,9 @@ void test_show_result(uc_send_recv_t *result)
     rt_kprintf("send data to 0x%x, result %d\n", result->user_id, result->result);
 }
 
-void test_show_recv_data(u32_t user_id, u8_t *recv_data, u32_t data_len)
+void test_show_recv_data(u32_t user_id, u8_t *recv_data, u32_t data_len, u8_t type)
 {
-//    u8_t *fake_data = NULL;
+    //    u8_t *fake_data = NULL;
 
     rt_kprintf("user_id 0x%x, reportData ", user_id);
     for (u16_t index = 0; index < data_len; index++)
@@ -126,7 +64,6 @@ void test_show_recv_data(u32_t user_id, u8_t *recv_data, u32_t data_len)
     }
     rt_kprintf(", reportDataLen %d\n", data_len);
 
-    save_user_id_of_connected_iote(user_id);
     // fake_data = generate_fake_data(80, 10);
     // uc_wiota_send_data(fake_data, 80, &user_id, 1, 100, test_show_result);
     // rt_free(fake_data);
@@ -174,7 +111,7 @@ void test_handle_scan_freq(void)
     {
         rt_kprintf("scan freq failed or timeout\n");
     }
-    // according to the scan result , cchoose the best and set
+    // according to the scan result , choose the best and set
     // uc_wiota_set_frequency_point(fPoint[0]/* fPoint[x] */);
     rt_free(scan_info.data); // !!!need be manually released after use
     scan_info.data = NULL;
@@ -220,29 +157,46 @@ void test_register_callback(void)
 // test! send normal data to iote
 void test_send_normal_data(void)
 {
-    connected_iote_t *tempNode = g_userHead->next;
-    u8_t *fake_data = NULL;
+    u16_t conNum, disConNum;
 
-    if (tempNode == NULL)
-    {
-        rt_kprintf("no iote connected\n");
-        return;
-    }
+    iote_info_t *conNode = uc_wiota_get_iote_info(&conNum, &disConNum);
+    u8_t *fake_data = generate_fake_data(120, 10);
 
-    fake_data = generate_fake_data(120, 10);
-    while (tempNode != NULL)
+    while (conNode != NULL)
     {
-        u32_t user_id = tempNode->user_id;
-        if (UC_OP_SUCC == uc_wiota_send_data(fake_data, 120, &user_id, 1, 10000, test_show_result))
+        // active send
+        if (conNode->iote_status == STATUS_CONNECTED)
         {
-            rt_kprintf("send data to 0x%x suc!", user_id);
+            u32_t user_id = conNode->user_id;
+            if (UC_OP_SUCC == uc_wiota_send_data(fake_data, 120, &user_id, 1, 10000, test_show_result))
+            {
+                rt_kprintf("send data to 0x%x suc!", user_id);
+            }
+            else
+            {
+                rt_kprintf("send data to 0x%x failed!", user_id);
+            }
+        }
+        // paging
+        else if (conNode->iote_status == STATUS_DISCONNECTED)
+        {
+            u32_t user_id = conNode->user_id;
+            if (UC_OP_SUCC == uc_wiota_send_data(fake_data, 120, &user_id, 1, 10000, test_show_result))
+            {
+                rt_kprintf("send data to 0x%x suc!", user_id);
+            }
+            else
+            {
+                rt_kprintf("send data to 0x%x failed!", user_id);
+            }
         }
         else
         {
-            rt_kprintf("send data to 0x%x failed!", user_id);
+            // do something
         }
-        tempNode = tempNode->next;
+        conNode = conNode->next;
     }
+
     rt_free(fake_data);
     fake_data = NULL;
 }
@@ -305,11 +259,12 @@ void test_send_broadcast_data(broadcast_mode_e mode)
 // test! query iote infomation
 void test_query_iote_info(void)
 {
-    u16_t ioteNum = 0;
+    u16_t conNum, disConNum;
+
     iote_info_t *ioteInfo = NULL;
 
-    ioteInfo = uc_wiota_get_connected_iotes(&ioteNum);
-    uc_wiota_print_iote_info(ioteInfo, ioteNum);
+    ioteInfo = uc_wiota_get_iote_info(&conNum, &disConNum);
+    uc_wiota_print_iote_info(ioteInfo, conNum, disConNum);
 }
 
 // test! add iote to blacklist
@@ -344,21 +299,26 @@ void test_read_temp(void)
 // test! set ap8288 rf power
 void test_set_ap8288_rf_power(void)
 {
-    s8_t rf_power = 24; //value range:-1~34
+    s8_t rf_power = 24; //value range:-1~29
     uc_wiota_set_ap_max_power(rf_power);
 }
 
 // test! get version of sw
 void test_get_version()
 {
-    u8_t wiota_version[8] = {0};
-    u8_t git_info[36] = {0};
-    u8_t make_time[36] = {0};
+    u8_t wiota_version_8088[15] = {0};
+    u8_t git_info_8088[36] = {0};
+    u8_t make_time_8088[36] = {0};
+    u8_t wiota_version_8288[15] = {0};
+    u8_t git_info_8288[36] = {0};
+    u8_t make_time_8288[36] = {0};
+    u32_t cce_version = 0;
 
-    uc_wiota_get_version(wiota_version, git_info, make_time);
-    rt_kprintf("wiota lib version: %s\n", wiota_version);
-    rt_kprintf("wiota lib git info: %s\n", git_info);
-    rt_kprintf("wiota lib make time: %s\n", make_time);
+    uc_wiota_get_version(wiota_version_8088, git_info_8088, make_time_8088, wiota_version_8288, git_info_8288, make_time_8288, &cce_version);
+    rt_kprintf("wiota lib version: %s,%s\n", wiota_version_8088, wiota_version_8288);
+    rt_kprintf("wiota lib git info: %s,%s\n", git_info_8088, git_info_8288);
+    rt_kprintf("wiota lib make time: %s,%s\n", make_time_8088, make_time_8288);
+    rt_kprintf("cce version: %x\n", cce_version);
 }
 
 // test! remove iote from blacklist
@@ -377,30 +337,28 @@ void test_remove_iote_from_blacklist(void)
 // test! wiota exit and restart
 void test_wiota_exit_and_restart(void)
 {
-    uc_wiota_exit();
-    user_id_list_deinit();
-    rt_thread_mdelay(2000);
-    uc_wiota_init();
+    if (UC_OP_SUCC == uc_wiota_exit())
+    {
+        rt_thread_mdelay(2000);
+        uc_wiota_init();
 
-    // test! set frequency point after wiota start, before wiota start
-    test_set_frequency_point();
+        // test! set frequency point after wiota start, before wiota start
+        test_set_frequency_point();
 
-    // test! set/get connection timeout after wiota init, before wiota start
-    test_set_connection_timeout();
+        // test! set/get connection timeout after wiota init, before wiota start
+        test_set_connection_timeout();
 
-    // test! set all dynamic parameter after wiota init, before wiota start
-    // test_set_all_para();
+        // test! set all dynamic parameter after wiota init, before wiota start
+        // test_set_all_para();
 
-    uc_wiota_run();
+        uc_wiota_run();
+    }
 }
 
 void app_interface_main_task(void *pPara)
 {
     // wiota init
     uc_wiota_init();
-
-    // user id list init
-    user_id_list_init();
 
     // wiota start
     uc_wiota_run();

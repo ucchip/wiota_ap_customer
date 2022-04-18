@@ -1,14 +1,14 @@
 
 #include <board.h>
-#include<rtthread.h>
-#include<rtdevice.h>
+#include <rtthread.h>
+#include <rtdevice.h>
 
 #ifdef RT_USING_ADC
 
-#include "uc_addc.h"
+#include "uc_adda.h"
 
 //#define DRV_DEBUG
-#define LOG_TAG             "drv.adc"
+#define LOG_TAG "drv.adc"
 #include <drv_log.h>
 
 static struct rt_adc_device uc8088_adc_device;
@@ -67,11 +67,11 @@ static rt_err_t uc8088_get_adc_value(struct rt_adc_device *device, rt_uint32_t c
     RT_ASSERT(device != RT_NULL);
     RT_ASSERT(value != RT_NULL);
 
-    /* get ADC value */    
+    /* get ADC value */
     for (uint8_t index = 0; index < 100; index++)
     {
         adc_read(UC_ADDA);
-    } 
+    }
     adc_fifo_clear(UC_ADDA);
     adc_reset(UC_ADDA);
     adc_watermark_set(UC_ADDA, 100);
@@ -92,9 +92,9 @@ static rt_err_t uc8088_get_adc_value(struct rt_adc_device *device, rt_uint32_t c
         for (uint8_t index = 0; index < 100; index++)
         {
             adc_val += adc_read(UC_ADDA);
-        } 
+        }
         *value = adc_val / 100;
-    } 
+    }
     else
     {
         *value = 0;
@@ -104,8 +104,7 @@ static rt_err_t uc8088_get_adc_value(struct rt_adc_device *device, rt_uint32_t c
     return ret_val;
 }
 
-static const struct rt_adc_ops uc8088_adc_ops =
-{
+static const struct rt_adc_ops uc8088_adc_ops = {
     .enabled = uc8088_adc_enabled,
     .convert = uc8088_get_adc_value,
 };
@@ -132,4 +131,3 @@ static int uc8088_adc_init(void)
 INIT_BOARD_EXPORT(uc8088_adc_init);
 
 #endif /* BSP_USING_ADC */
-

@@ -22,16 +22,16 @@ void set_pin_function(int pinnumber, int function)
 {
     volatile int old_function;
 
-    old_function = *(volatile int*) (SOC_CTRL_PADFUN);
+    old_function = *(volatile int *)(SOC_CTRL_PADFUN);
     old_function = old_function & (~(1 << pinnumber));
     old_function = old_function | (function << pinnumber);
-    *(volatile int*) (SOC_CTRL_PADFUN) = old_function;
+    *(volatile int *)(SOC_CTRL_PADFUN) = old_function;
 }
 
 int get_pin_function(int pinnumber)
 {
     volatile int old_function;
-    old_function = *(volatile int*) (SOC_CTRL_PADFUN);
+    old_function = *(volatile int *)(SOC_CTRL_PADFUN);
     old_function = (old_function >> pinnumber & 0x01);
     return old_function;
 }
@@ -39,38 +39,37 @@ int get_pin_function(int pinnumber)
 void set_gpio_pin_direction(int pinnumber, int direction)
 {
     volatile int old_dir;
-    old_dir = *(volatile int*) (GPIO_REG_PADDIR);
+    old_dir = *(volatile int *)(GPIO_REG_PADDIR);
     if (direction == 0)
         old_dir &= ~(1 << pinnumber);
     else
         old_dir |= 1 << pinnumber;
-    *(volatile int*) (GPIO_REG_PADDIR) = old_dir;
+    *(volatile int *)(GPIO_REG_PADDIR) = old_dir;
 }
 
 int get_gpio_pin_direction(int pinnumber)
 {
     volatile int old_dir;
-    old_dir = *(volatile int*) (GPIO_REG_PADDIR);
-    old_dir = (old_dir >> (pinnumber) & 0x01);
+    old_dir = *(volatile int *)(GPIO_REG_PADDIR);
+    old_dir = (old_dir >> (pinnumber)&0x01);
     return old_dir;
-
 }
 
 void set_gpio_pin_value(int pinnumber, int value)
 {
     volatile int v;
-    v = *(volatile int*) (GPIO_REG_PADOUT);
+    v = *(volatile int *)(GPIO_REG_PADOUT);
     if (value == 0)
         v &= ~(1 << pinnumber);
     else
         v |= 1 << pinnumber;
-    *(volatile int*) (GPIO_REG_PADOUT) = v;
+    *(volatile int *)(GPIO_REG_PADOUT) = v;
 }
 
 int get_gpio_pin_value(int pinnumber)
 {
     volatile int v;
-    v = *(volatile int*) (GPIO_REG_PADIN);
+    v = *(volatile int *)(GPIO_REG_PADIN);
     v = (v >> pinnumber) & 0x01;
     return v;
 }
@@ -93,12 +92,12 @@ void set_gpio_pin_value_reverse(int pinnumber)
 void set_gpio_pin_irq_en(int pinnumber, int enable)
 {
     int v;
-    v = *(volatile int*) (GPIO_REG_INTEN);
+    v = *(volatile int *)(GPIO_REG_INTEN);
     if (enable == 0)
         v &= ~(1 << pinnumber);
     else
         v |= 1 << pinnumber;
-    *(volatile int*) (GPIO_REG_INTEN) = v;
+    *(volatile int *)(GPIO_REG_INTEN) = v;
 }
 
 void set_gpio_pin_irq_type(int pinnumber, int type)
@@ -106,8 +105,8 @@ void set_gpio_pin_irq_type(int pinnumber, int type)
     int type0;
     int type1;
 
-    type0 = *(volatile int*) (GPIO_REG_INTTYPE0);
-    type1 = *(volatile int*) (GPIO_REG_INTTYPE1);
+    type0 = *(volatile int *)(GPIO_REG_INTTYPE0);
+    type1 = *(volatile int *)(GPIO_REG_INTTYPE1);
 
     if ((type & 0x1) == 0)
         type0 &= ~(1 << pinnumber);
@@ -119,21 +118,85 @@ void set_gpio_pin_irq_type(int pinnumber, int type)
     else
         type1 |= 1 << pinnumber;
 
-    *(volatile int*) (GPIO_REG_INTTYPE0) = type0;
-    *(volatile int*) (GPIO_REG_INTTYPE1) = type1;
+    *(volatile int *)(GPIO_REG_INTTYPE0) = type0;
+    *(volatile int *)(GPIO_REG_INTTYPE1) = type1;
+}
+
+void set_gpio_pin_mux(GPIO_CFG_TypeDef *GPIO_CFG, GPIO_PIN pin, GPIO_FUNCTION func)
+{
+    CHECK_PARAM(PARAM_GPIO_CFG(GPIO_CFG));
+    CHECK_PARAM(PARAM_GPIO_PIN(pin));
+    CHECK_PARAM(PARAM_GPIO_FUNC(func));
+
+    //set pin mux
+    if (func == GPIO_FUNC_1)
+    {
+        GPIO_CFG->PADMUX |= (1 << pin);
+        GPIO_CFG->PADMUX1 &= ~(1 << pin);
+    }
+    else if (func == GPIO_FUNC_2)
+    {
+        GPIO_CFG->PADMUX &= ~(1 << pin);
+        GPIO_CFG->PADMUX1 |= (1 << pin);
+    }
+    else
+    {
+        GPIO_CFG->PADMUX &= ~(1 << pin);
+        GPIO_CFG->PADMUX1 &= ~(1 << pin);
+    }
+}
+
+GPIO_FUNCTION get_gpio_pin_mux(GPIO_CFG_TypeDef *GPIO_CFG, GPIO_PIN pin)
+{
+    CHECK_PARAM(PARAM_GPIO_CFG(GPIO_CFG));
+    CHECK_PARAM(PARAM_GPIO_PIN(pin));
+
+    if ((GPIO_CFG->PADMUX & (1 << pin)) != 0)
+    {
+        return GPIO_FUNC_1;
+    }
+    else if ((GPIO_CFG->PADMUX1 & (1 << pin)) != 0)
+    {
+        return GPIO_FUNC_2;
+    }
+    else
+    {
+        return GPIO_FUNC_0;
+    }
+}
+
+void set_gpio_init(uint8_t pin_number, uint8_t en_func, uint8_t en_pullup)
+{
+    volatile GPIO_CFG_TypeDef *GPIO_CFG = (GPIO_CFG_TypeDef *)SOC_CTRL_BASE_ADDR;
+    if (pin_number > 31)
+    {
+        return;
+    }
+
+    //set pin mux
+    if (en_func)
+        GPIO_CFG->PADMUX |= (1 << pin_number);
+    else
+        GPIO_CFG->PADMUX &= ~(1 << pin_number);
+
+    //set pin status
+    if (en_pullup)
+        GPIO_CFG->PADCFG |= (1 << pin_number);
+    else
+        GPIO_CFG->PADCFG &= ~(1 << pin_number);
 }
 
 int get_gpio_irq_status()
 {
-    return *(volatile int*) (GPIO_REG_INTSTATUS);
+    return *(volatile int *)(GPIO_REG_INTSTATUS);
 }
 
-#define PIN_NUMBER  11
+#define PIN_NUMBER 11
 void gpio_init(void)
 {
     int_enable();
-    set_gpio_pin_direction(PIN_NUMBER, DIR_IN);
-    set_gpio_pin_irq_type(PIN_NUMBER, GPIO_IRQ_RISE);
+    set_gpio_pin_direction(PIN_NUMBER, GPIO_DIR_IN);
+    set_gpio_pin_irq_type(PIN_NUMBER, GPIO_IT_RISE_EDGE);
     set_gpio_pin_irq_en(PIN_NUMBER, 1);
 
     enable_event_iqr(GPIO_INT_ID);
@@ -151,11 +214,11 @@ void gpio_deinit(void)
 //unsigned int g_gpio_count = 0;
 void ISR_GPIO(void)
 {
-    int temp = *(volatile int*) (GPIO_REG_INTSTATUS);
+    int temp = *(volatile int *)(GPIO_REG_INTSTATUS);
 
     if (0 != ((1 << PIN_NUMBER) & temp))
     {
-//        g_gpio_count = *(u32_t*)0x3b0014;
+        //        g_gpio_count = *(u32_t*)0x3b0014;
         scheduler_tick_notify();
     }
 
@@ -169,17 +232,18 @@ void ISR_GPIO(void)
 void gpoi_8088_to_8288_init(void)
 {
     // set_pin_function(GPIO_8288_TO_8088_PIN_NUMBER,1);
-    set_gpio_pin_direction(GPIO_8288_TO_8088_PIN_NUMBER, DIR_OUT);
+    set_gpio_pin_direction(GPIO_8288_TO_8088_PIN_NUMBER, GPIO_DIR_OUT);
     // set_gpio_pin_value(GPIO_8288_TO_8088_PIN_NUMBER,PIN_OUT_LOW);//first is low
-    set_gpio_pin_value(GPIO_8288_TO_8088_PIN_NUMBER,0);//first is low
+    set_gpio_pin_value(GPIO_8288_TO_8088_PIN_NUMBER, 0); //first is low
 }
 
 #ifndef TEST_SINGLE_MAIN
 // static u32_t g_gpio_record_count =0;
 void gpoi_8088_to_8288_change_value()
 {
-    set_gpio_pin_value(GPIO_8288_TO_8088_PIN_NUMBER,1);
-    set_gpio_pin_value(GPIO_8288_TO_8088_PIN_NUMBER,0);
+    set_gpio_pin_value(GPIO_8288_TO_8088_PIN_NUMBER, 1);
+    // rt_thread_mdelay(10);
+    set_gpio_pin_value(GPIO_8288_TO_8088_PIN_NUMBER, 0);
 
     // u32_t count = os_getTimeStamp();
     // u32_t distance_count=0;
@@ -193,13 +257,11 @@ void gpoi_8088_to_8288_change_value()
     // }
     // g_gpio_record_count = count;
     // TRACE_PRINTF("<<<<<timerA dfe count [%u]\n",distance_count);
-
-
 }
 #else
-void gpoi_8088_to_8288_change_value(unsigned int test1,unsigned int test2)
+void gpoi_8088_to_8288_change_value(unsigned int test1, unsigned int test2)
 {
-    TRACE_PRINTF("<<<<<timer [%u]  [%u] \n",test1,test2);
+    TRACE_PRINTF("<<<<<timer [%u]  [%u] \n", test1, test2);
 }
 
 #endif

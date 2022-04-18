@@ -3,7 +3,8 @@ from building import *
 cwd = GetCurrentDir()
 
 path = [cwd + '/inc']
+src = Glob('src/*.c')
 
-group = DefineGroup('boot', '', depend = [''], CPPPATH = path)
+group = DefineGroup('boot', src, depend = [''], CPPPATH = path)
 
 Return('group')

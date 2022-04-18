@@ -15,6 +15,7 @@
 
 #include <rtdevice.h>
 #include "uc_wiota_api.h"
+#include "uc_boot_download.h"
 
 #ifdef AT_USING_SERVER
 
@@ -152,6 +153,7 @@ static at_result_t at_uart_setup(const char *args)
         return AT_RESULT_FAILE;
     }
 
+    boot_set_uart0_baud_rate((unsigned int)baudrate);
     return AT_RESULT_OK;
 }
 

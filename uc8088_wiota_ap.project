@@ -12,6 +12,7 @@
       <File Name="boot/inc/uc_boot_ymodem.h"/>
       <File Name="boot/inc/uc_boot_uart.h"/>
       <File Name="boot/inc/uc_boot_download.h"/>
+      <File Name="boot/inc/uc_boot_watchdog.h"/>
     </VirtualDirectory>
   </VirtualDirectory>
   <VirtualDirectory Name="PS">
@@ -57,6 +58,9 @@
       <VirtualDirectory Name="drivers">
         <VirtualDirectory Name="misc">
           <File Name="rt-thread/components/drivers/misc/pin.c"/>
+          <File Name="rt-thread/components/drivers/misc/adc.c"/>
+          <File Name="rt-thread/components/drivers/misc/dac.c"/>
+          <File Name="rt-thread/components/drivers/misc/rt_drv_pwm.c"/>
         </VirtualDirectory>
         <VirtualDirectory Name="serial">
           <File Name="rt-thread/components/drivers/serial/serial.c"/>
@@ -128,6 +132,14 @@
           <File Name="rt-thread/components/drivers/hwtimer/README_CN.md"/>
           <File Name="rt-thread/components/drivers/hwtimer/SConscript"/>
           <File Name="rt-thread/components/drivers/hwtimer/hwtimer.c"/>
+        </VirtualDirectory>
+        <VirtualDirectory Name="can">
+          <File Name="rt-thread/components/drivers/can/can.c"/>
+        </VirtualDirectory>
+        <VirtualDirectory Name="i2c">
+          <File Name="rt-thread/components/drivers/i2c/i2c-bit-ops.c"/>
+          <File Name="rt-thread/components/drivers/i2c/i2c_core.c"/>
+          <File Name="rt-thread/components/drivers/i2c/i2c_dev.c"/>
         </VirtualDirectory>
       </VirtualDirectory>
       <VirtualDirectory Name="libc">
@@ -207,14 +219,21 @@
       <File Name="libraries/HAL_Drivers/drv_hwtimer.c"/>
       <File Name="libraries/HAL_Drivers/drv_wdt.c"/>
       <File Name="libraries/HAL_Drivers/SConscript"/>
+      <File Name="libraries/HAL_Drivers/drv_adc.c"/>
+      <File Name="libraries/HAL_Drivers/drv_can.c"/>
+      <File Name="libraries/HAL_Drivers/drv_can.h"/>
+      <File Name="libraries/HAL_Drivers/drv_dac.c"/>
+      <File Name="libraries/HAL_Drivers/drv_gpio.c"/>
+      <File Name="libraries/HAL_Drivers/drv_hw_i2c.c"/>
+      <File Name="libraries/HAL_Drivers/drv_pwm.c"/>
+      <File Name="libraries/HAL_Drivers/drv_soft_i2c.c"/>
+      <File Name="libraries/HAL_Drivers/drv_soft_i2c.h"/>
     </VirtualDirectory>
     <VirtualDirectory Name="UC8088_HAL_Driver">
       <VirtualDirectory Name="inc">
         <File Name="libraries/UC8088_HAL_Driver/inc/gpio.h"/>
         <File Name="libraries/UC8088_HAL_Driver/inc/pulpino.h"/>
         <File Name="libraries/UC8088_HAL_Driver/inc/spim.h"/>
-        <File Name="libraries/UC8088_HAL_Driver/inc/uc_addc.h"/>
-        <File Name="libraries/UC8088_HAL_Driver/inc/uc_cce.h"/>
         <File Name="libraries/UC8088_HAL_Driver/inc/uc_core.h"/>
         <File Name="libraries/UC8088_HAL_Driver/inc/uc_event.h"/>
         <File Name="libraries/UC8088_HAL_Driver/inc/uc_i2c.h"/>
@@ -228,11 +247,12 @@
         <File Name="libraries/UC8088_HAL_Driver/inc/uc_uartx.h"/>
         <File Name="libraries/UC8088_HAL_Driver/inc/uc_utils.h"/>
         <File Name="libraries/UC8088_HAL_Driver/inc/uc_watchdog.h"/>
+        <File Name="libraries/UC8088_HAL_Driver/inc/uc_adda.h"/>
+        <File Name="libraries/UC8088_HAL_Driver/inc/uc_can.h"/>
       </VirtualDirectory>
       <VirtualDirectory Name="src">
         <File Name="libraries/UC8088_HAL_Driver/src/gpio.c"/>
         <File Name="libraries/UC8088_HAL_Driver/src/spim.c"/>
-        <File Name="libraries/UC8088_HAL_Driver/src/uc_addc.c"/>
         <File Name="libraries/UC8088_HAL_Driver/src/uc_boot_strap.c"/>
         <File Name="libraries/UC8088_HAL_Driver/src/uc_exceptions.c"/>
         <File Name="libraries/UC8088_HAL_Driver/src/uc_i2c.c"/>
@@ -248,6 +268,8 @@
         <File Name="libraries/UC8088_HAL_Driver/src/uc_utils.c"/>
         <File Name="libraries/UC8088_HAL_Driver/src/uc_watchdog.c"/>
         <File Name="libraries/UC8088_HAL_Driver/inc/sectdefs.h"/>
+        <File Name="libraries/UC8088_HAL_Driver/src/uc_adda.c"/>
+        <File Name="libraries/UC8088_HAL_Driver/src/uc_can.c"/>
       </VirtualDirectory>
       <File Name="libraries/UC8088_HAL_Driver/SConscript"/>
     </VirtualDirectory>
@@ -266,6 +288,7 @@
     <File Name="board/crt0.flash.S"/>
     <File Name="board/SConscript"/>
   </VirtualDirectory>
+  <Dependencies Name="Debug"/>
   <Settings Type="Executable">
     <GlobalSettings>
       <Compiler Options="" C_Options="" Assembler="">
@@ -314,7 +337,8 @@ load</PostConnectCommands>
         <StartupCommands/>
       </Debugger>
       <PreBuild>
-        <Command Enabled="yes"/>
+        <Command Enabled="yes">./Other/packages/current_version.sh PS/app/include/uc_wiota_version.h</Command>
+        <Command Enabled="yes">python3 bin_bswap32_to_h.py -i $(WorkspacePath)/bin/ap8288.bin -o $(WorkspacePath)/flat_ap8288.h</Command>
       </PreBuild>
       <PostBuild>
         <Command Enabled="yes">riscv32-unknown-elf-objdump -d $(IntermediateDirectory)/$(ProjectName) &gt;$(IntermediateDirectory)/$(ProjectName).asm</Command>
@@ -343,5 +367,4 @@ load</PostConnectCommands>
       </Completion>
     </Configuration>
   </Settings>
-  <Dependencies Name="Debug"/>
 </CodeLite_Project>

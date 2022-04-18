@@ -6,13 +6,15 @@
 #define FLASH_PAGE_LEN 4096
 #define MAX_DOWN_FILE_8088 ((2 * 1024 * 1024 - 8 * 1024) / 2)
 #define BACK_FLASH_ADDR_8088 ((2 * 1024 * 1024 - 8 * 1024) / 2)
-#define ENTERMODEM "+CHOOSEMODEM:D\r\n"
+#define ENTERMODEM "+CHOOSEMODEM: D or M\r\n"
 #define SYSTEMSTART "+SYSTEM:START\r\n"
 
 typedef enum
 {
     BOOT_SHARE_DEFAULT = 1,
     BOOT_SHARE_ENTER_DOWNLOAD,
+    BOOT_SHARE_8288_DOWNLOAD,
+    BOOT_SHARE_8288_REFLASH,
     
 } BOOT_SHARE_FLAG;
 
@@ -29,11 +31,12 @@ typedef struct
     unsigned int baud_flag;
     unsigned int baud_rate;
     unsigned int flag;
+    unsigned int already_reboot;
 } share_data;
 
 /*
-* parment    mean
-*     0              no input state
+* parment           mean
+*     0             no input state
 *     1             input current state
 */
 

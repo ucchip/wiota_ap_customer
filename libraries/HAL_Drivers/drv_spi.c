@@ -12,8 +12,8 @@
  */
 
 #include "board.h"
-#include<rtthread.h>
-#include<rtdevice.h>
+#include <rtthread.h>
+#include <rtdevice.h>
 #include <string.h>
 
 #ifdef RT_USING_SPI
@@ -24,17 +24,17 @@
 #include "gpio.h"
 
 //#define DRV_DEBUG
-#define LOG_TAG              "drv.spi"
+#define LOG_TAG "drv.spi"
 #include <drv_log.h>
 
 #ifdef RT_USING_SFUD
 #include <spi_flash_sfud.h>
 #endif
 
-#define SPIM_CMD_RD    0
-#define SPIM_CMD_WR    1
-#define SPIM_CMD_QRD   2
-#define SPIM_CMD_QWR   3
+#define SPIM_CMD_RD 0
+#define SPIM_CMD_WR 1
+#define SPIM_CMD_QRD 2
+#define SPIM_CMD_QWR 3
 #define SPIM_CMD_SWRST 4
 
 #define SPIM_CSN0 0
@@ -44,7 +44,7 @@
 
 struct uc8088_hw_spi_cs
 {
-    GPIO_TypeDef* GPIOx;
+    GPIO_TypeDef *GPIOx;
     uint16_t GPIO_Pin;
 };
 
@@ -58,7 +58,7 @@ static rt_err_t uc8088_spi_init(struct rt_spi_configuration *cfg)
 
     if (cfg->max_hz > 0)
     {
-        clk_dlv = BSP_CLOCK_SYSTEM_FREQ_HZ/cfg->max_hz/2;
+        clk_dlv = BSP_CLOCK_SYSTEM_FREQ_HZ / cfg->max_hz / 2;
         if (clk_dlv > 0)
         {
             clk_dlv -= 1;
@@ -130,40 +130,42 @@ static rt_uint32_t spixfer(struct rt_spi_device *device, struct rt_spi_message *
             //rt_kprintf("spixfer 1 len = %d\r\n", send_length);
             uint32_t offset = 0;
 
-            spim_setup_cmd_addr(UC_SPIM,0,0,0,0);
-            while(offset < send_length)
+            spim_setup_cmd_addr(UC_SPIM, 0, 0, 0, 0);
+            while (offset < send_length)
             {
                 uint8_t index = 0;
                 uint8_t order_size = 0;
                 uint32_t data_len = 0;
                 uint8_t data_buf[32];
                 uint8_t index_offset = 0;
-                if ((send_length-offset) > 32)
+                if ((send_length - offset) > 32)
                 {
                     order_size = 32;
                 }
                 else
                 {
-                    order_size = send_length-offset;
+                    order_size = send_length - offset;
                 }
-                data_len = order_size*8;
+                data_len = order_size * 8;
                 memset(data_buf, 0x00, 32);
                 for (index = 0; index < order_size; index++)
                 {
-                    data_buf[(index/4)*4 + (3-index%4)] = send_buf[index];
+                    data_buf[(index / 4) * 4 + (3 - index % 4)] = send_buf[index];
                 }
-                spim_set_datalen(UC_SPIM,data_len);
-                spim_setup_dummy(UC_SPIM,0,0);
-                spim_write_fifo(UC_SPIM,(int *)data_buf,data_len);
-                for(int i=0;i<10;i++)
-                    for(int j=0;j<1000;j++);
+                spim_set_datalen(UC_SPIM, data_len);
+                spim_setup_dummy(UC_SPIM, 0, 0);
+                spim_write_fifo(UC_SPIM, (int *)data_buf, data_len);
+                for (int i = 0; i < 10; i++)
+                    for (int j = 0; j < 1000; j++)
+                        ;
 
                 //spim_start_transaction(UC_SPIM,SPIM_CMD_WR, cs->GPIO_Pin);
-                spim_start_transaction(UC_SPIM,SPIM_CMD_WR, SPIM_CSN0);
-                while ((spim_get_status(UC_SPIM) & 0xFFFF) != 1);
+                spim_start_transaction(UC_SPIM, SPIM_CMD_WR, SPIM_CSN0);
+                while ((spim_get_status(UC_SPIM) & 0xFFFF) != 1)
+                    ;
                 memset(data_buf, 0xff, 32);
-                spim_read_fifo(UC_SPIM,(int *)data_buf,data_len);
-                for (index_offset = 0; index_offset < order_size; index_offset+=4)
+                spim_read_fifo(UC_SPIM, (int *)data_buf, data_len);
+                for (index_offset = 0; index_offset < order_size; index_offset += 4)
                 {
                     uint8_t count = 0;
                     if ((index_offset + 4) > order_size)
@@ -174,9 +176,9 @@ static rt_uint32_t spixfer(struct rt_spi_device *device, struct rt_spi_message *
                     {
                         count = 4;
                     }
-                    for (index = index_offset; index < (index_offset+count); index++)
+                    for (index = index_offset; index < (index_offset + count); index++)
                     {
-                        recv_buf[index] = data_buf[(index/count)*count + ((count-1)-index%count)];
+                        recv_buf[index] = data_buf[(index / count) * count + ((count - 1) - index % count)];
                     }
                 }
 
@@ -188,36 +190,38 @@ static rt_uint32_t spixfer(struct rt_spi_device *device, struct rt_spi_message *
             //rt_kprintf("spixfer 2 len = %d\r\n", send_length);
             uint32_t offset = 0;
 
-            spim_setup_cmd_addr(UC_SPIM,0,0,0,0);
-            while(offset < send_length)
+            spim_setup_cmd_addr(UC_SPIM, 0, 0, 0, 0);
+            while (offset < send_length)
             {
                 uint8_t index = 0;
                 uint8_t order_size = 0;
                 uint32_t data_len = 0;
                 uint8_t data_buf[32];
-                if ((send_length-offset) > 32)
+                if ((send_length - offset) > 32)
                 {
                     order_size = 32;
                 }
                 else
                 {
-                    order_size = send_length-offset;
+                    order_size = send_length - offset;
                 }
-                data_len = order_size*8;
+                data_len = order_size * 8;
                 memset(data_buf, 0x00, 32);
                 for (index = 0; index < order_size; index++)
                 {
-                    data_buf[(index/4)*4 + (3-index%4)] = send_buf[index];
+                    data_buf[(index / 4) * 4 + (3 - index % 4)] = send_buf[index];
                 }
-                spim_set_datalen(UC_SPIM,data_len);
-                spim_setup_dummy(UC_SPIM,0,0);
-                spim_write_fifo(UC_SPIM,(int *)data_buf,data_len);
-                for(int i=0;i<10;i++)
-                    for(int j=0;j<1000;j++);
+                spim_set_datalen(UC_SPIM, data_len);
+                spim_setup_dummy(UC_SPIM, 0, 0);
+                spim_write_fifo(UC_SPIM, (int *)data_buf, data_len);
+                for (int i = 0; i < 10; i++)
+                    for (int j = 0; j < 1000; j++)
+                        ;
 
                 //spim_start_transaction(UC_SPIM,SPIM_CMD_WR, cs->GPIO_Pin);
-                spim_start_transaction(UC_SPIM,SPIM_CMD_WR, SPIM_CSN0);
-                while ((spim_get_status(UC_SPIM) & 0xFFFF) != 1);
+                spim_start_transaction(UC_SPIM, SPIM_CMD_WR, SPIM_CSN0);
+                while ((spim_get_status(UC_SPIM) & 0xFFFF) != 1)
+                    ;
 
                 offset += order_size;
             }
@@ -227,30 +231,31 @@ static rt_uint32_t spixfer(struct rt_spi_device *device, struct rt_spi_message *
             //rt_kprintf("spixfer 3 len = %d\r\n", send_length);
             uint32_t offset = 0;
 
-            spim_setup_cmd_addr(UC_SPIM,0,0,0,0);
-            while(offset < send_length)
+            spim_setup_cmd_addr(UC_SPIM, 0, 0, 0, 0);
+            while (offset < send_length)
             {
                 uint8_t index = 0;
                 uint8_t order_size = 0;
                 uint32_t data_len = 0;
                 uint8_t data_buf[32];
                 uint8_t index_offset = 0;
-                if ((send_length-offset) > 32)
+                if ((send_length - offset) > 32)
                 {
                     order_size = 32;
                 }
                 else
                 {
-                    order_size = send_length-offset;
+                    order_size = send_length - offset;
                 }
-                data_len = order_size*8;
+                data_len = order_size * 8;
                 memset(data_buf, 0xff, 32);
-                spim_set_datalen(UC_SPIM,data_len);
+                spim_set_datalen(UC_SPIM, data_len);
                 //spim_start_transaction(UC_SPIM,SPIM_CMD_RD, cs->GPIO_Pin);
-                spim_start_transaction(UC_SPIM,SPIM_CMD_RD, SPIM_CSN0);
-                while ((spim_get_status(UC_SPIM) & 0xFFFF) != 1);
-                spim_read_fifo(UC_SPIM,(int *)data_buf,data_len);
-                for (index_offset = 0; index_offset < order_size; index_offset+=4)
+                spim_start_transaction(UC_SPIM, SPIM_CMD_RD, SPIM_CSN0);
+                while ((spim_get_status(UC_SPIM) & 0xFFFF) != 1)
+                    ;
+                spim_read_fifo(UC_SPIM, (int *)data_buf, data_len);
+                for (index_offset = 0; index_offset < order_size; index_offset += 4)
                 {
                     uint8_t count = 0;
                     if ((index_offset + 4) > order_size)
@@ -261,9 +266,9 @@ static rt_uint32_t spixfer(struct rt_spi_device *device, struct rt_spi_message *
                     {
                         count = 4;
                     }
-                    for (index = index_offset; index < (index_offset+count); index++)
+                    for (index = index_offset; index < (index_offset + count); index++)
                     {
-                        recv_buf[index] = data_buf[(index/count)*count + ((count-1)-index%count)];
+                        recv_buf[index] = data_buf[(index / count) * count + ((count - 1) - index % count)];
                     }
                 }
 
@@ -300,9 +305,9 @@ static rt_err_t spi_configure(struct rt_spi_device *device,
 }
 
 static const struct rt_spi_ops uc8088_spi_ops =
-{
-    .configure = spi_configure,
-    .xfer = spixfer,
+    {
+        .configure = spi_configure,
+        .xfer = spixfer,
 };
 
 static int rt_hw_spi_bus_init(void)
@@ -332,7 +337,7 @@ rt_err_t rt_hw_spi_device_attach(const char *bus_name, const char *device_name, 
     /* initialize the cs pin && select the slave*/
     cs_gpiox = UC_GPIO;
     set_pin_function(cs_gpio_pin, 0);
-	set_gpio_pin_direction(cs_gpiox, cs_gpio_pin, PIN_OUT);
+    set_gpio_pin_direction(cs_gpiox, cs_gpio_pin, PIN_OUT);
     set_gpio_pin_value(cs_gpiox, cs_gpio_pin, PIN_OUT_HIGH);
 
     /* attach the device to spi bus*/

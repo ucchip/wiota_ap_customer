@@ -26,7 +26,8 @@ extern uint16_t auto_dummy;
 __critical_512 uint32_t ReadFlashID()
 {
 	uint32_t data;
-	REG_SPI_CMD = FLASH_CMD_ID << 24;	// set cmd
+//	REG_SPI_CMD = FLASH_CMD_ID << 24;	// set cmd
+    REG_SPI_CMD = FLASH_CMD_DEV_ID << 24;	// set cmd
 	REG_SPI_LEN = 0x200008;		// set cmd and data len
 	SPI_START(SPI_CMD_RD);
 	WAIT_XIP_FREE;

@@ -44,7 +44,7 @@ __reset int spi_get_status() {
 
 __reset void spi_write_fifo(int *data, int datalen) {
     volatile int num_words, i;
-    
+
     if(datalen==0)
         return;
 
@@ -70,10 +70,10 @@ __reset void spi_read_fifo(int *data, int datalen) {
     if ( (datalen & 0x1F) != 0)
         num_words++;
     i = 0;
-    while (1){    
+    while (1){
         do {
             j = (((*(volatile int*) (SPI_REG_STATUS)) >> 16) & 0xFF);
-        } while (j==0);   
+        } while (j==0);
         do {
             data[i++] = *(volatile int*) (SPI_REG_RXFIFO);
             j--;
@@ -89,4 +89,3 @@ __reset void spi_no_op()
 {
     return;
 }
-

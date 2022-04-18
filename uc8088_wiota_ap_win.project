@@ -55,7 +55,18 @@
     </VirtualDirectory>
     <VirtualDirectory Name="components">
       <VirtualDirectory Name="drivers">
+        <VirtualDirectory Name="can">
+          <File Name="rt-thread/components/drivers/can/can.c"/>
+        </VirtualDirectory>
+        <VirtualDirectory Name="i2c">
+          <File Name="rt-thread/components/drivers/i2c/i2c_dev.c"/>
+          <File Name="rt-thread/components/drivers/i2c/i2c_core.c"/>
+          <File Name="rt-thread/components/drivers/i2c/i2c-bit-ops.c"/>
+        </VirtualDirectory>
         <VirtualDirectory Name="misc">
+          <File Name="rt-thread/components/drivers/misc/rt_drv_pwm.c"/>
+          <File Name="rt-thread/components/drivers/misc/dac.c"/>
+          <File Name="rt-thread/components/drivers/misc/adc.c"/>
           <File Name="rt-thread/components/drivers/misc/pin.c"/>
         </VirtualDirectory>
         <VirtualDirectory Name="serial">
@@ -207,14 +218,22 @@
       <File Name="libraries/HAL_Drivers/drv_hwtimer.c"/>
       <File Name="libraries/HAL_Drivers/drv_wdt.c"/>
       <File Name="libraries/HAL_Drivers/SConscript"/>
+      <File Name="libraries/HAL_Drivers/drv_adc.c"/>
+      <File Name="libraries/HAL_Drivers/drv_can.c"/>
+      <File Name="libraries/HAL_Drivers/drv_can.h"/>
+      <File Name="libraries/HAL_Drivers/drv_dac.c"/>
+      <File Name="libraries/HAL_Drivers/drv_gpio.c"/>
+      <File Name="libraries/HAL_Drivers/drv_hw_i2c.c"/>
+      <File Name="libraries/HAL_Drivers/drv_pwm.c"/>
+      <File Name="libraries/HAL_Drivers/drv_soft_i2c.c"/>
+      <File Name="libraries/HAL_Drivers/drv_soft_i2c.h"/>
     </VirtualDirectory>
     <VirtualDirectory Name="UC8088_HAL_Driver">
       <VirtualDirectory Name="inc">
+        <File Name="libraries/UC8088_HAL_Driver/inc/uc_can.h"/>
         <File Name="libraries/UC8088_HAL_Driver/inc/gpio.h"/>
         <File Name="libraries/UC8088_HAL_Driver/inc/pulpino.h"/>
         <File Name="libraries/UC8088_HAL_Driver/inc/spim.h"/>
-        <File Name="libraries/UC8088_HAL_Driver/inc/uc_addc.h"/>
-        <File Name="libraries/UC8088_HAL_Driver/inc/uc_cce.h"/>
         <File Name="libraries/UC8088_HAL_Driver/inc/uc_core.h"/>
         <File Name="libraries/UC8088_HAL_Driver/inc/uc_event.h"/>
         <File Name="libraries/UC8088_HAL_Driver/inc/uc_i2c.h"/>
@@ -229,11 +248,13 @@
         <File Name="libraries/UC8088_HAL_Driver/inc/uc_utils.h"/>
         <File Name="libraries/UC8088_HAL_Driver/inc/uc_watchdog.h"/>
         <File Name="libraries/UC8088_HAL_Driver/inc/sectdefs.h"/>
+        <File Name="libraries/UC8088_HAL_Driver/inc/uc_adda.h"/>
       </VirtualDirectory>
       <VirtualDirectory Name="src">
+        <File Name="libraries/UC8088_HAL_Driver/src/uc_can.c"/>
+        <File Name="libraries/UC8088_HAL_Driver/src/uc_adda.c"/>
         <File Name="libraries/UC8088_HAL_Driver/src/gpio.c"/>
         <File Name="libraries/UC8088_HAL_Driver/src/spim.c"/>
-        <File Name="libraries/UC8088_HAL_Driver/src/uc_addc.c"/>
         <File Name="libraries/UC8088_HAL_Driver/src/uc_boot_strap.c"/>
         <File Name="libraries/UC8088_HAL_Driver/src/uc_exceptions.c"/>
         <File Name="libraries/UC8088_HAL_Driver/src/uc_i2c.c"/>
@@ -278,7 +299,7 @@
       <ResourceCompiler Options=""/>
     </GlobalSettings>
     <Configuration Name="Debug" CompilerType="pulpino" DebuggerType="GNU gdb debugger" Type="Executable" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
-      <Compiler Options="-g;-Os;-Wall  -march=rv32imfc;-ffunction-sections  -Iplatform -Ilibraries/inc" C_Options="-g;-Os;-Wall  -march=rv32imfc;-ffunction-sections;-Iplatform;-Ilibraries/inc;-D _ASIC_;-D UC_DEBUG;-D MEM_OPT;-DLO_TYPE=H_LO;-DIF_VALUE=100;-DHB_COE=1;-DFILTER_TAG=240;-D __AFC_SWITCH__;" Assembler="-c; -g;  -march=rv32imfc;  -Iplatform -Ilibraries/inc " Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="0">
+      <Compiler Options="-g; -Os; -Wall  -march=rv32imfc;  -ffunction-sections  -Iplatform -Ilibraries/inc " C_Options="-g;-Os;-Wall  -march=rv32imfc;-ffunction-sections;-Iplatform;-Ilibraries/inc;-D _ASIC_;-D UC_DEBUG;-D MEM_OPT;-DLO_TYPE=H_LO;-DIF_VALUE=100;-DHB_COE=1;-DFILTER_TAG=240;-D __AFC_SWITCH__;" Assembler="-c; -g;  -march=rv32imfc;  -Iplatform -Ilibraries/inc " Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="0">
         <IncludePath Value="."/>
         <IncludePath Value="/opt/riscv/riscv32-unknown-elf/include"/>
         <IncludePath Value="applications"/>
@@ -318,6 +339,8 @@ load</PostConnectCommands>
       </Debugger>
       <PreBuild>
         <Command Enabled="yes">.\Other\packages\current_version.exe</Command>
+        <Command Enabled="yes">.\bin_bswap32_to_h.exe -i  .\bin\ap8288.bin -o flat_ap8288.h</Command>
+        <Command Enabled="yes"/>
       </PreBuild>
       <PostBuild>
         <Command Enabled="yes">riscv32-unknown-elf-objdump -d $(IntermediateDirectory)/$(ProjectName) &gt;$(IntermediateDirectory)/$(ProjectName).asm</Command>
