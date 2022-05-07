@@ -20,12 +20,14 @@ static rt_err_t uc8088_dac_enabled(struct rt_dac_device *device, rt_uint32_t cha
     if (channel == 0)
     {
         dac_power_set(UC_ADDA);
-        //dac_clkdiv_set(UC_ADDA, 60);
-        //dac_level_set(UC_ADDA, 0x8a);
+        dac_clkdiv_set(UC_ADDA, 60);
+        // dac_level_set(UC_ADDA, 0x8a);
     }
     else if (channel == 1)
     {
-        aux_dac_power_set(UC_ADDA);
+        auxdac_init(UC_ADDA);
+        dac_power_set(UC_ADDA);
+        dac_clkdiv_set(UC_ADDA, 60);
     }
 
     return RT_EOK;
@@ -50,7 +52,7 @@ static rt_err_t uc8088_set_dac_value(struct rt_dac_device *device, rt_uint32_t c
     }
     else if (channel == 1)
     {
-        aux_dac_write(*value);
+        auxdac_level_set(UC_ADDA, *value);
     }
 
     return RT_EOK;

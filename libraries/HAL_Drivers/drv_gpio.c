@@ -40,6 +40,7 @@ static struct rt_pin_irq_hdr pin_irq_hdr_tab[] = {
     {-1, 0, RT_NULL, RT_NULL},
     {-1, 0, RT_NULL, RT_NULL},
 };
+
 static uint32_t pin_irq_enable_mask = 0;
 
 #define ITEM_NUM(items) sizeof(items) / sizeof(items[0])
@@ -51,8 +52,8 @@ static void uc8088_pin_write(rt_device_t dev, rt_base_t pin, rt_base_t value)
         return;
     }
 
-    // set_gpio_pin_value(UC_GPIO, pin, (GPIO_VALUE)value);
-    set_gpio_pin_value(pin, value);
+    // gpio_set_pin_value(UC_GPIO, pin, (GPIO_VALUE)value);
+    gpio_set_pin_value(pin, value);
 }
 
 static int uc8088_pin_read(rt_device_t dev, rt_base_t pin)
@@ -65,8 +66,8 @@ static int uc8088_pin_read(rt_device_t dev, rt_base_t pin)
         return value;
     }
 
-    // value = get_gpio_pin_value(UC_GPIO, pin);
-    value = get_gpio_pin_value(pin);
+    // value = gpio_get_pin_value(UC_GPIO, pin);
+    value = gpio_get_pin_value(pin);
 
     return value;
 }
@@ -82,36 +83,36 @@ static void uc8088_pin_mode(rt_device_t dev, rt_base_t pin, rt_base_t mode)
         || (pin == 6)
         || (pin == 7))
     {
-        set_pin_function(pin, 0);
+        gpio_set_pin_function(pin, 0);
     }
     */
     if (mode == PIN_MODE_OUTPUT)
     {
         /* output setting */
-        set_gpio_init(pin, 0, 1);
-        // set_gpio_pin_direction(UC_GPIO, pin, GPIO_DIR_OUT);
-        set_gpio_pin_direction(pin, GPIO_DIR_OUT);
+        gpio_set_init(pin, 0, 1);
+        // gpio_set_pin_direction(UC_GPIO, pin, GPIO_DIR_OUT);
+        gpio_set_pin_direction(pin, GPIO_DIR_OUT);
     }
     else if (mode == PIN_MODE_INPUT)
     {
         /* input setting */
-        set_gpio_init(pin, 0, 0);
-        // set_gpio_pin_direction(UC_GPIO, pin, GPIO_DIR_IN);
-        set_gpio_pin_direction(pin, GPIO_DIR_IN);
+        gpio_set_init(pin, 0, 0);
+        // gpio_set_pin_direction(UC_GPIO, pin, GPIO_DIR_IN);
+        gpio_set_pin_direction(pin, GPIO_DIR_IN);
     }
     else if (mode == PIN_MODE_INPUT_PULLUP)
     {
         /* input setting: pull up. */
-        set_gpio_init(pin, 0, 1);
-        // set_gpio_pin_direction(UC_GPIO, pin, GPIO_DIR_IN);
-        set_gpio_pin_direction(pin, GPIO_DIR_IN);
+        gpio_set_init(pin, 0, 1);
+        // gpio_set_pin_direction(UC_GPIO, pin, GPIO_DIR_IN);
+        gpio_set_pin_direction(pin, GPIO_DIR_IN);
     }
     else if (mode == PIN_MODE_OUTPUT_OD)
     {
         /* output setting: od. */
-        set_gpio_init(pin, 0, 0);
-        // set_gpio_pin_direction(UC_GPIO, pin, GPIO_DIR_OUT);
-        set_gpio_pin_direction(pin, GPIO_DIR_OUT);
+        gpio_set_init(pin, 0, 0);
+        // gpio_set_pin_direction(UC_GPIO, pin, GPIO_DIR_OUT);
+        gpio_set_pin_direction(pin, GPIO_DIR_OUT);
     }
 }
 
@@ -215,24 +216,24 @@ static rt_err_t uc8088_pin_irq_enable(struct rt_device *device,
         switch (pin_irq_hdr_tab[irqindex].mode)
         {
         case PIN_IRQ_MODE_RISING:
-            // set_gpio_pin_irq_type(UC_GPIO, pin, GPIO_IT_RISE_EDGE);
-            set_gpio_pin_irq_type(pin, GPIO_IT_RISE_EDGE);
+            // gpio_set_pin_irq_type(UC_GPIO, pin, GPIO_IT_RISE_EDGE);
+            gpio_set_pin_irq_type(pin, GPIO_IT_RISE_EDGE);
             break;
         case PIN_IRQ_MODE_FALLING:
-            // set_gpio_pin_irq_type(UC_GPIO, pin, GPIO_IT_FALL_EDGE);
-            set_gpio_pin_irq_type(pin, GPIO_IT_FALL_EDGE);
+            // gpio_set_pin_irq_type(UC_GPIO, pin, GPIO_IT_FALL_EDGE);
+            gpio_set_pin_irq_type(pin, GPIO_IT_FALL_EDGE);
             break;
         case PIN_IRQ_MODE_HIGH_LEVEL:
-            // set_gpio_pin_irq_type(UC_GPIO, pin, GPIO_IT_HIGH_LEVEL);
-            set_gpio_pin_irq_type(pin, GPIO_IT_HIGH_LEVEL);
+            // gpio_set_pin_irq_type(UC_GPIO, pin, GPIO_IT_HIGH_LEVEL);
+            gpio_set_pin_irq_type(pin, GPIO_IT_HIGH_LEVEL);
             break;
         case PIN_IRQ_MODE_LOW_LEVEL:
-            // set_gpio_pin_irq_type(UC_GPIO, pin, GPIO_IT_LOW_LEVEL);
-            set_gpio_pin_irq_type(pin, GPIO_IT_LOW_LEVEL);
+            // gpio_set_pin_irq_type(UC_GPIO, pin, GPIO_IT_LOW_LEVEL);
+            gpio_set_pin_irq_type(pin, GPIO_IT_LOW_LEVEL);
             break;
         }
-        // set_gpio_pin_irq_en(UC_GPIO, pin, PIN_IRQ_ENABLE);
-        set_gpio_pin_irq_en(pin, PIN_IRQ_ENABLE);
+        // gpio_set_pin_irq_en(UC_GPIO, pin, PIN_IRQ_ENABLE);
+        gpio_set_pin_irq_en(pin, PIN_IRQ_ENABLE);
 
         //int_enable();
         IER |= 1 << 25;
@@ -245,8 +246,8 @@ static rt_err_t uc8088_pin_irq_enable(struct rt_device *device,
     {
         level = rt_hw_interrupt_disable();
 
-        // set_gpio_pin_irq_en(UC_GPIO, pin, PIN_IRQ_DISABLE);
-        set_gpio_pin_irq_en(pin, PIN_IRQ_DISABLE);
+        // gpio_set_pin_irq_en(UC_GPIO, pin, PIN_IRQ_DISABLE);
+        gpio_set_pin_irq_en(pin, PIN_IRQ_DISABLE);
         pin_irq_enable_mask &= ~pin;
 
         if (pin_irq_enable_mask == 0)
@@ -292,7 +293,7 @@ rt_inline void pin_irq_hdr(int irqno)
 
 //     rt_interrupt_enter();
 
-//     irq_status = get_gpio_irq_status(UC_GPIO);
+//     irq_status = gpio_get_irq_status(UC_GPIO);
 //     pin_irq_hdr(bit2bitno(irq_status));
 
 //     ICP |= 1<<25;

@@ -14,11 +14,11 @@
 
 #if 0
 void spim_setup_slave() {
-    set_pin_function(PIN_SSPIM_SIO0, FUNC_SPI);
-    set_pin_function(PIN_SSPIM_SIO1, FUNC_SPI);
-    set_pin_function(PIN_SSPIM_SIO2, FUNC_SPI);
-    set_pin_function(PIN_SSPIM_SIO3, FUNC_SPI);
-    set_pin_function(PIN_SSPIM_CSN, FUNC_SPI);
+    gpio_set_pin_function(PIN_SSPIM_SIO0, FUNC_SPI);
+    gpio_set_pin_function(PIN_SSPIM_SIO1, FUNC_SPI);
+    gpio_set_pin_function(PIN_SSPIM_SIO2, FUNC_SPI);
+    gpio_set_pin_function(PIN_SSPIM_SIO3, FUNC_SPI);
+    gpio_set_pin_function(PIN_SSPIM_CSN, FUNC_SPI);
 }
 
 #endif
@@ -34,10 +34,10 @@ void spim_setup_master(int numcs) {
 //    pad_cfg += 1;
 //    *pad_cfg = 0x01; //12-13 pull up
 
-    set_pin_function(8,1);
-    set_pin_function(9,1);
-    set_pin_function(10,1);
-    set_pin_function(13,1);
+    gpio_set_pin_function(8,1);
+    gpio_set_pin_function(9,1);
+    gpio_set_pin_function(10,1);
+    gpio_set_pin_function(13,1);
 
     uint32_t * pad_cfg = (uint32_t *)0x1a107020;
     (*pad_cfg) |= (1<<8);
@@ -45,9 +45,9 @@ void spim_setup_master(int numcs) {
     (*pad_cfg) |= (1<<10);
 
 
-    // rt_kprintf("gpio 8:%d\n",get_pin_function(8));
-    // rt_kprintf("gpio 9:%d\n",get_pin_function(9));
-    // rt_kprintf("gpio 12:%d\n",get_pin_function(12));
+    // rt_kprintf("gpio 8:%d\n",gpio_get_pin_function(8));
+    // rt_kprintf("gpio 9:%d\n",gpio_get_pin_function(9));
+    // rt_kprintf("gpio 12:%d\n",gpio_get_pin_function(12));
 }
 
 

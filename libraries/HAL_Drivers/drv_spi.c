@@ -93,7 +93,7 @@ static rt_uint32_t spixfer(struct rt_spi_device *device, struct rt_spi_message *
 
     if (message->cs_take)
     {
-        set_gpio_pin_value(cs->GPIOx, cs->GPIO_Pin, PIN_OUT_LOW);
+        gpio_set_pin_value(cs->GPIOx, cs->GPIO_Pin, PIN_OUT_LOW);
     }
 
     LOG_D("%s transfer prepare and start", "spim");
@@ -289,7 +289,7 @@ static rt_uint32_t spixfer(struct rt_spi_device *device, struct rt_spi_message *
 
     if (message->cs_release)
     {
-        set_gpio_pin_value(cs->GPIOx, cs->GPIO_Pin, PIN_OUT_HIGH);
+        gpio_set_pin_value(cs->GPIOx, cs->GPIO_Pin, PIN_OUT_HIGH);
     }
 
     return message->length;
@@ -336,9 +336,9 @@ rt_err_t rt_hw_spi_device_attach(const char *bus_name, const char *device_name, 
 
     /* initialize the cs pin && select the slave*/
     cs_gpiox = UC_GPIO;
-    set_pin_function(cs_gpio_pin, 0);
-    set_gpio_pin_direction(cs_gpiox, cs_gpio_pin, PIN_OUT);
-    set_gpio_pin_value(cs_gpiox, cs_gpio_pin, PIN_OUT_HIGH);
+    gpio_set_pin_function(cs_gpio_pin, 0);
+    gpio_set_pin_direction(cs_gpiox, cs_gpio_pin, PIN_OUT);
+    gpio_set_pin_value(cs_gpiox, cs_gpio_pin, PIN_OUT_HIGH);
 
     /* attach the device to spi bus*/
     spi_device = (struct rt_spi_device *)rt_malloc(sizeof(struct rt_spi_device));

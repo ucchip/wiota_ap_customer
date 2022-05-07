@@ -7,7 +7,8 @@
 
 void pwm_enable(PWM_TypeDef* PWM);
 void pwm_disable(PWM_TypeDef* PWM);
-void set_pwm_cnt_max(PWM_TypeDef* PWM, int max_cnt);
-void set_pwm_duty(PWM_TypeDef* PWM, int duty_cnt);
-
+void pwm_set_period(PWM_TypeDef* PWM, int period_cnt);
+void pwm_set_duty(PWM_TypeDef* PWM, int duty_cnt);
+int pwm_get_period(PWM_TypeDef* PWM);
+int pwm_get_duty(PWM_TypeDef* PWM);
 #endif

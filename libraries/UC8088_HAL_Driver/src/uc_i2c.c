@@ -9,11 +9,18 @@
 // specific language governing permissions and limitations under the License.
 
 #include <uc_i2c.h>
+#include "gpio.h"
 
 void i2c_setup(I2C_TYPE *I2C, I2C_CFG_Type *I2CconfigStruct)
 {
     CHECK_PARAM(PARAM_I2C(I2C));
     CHECK_PARAM(PARAM_I2C_TRANSFER_RATE(I2CconfigStruct->prescaler));
+
+    // GPIO3:CLK, GPIO4:SDA
+    gpio_set_pin_mux(UC_GPIO_CFG, GPIO_PIN_3, GPIO_FUNC_1);
+    gpio_set_pin_pupd(UC_GPIO_CFG, GPIO_PIN_3, GPIO_PUPD_UP);
+    gpio_set_pin_mux(UC_GPIO_CFG, GPIO_PIN_4, GPIO_FUNC_1);
+    gpio_set_pin_pupd(UC_GPIO_CFG, GPIO_PIN_4, GPIO_PUPD_UP);
 
     I2C->CPR = I2CconfigStruct->prescaler & I2C_PRESCALER_MASK;
 
@@ -50,7 +57,7 @@ void i2c_send_data(I2C_TYPE *I2C, uint8_t data)
     I2C->TXR = data;
 }
 
-uint32_t I2C_Get_Status(I2C_TYPE *I2C)
+uint32_t i2c_get_status(I2C_TYPE *I2C)
 {
     uint32_t temreg;
 
@@ -61,7 +68,7 @@ uint32_t I2C_Get_Status(I2C_TYPE *I2C)
     return temreg;
 }
 
-I2CTXStatus I2C_Get_TXStatus(I2C_TYPE *I2C)
+I2CTXStatus i2c_get_txstatus(I2C_TYPE *I2C)
 {
     I2CTXStatus temstatus;
 
@@ -74,29 +81,25 @@ I2CTXStatus I2C_Get_TXStatus(I2C_TYPE *I2C)
 
 I2CACK i2c_get_ack(I2C_TYPE *I2C)
 {
+    CHECK_PARAM(PARAM_I2C(I2C));
     while ((I2C->STR & I2C_STATUS_TIP) == 0)
-        ;
+        ; // need TIP go to 1
     while ((I2C->STR & I2C_STATUS_TIP) != 0)
-        ;
-    return !(I2C->STR & I2C_STATUS_RXACK);
+        ; // and then go back to 0
+
+    return !(I2C->STR & I2C_STATUS_RXACK); // invert since signal is active low
 }
 
 uint32_t i2c_get_data(I2C_TYPE *I2C)
 {
-    volatile int tempdata;
     CHECK_PARAM(PARAM_I2C(I2C));
 
-    tempdata = *(volatile int *)(I2C->RXR);
-    return tempdata;
+    return (I2C->RXR & 0xff);
 }
 
 I2CStatus i2c_busy(I2C_TYPE *I2C)
 {
-    uint32_t temreg;
-
     CHECK_PARAM(PARAM_I2C(I2C));
 
-    temreg = (I2C->STR & I2C_BUSY_MASK);
-
-    return (temreg == I2C_BUSY_MASK);
+    return ((I2C->STR & I2C_BUSY_MASK) == I2C_BUSY_MASK);
 }

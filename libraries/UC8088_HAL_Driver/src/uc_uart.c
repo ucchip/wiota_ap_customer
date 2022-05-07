@@ -91,8 +91,8 @@ void uc_uart_init(UART_TYPE *uartx, uint32_t baud_rate, uint8_t data_bits, uint8
 
     if (uartx == (UART_TYPE *)UART1_BASE_ADDR)
     {
-        set_pin_function(24, 1);
-        set_pin_function(25, 1);
+        gpio_set_pin_function(24, 1);
+        gpio_set_pin_function(25, 1);
     }
 
     CGREG |= (1 << CGUART); // don't clock gate UART

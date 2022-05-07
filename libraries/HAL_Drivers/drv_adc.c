@@ -17,39 +17,96 @@ static rt_err_t uc8088_adc_enabled(struct rt_adc_device *device, rt_uint32_t cha
 {
     RT_ASSERT(device != RT_NULL);
 
-    if (channel > 3)
+    if ((channel == 0) || (channel > 7))
     {
         return -RT_ERROR;
     }
 
     if (enabled)
     {
-        ADC_CHANNEL channel_val = CHANNEL_A;
-        if (channel == 0)
+        switch (channel)
         {
-            temperature_set(UC_ADDA);
-        }
-        else if (channel == 1)
+        case ADC_CONFIG_CHANNEL_A:
         {
-            channel_val = CHANNEL_A;
+            ADC_CHANNEL channel_val = ADC_CHANNEL_A;
             adc_power_set(UC_ADDA);
             adc_channel_select(UC_ADDA, channel_val);
+            adc_set_sample_rate(UC_ADDA, ADC_SR_45KSPS);
+            adc_fifo_clear(UC_ADDA);
+            adc_watermark_set(UC_ADDA, 100);
+            break;
         }
-        else if (channel == 2)
+        case ADC_CONFIG_CHANNEL_B:
         {
-            channel_val = CHANNEL_B;
+            ADC_CHANNEL channel_val = ADC_CHANNEL_B;
             adc_power_set(UC_ADDA);
             adc_channel_select(UC_ADDA, channel_val);
+            adc_set_sample_rate(UC_ADDA, ADC_SR_45KSPS);
+            adc_fifo_clear(UC_ADDA);
+            adc_watermark_set(UC_ADDA, 100);
+            break;
         }
-        else if (channel == 3)
+        case ADC_CONFIG_CHANNEL_C:
         {
-            channel_val = CHANNEL_C;
+            ADC_CHANNEL channel_val = ADC_CHANNEL_C;
             adc_power_set(UC_ADDA);
             adc_channel_select(UC_ADDA, channel_val);
+            adc_set_sample_rate(UC_ADDA, ADC_SR_45KSPS);
+            adc_fifo_clear(UC_ADDA);
+            adc_watermark_set(UC_ADDA, 100);
+            break;
         }
-        adc_fifo_clear(UC_ADDA);
-        adc_reset(UC_ADDA);
-        adc_watermark_set(UC_ADDA, 100);
+        case ADC_CONFIG_CHANNEL_BAT:
+        {
+            /* ?????? */
+            ADC_CHANNEL channel_val = ADC_CHANNEL_BAT;
+            adc_power_set(UC_ADDA);
+            adc_set_sample_rate(UC_ADDA, ADC_SR_45KSPS);
+            adc_watermark_set(UC_ADDA, 128);
+            adc_channel_select(UC_ADDA, channel_val);
+            adc_vbat_measure_enable(true);
+            adc_fifo_clear(UC_ADDA);
+            break;
+        }
+        case ADC_CONFIG_CHANNEL_TEMP_A:
+        {
+            ADC_CHANNEL channel_val = ADC_CHANNEL_TEMP;
+            adc_power_set(UC_ADDA);
+            adc_channel_select(UC_ADDA, channel_val);
+            adc_temp_sensor_enable(UC_ADDA, true);
+            adc_temp_source_sel(UC_ADDA, ADC_TEMP_A);
+            adc_set_sample_rate(UC_ADDA, ADC_SR_45KSPS);
+            adc_fifo_clear(UC_ADDA);
+            adc_watermark_set(UC_ADDA, 100);
+            break;
+        }
+        case ADC_CONFIG_CHANNEL_TEMP_B:
+        {
+            ADC_CHANNEL channel_val = ADC_CHANNEL_TEMP;
+            adc_power_set(UC_ADDA);
+            adc_channel_select(UC_ADDA, channel_val);
+            adc_temp_sensor_enable(UC_ADDA, true);
+            adc_temp_source_sel(UC_ADDA, ADC_TEMP_B);
+            adc_set_sample_rate(UC_ADDA, ADC_SR_45KSPS);
+            adc_fifo_clear(UC_ADDA);
+            adc_watermark_set(UC_ADDA, 100);
+            break;
+        }
+        case ADC_CONFIG_CHANNEL_TEMP_C:
+        {
+            ADC_CHANNEL channel_val = ADC_CHANNEL_TEMP;
+            adc_power_set(UC_ADDA);
+            adc_channel_select(UC_ADDA, channel_val);
+            adc_temp_sensor_enable(UC_ADDA, true);
+            adc_temp_source_sel(UC_ADDA, ADC_TEMP_C);
+            adc_set_sample_rate(UC_ADDA, ADC_SR_45KSPS);
+            adc_fifo_clear(UC_ADDA);
+            adc_watermark_set(UC_ADDA, 100);
+            break;
+        }
+        default:
+            return RT_ERROR;
+        }
     }
     else
     {
@@ -91,6 +148,7 @@ static rt_err_t uc8088_get_adc_value(struct rt_adc_device *device, rt_uint32_t c
         uint32_t adc_val = 0;
         for (uint8_t index = 0; index < 100; index++)
         {
+            adc_wait_data_ready(UC_ADDA);
             adc_val += adc_read(UC_ADDA);
         }
         *value = adc_val / 100;

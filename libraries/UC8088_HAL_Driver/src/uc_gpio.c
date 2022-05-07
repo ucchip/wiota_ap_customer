@@ -17,130 +17,130 @@ void gpio_init(GPIO_TypeDef *GPIO,GPIO_CFG_TypeDef *GPIO_CFG,GPIO_CFG_Type *gpio
     CHECK_PARAM(PARAM_GPIO_PIN(gpio_cfg->pinnumber));
     CHECK_PARAM(PARAM_GPIO_FUNC(gpio_cfg->func));
     CHECK_PARAM(PARAM_GPIO_STATUS(gpio_cfg->status));
-    
+
     //set pin mux
     if(gpio_cfg->func)
         GPIO_CFG->PADMUX |= (1 << gpio_cfg->pinnumber);
     else
-        GPIO_CFG->PADMUX &= ~(1 << gpio_cfg->pinnumber); 
-    
+        GPIO_CFG->PADMUX &= ~(1 << gpio_cfg->pinnumber);
+
     //set pin direction
     if(gpio_cfg->direction)
-        GPIO->PADDIR &= ~(1 << gpio_cfg->pinnumber); 
+        GPIO->PADDIR &= ~(1 << gpio_cfg->pinnumber);
     else
-        GPIO->PADDIR |= (1 << gpio_cfg->pinnumber); 
-    
+        GPIO->PADDIR |= (1 << gpio_cfg->pinnumber);
+
     //set pin status
     if(gpio_cfg->status)
         GPIO_CFG->PADCFG |= (1 << gpio_cfg->pinnumber);
     else
         GPIO_CFG->PADCFG &= ~(1 << gpio_cfg->pinnumber);
-        
+
 }
 
-void set_gpio_init(uint8_t pin_number, uint8_t en_func, uint8_t en_pullup)
+void gpio_set_init(uint8_t pin_number, uint8_t en_func, uint8_t en_pullup)
 {
     volatile GPIO_CFG_TypeDef *GPIO_CFG = (GPIO_CFG_TypeDef *)SOC_CTRL_BASE_ADDR;
     if (pin_number > 31)
     {
         return;
     }
-    
+
     //set pin mux
     if(en_func)
         GPIO_CFG->PADMUX |= (1 << pin_number);
     else
-        GPIO_CFG->PADMUX &= ~(1 << pin_number); 
-        
+        GPIO_CFG->PADMUX &= ~(1 << pin_number);
+
     //set pin status
     if(en_pullup)
         GPIO_CFG->PADCFG |= (1 << pin_number);
     else
-        GPIO_CFG->PADCFG &= ~(1 << pin_number);        
+        GPIO_CFG->PADCFG &= ~(1 << pin_number);
 }
 
 
-void set_gpio_pin_direction(GPIO_TypeDef *GPIO, uint8_t pinnumber, GPIO_DIRECTION direction) 
+void gpio_set_pin_direction(GPIO_TypeDef *GPIO, uint8_t pinnumber, GPIO_DIRECTION direction)
 {
     CHECK_PARAM(PARAM_GPIO(GPIO));
     CHECK_PARAM(PARAM_GPIO_PIN(pinnumber));
     CHECK_PARAM(PARAM_GPIO_DERECTION(direction));
-    
-    
+
+
     if(direction == 0)
-        GPIO->PADDIR &= ~(1 << pinnumber); 
+        GPIO->PADDIR &= ~(1 << pinnumber);
     else
-        GPIO->PADDIR |= 1 << pinnumber; 
+        GPIO->PADDIR |= 1 << pinnumber;
 }
 
-uint8_t get_gpio_pin_direction(GPIO_TypeDef *GPIO, uint8_t pinnumber) 
+uint8_t gpio_get_pin_direction(GPIO_TypeDef *GPIO, uint8_t pinnumber)
 {
     CHECK_PARAM(PARAM_GPIO(GPIO));
     CHECK_PARAM(PARAM_GPIO_PIN(pinnumber));
-    
+
     uint8_t pin_direction = (GPIO->PADDIR >> pinnumber) & 0x01;
     return pin_direction;
 }
 
-void set_gpio_pin_value(GPIO_TypeDef *GPIO, uint8_t pinnumber, GPIO_VALUE value) 
+void gpio_set_pin_value(GPIO_TypeDef *GPIO, uint8_t pinnumber, GPIO_VALUE value)
 {
     CHECK_PARAM(PARAM_GPIO(GPIO));
     CHECK_PARAM(PARAM_GPIO_PIN(pinnumber));
-    
+
     if(value == 0)
         GPIO->PADOUT &= ~(1 << pinnumber);
     else
         GPIO->PADOUT |= 1 << pinnumber;
 }
 
-uint8_t get_gpio_pin_value(GPIO_TypeDef *GPIO, uint8_t pinnumber)
+uint8_t gpio_get_pin_value(GPIO_TypeDef *GPIO, uint8_t pinnumber)
 {
     CHECK_PARAM(PARAM_GPIO(GPIO));
     CHECK_PARAM(PARAM_GPIO_PIN(pinnumber));
-    
+
 	uint8_t output_pin_value = 0;
-	uint8_t pin_direction = get_gpio_pin_direction(GPIO, pinnumber);
-	
+	uint8_t pin_direction = gpio_get_pin_direction(GPIO, pinnumber);
+
 	if(pin_direction)
 		output_pin_value = (GPIO->PADIN >> pinnumber) & 0x01;
 	else
 		output_pin_value = (GPIO->PADOUT >> pinnumber) & 0x01;
-		
+
     return output_pin_value;
 }
 
-void set_gpio_pin_irq_en(GPIO_TypeDef *GPIO, uint8_t pinnumber, uint8_t enable) 
+void gpio_set_pin_irq_en(GPIO_TypeDef *GPIO, uint8_t pinnumber, uint8_t enable)
 {
     CHECK_PARAM(PARAM_GPIO(GPIO));
     CHECK_PARAM(PARAM_GPIO_PIN(pinnumber));
-    
+
     if(enable == 0)
         GPIO->INTEN &= ~(1 << pinnumber);
     else
         GPIO->INTEN |= 1 << pinnumber;
 }
 
-void set_gpio_pin_irq_type(GPIO_TypeDef *GPIO, uint8_t pinnumber, GPIO_IRQ_TYPE type) 
+void gpio_set_pin_irq_type(GPIO_TypeDef *GPIO, uint8_t pinnumber, GPIO_IRQ_TYPE type)
 {
     CHECK_PARAM(PARAM_GPIO(GPIO));
     CHECK_PARAM(PARAM_GPIO_PIN(pinnumber));
     CHECK_PARAM(PARAM_GPIO_IRQ(type));
-    
+
     if((type & 0x1) == 0)
         GPIO->INTTYPE0 &= ~(1 << pinnumber);
     else
         GPIO->INTTYPE0 |= 1 << pinnumber;
-        
+
     if((type & 0x2) == 0)
         GPIO->INTTYPE1 &= ~(1 << pinnumber);
     else
         GPIO->INTTYPE1 |= 1 << pinnumber;
 }
 
-uint32_t get_gpio_irq_status(GPIO_TypeDef *GPIO) 
+uint32_t gpio_get_irq_status(GPIO_TypeDef *GPIO)
 {
     CHECK_PARAM(PARAM_GPIO(GPIO));
-    
+
     return GPIO->INTSTATUS;
 }
 
@@ -155,7 +155,7 @@ void soc_hw_ldo_on(void)
 
 #define SOC_CTRL_PADFUN     (SOC_CTRL_BASE_ADDR + 0x00)
 
-void set_pin_function(int pinnumber, int function)
+void gpio_set_pin_function(int pinnumber, int function)
 {
     volatile int old_function;
     //int addr;
@@ -191,11 +191,11 @@ static volatile uint32_t gprs_io_out_reg = 0;
 void gprs_io_init(void)
 {
     uint32_t CUR_TIME = 0;
-        
+
     gprs_io_store(0x3B0004, 0x30408000);
     gprs_io_load(0x3B0014, &CUR_TIME);
     gprs_io_store(0x3B0180, CUR_TIME+64);
-    gprs_io_store(0x3B0180, 0x30000000);   
+    gprs_io_store(0x3B0180, 0x30000000);
     gprs_io_store(0x3B076C, 0x80000001);
     gprs_io_delay(150);
     gprs_io_load(0x3B0014, &CUR_TIME);
@@ -211,7 +211,7 @@ uint8_t gprs_io_read(uint8_t pin_num)
 {
     uint8_t ret_val = PIN_OUT_LOW;
     uint8_t offset = 0xff;
-    
+
     if (pin_num == 134)
     {
         /* Pin:34 TX_EN */
@@ -263,9 +263,8 @@ void gprs_io_write(uint8_t pin_num, GPIO_VALUE value)
     {
         gprs_io_out_reg &= ~(1 << offset);
     }
-        
+
     gprs_io_load(0x3B0014, &CUR_TIME);
     gprs_io_store(0x3B0180, CUR_TIME+64);
     gprs_io_store(0x3B0180, gprs_io_out_reg);
 }
-

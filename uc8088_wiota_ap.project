@@ -133,9 +133,6 @@
           <File Name="rt-thread/components/drivers/hwtimer/SConscript"/>
           <File Name="rt-thread/components/drivers/hwtimer/hwtimer.c"/>
         </VirtualDirectory>
-        <VirtualDirectory Name="can">
-          <File Name="rt-thread/components/drivers/can/can.c"/>
-        </VirtualDirectory>
         <VirtualDirectory Name="i2c">
           <File Name="rt-thread/components/drivers/i2c/i2c-bit-ops.c"/>
           <File Name="rt-thread/components/drivers/i2c/i2c_core.c"/>
@@ -220,8 +217,6 @@
       <File Name="libraries/HAL_Drivers/drv_wdt.c"/>
       <File Name="libraries/HAL_Drivers/SConscript"/>
       <File Name="libraries/HAL_Drivers/drv_adc.c"/>
-      <File Name="libraries/HAL_Drivers/drv_can.c"/>
-      <File Name="libraries/HAL_Drivers/drv_can.h"/>
       <File Name="libraries/HAL_Drivers/drv_dac.c"/>
       <File Name="libraries/HAL_Drivers/drv_gpio.c"/>
       <File Name="libraries/HAL_Drivers/drv_hw_i2c.c"/>
@@ -248,7 +243,6 @@
         <File Name="libraries/UC8088_HAL_Driver/inc/uc_utils.h"/>
         <File Name="libraries/UC8088_HAL_Driver/inc/uc_watchdog.h"/>
         <File Name="libraries/UC8088_HAL_Driver/inc/uc_adda.h"/>
-        <File Name="libraries/UC8088_HAL_Driver/inc/uc_can.h"/>
       </VirtualDirectory>
       <VirtualDirectory Name="src">
         <File Name="libraries/UC8088_HAL_Driver/src/gpio.c"/>
@@ -269,7 +263,6 @@
         <File Name="libraries/UC8088_HAL_Driver/src/uc_watchdog.c"/>
         <File Name="libraries/UC8088_HAL_Driver/inc/sectdefs.h"/>
         <File Name="libraries/UC8088_HAL_Driver/src/uc_adda.c"/>
-        <File Name="libraries/UC8088_HAL_Driver/src/uc_can.c"/>
       </VirtualDirectory>
       <File Name="libraries/UC8088_HAL_Driver/SConscript"/>
     </VirtualDirectory>

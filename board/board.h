@@ -8,7 +8,10 @@
 
 #define BSP_USING_UART0
 #define BSP_USING_UART1
-
+// #define BSP_USING_PWM0
+//#define BSP_USING_PWM1
+#define BSP_USING_PWM2
+//#define BSP_USING_PWM3
 /*-------------------------- ROM/RAM CONFIG BEGIN --------------------------*/
 
 #define ROM_START              ((uint32_t)0x00000000)

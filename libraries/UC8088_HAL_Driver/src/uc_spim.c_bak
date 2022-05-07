@@ -13,11 +13,11 @@
 
 void spim_init(SPI_TypeDef *SPIx,SPIM_CFG_Type *SPI_ConfigStruc)
 {
-    CHECK_PARAM(PARAM_SPIM(SPIx));    
-    set_pin_function(8, 1); 
-    set_pin_function(9, 1); 
-    set_pin_function(10, 1); 
-    //set_pin_function(13, 1);
+    CHECK_PARAM(PARAM_SPIM(SPIx));
+    gpio_set_pin_function(8, 1);
+    gpio_set_pin_function(9, 1);
+    gpio_set_pin_function(10, 1);
+    //gpio_set_pin_function(13, 1);
     SPIx->CLKDIV = SPI_ConfigStruc->Clk_rate;
 }
 
@@ -28,26 +28,26 @@ void spim_setup_cmd_addr(SPI_TypeDef *SPIx, int cmd, int cmdlen, int addr, int a
     cmd_reg = cmd << (32 - cmdlen);
     SPIx->SPICMD = cmd_reg;
     SPIx->SPIADR = addr;
-    SPIx->SPILEN = (cmdlen & SPILEN_CLR_MASK) | 
+    SPIx->SPILEN = (cmdlen & SPILEN_CLR_MASK) |
            ((addrlen << 8) & SPILEN_ALR_MASK);
 }
 
 void spim_setup_dummy(SPI_TypeDef *SPIx, int dummy_rd, int dummy_wr) {
-    SPIx->SPIDUM = ((dummy_wr << 16) & SPIDUM_TDR_MASK) | 
+    SPIx->SPIDUM = ((dummy_wr << 16) & SPIDUM_TDR_MASK) |
                            (dummy_rd & SPIDUM_RDR_MASK);
 }
 
 void spim_set_datalen(SPI_TypeDef *SPIx, int datalen) {
     volatile int old_len;
     old_len = SPIx->SPILEN;
-    old_len = ((datalen << 16) & (SPILEN_RLR_MASK | SPILEN_TLR_MASK)) | 
+    old_len = ((datalen << 16) & (SPILEN_RLR_MASK | SPILEN_TLR_MASK)) |
                       (old_len & (SPILEN_CLR_MASK | SPILEN_ALR_MASK));
     SPIx->SPILEN = old_len;
 }
 
 
 void spim_start_transaction(SPI_TypeDef *SPIx, int trans_type, int csnum) {
-    SPIx->STATUS = ((1 << (csnum + 8)) & SPI_CSN_MASK) | 
+    SPIx->STATUS = ((1 << (csnum + 8)) & SPI_CSN_MASK) |
                     ((1 << trans_type) & SPI_TRA_MASK);
 }
 
@@ -82,10 +82,10 @@ void spim_read_fifo(SPI_TypeDef *SPIx, int *data, int datalen) {
     if ( (datalen & SPI_RXA_MASK) != 0)
         num_words++;
     i = 0;
-    while (1){    
+    while (1){
         do {
             j = (((SPIx->STATUS) >> 16) & SPI_TRA_MASK);
-        } while (j==0);   
+        } while (j==0);
         do {
             data[i++] = SPIx->RXFIFO;
             j--;
@@ -101,4 +101,3 @@ void spim_no_op()
 {
     return;
 }
-

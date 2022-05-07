@@ -53,11 +53,12 @@ typedef enum {
     I2C_STOP  = 0x40,
     I2C_READ  = 0x20,
     I2C_WRITE = 0x10,
+    I2C_ACK = 0x08,
     I2C_CLR_INT = 0x01,
     I2C_START_READ = 0xA0,
-    I2C_STOP_READ = 0x60,
+    I2C_STOP_READ = 0x68,
     I2C_START_WRITE = 0x90,
-    I2C_STOP_WRITE = 0x50
+    I2C_STOP_WRITE = 0x58
 }I2C_CMD;
 
 #define PARAM_I2C(i2c)                            ((i2c==UC_I2C))
@@ -77,14 +78,12 @@ typedef struct{
     FunctionalState     Enable;      /* parity bit enable */
 }I2C_CFG_Type;
 
-
-void I2C_Init(I2C_TYPE *I2C);
 void i2c_setup(I2C_TYPE *I2C, I2C_CFG_Type *I2CconfigStruct);
 void i2c_cmd(I2C_TYPE *I2C, FunctionalState NewState);
 void i2c_send_command(I2C_TYPE *I2C, I2C_CMD cmd);
 void i2c_send_data(I2C_TYPE *I2C, uint8_t data);
-uint32_t I2C_Get_Status(I2C_TYPE *I2C);
-I2CTXStatus I2C_Get_TXStatus(I2C_TYPE *I2C);
+uint32_t i2c_get_status(I2C_TYPE *I2C);
+I2CTXStatus i2c_get_txstatus(I2C_TYPE *I2C);
 I2CACK i2c_get_ack(I2C_TYPE *I2C);
 uint32_t i2c_get_data(I2C_TYPE *I2C);
 I2CStatus i2c_busy(I2C_TYPE *I2C);

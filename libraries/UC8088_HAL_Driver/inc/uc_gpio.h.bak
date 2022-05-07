@@ -65,20 +65,20 @@ typedef struct{
 
 
 void gpio_init(GPIO_TypeDef *GPIO,GPIO_CFG_TypeDef *GPIO_CFG,GPIO_CFG_Type *gpio_cfg);
-void set_gpio_init(uint8_t pin_number, uint8_t en_func, uint8_t en_pullup);
+void gpio_set_init(uint8_t pin_number, uint8_t en_func, uint8_t en_pullup);
 
-void set_gpio_pin_direction(GPIO_TypeDef *GPIO, uint8_t pinnumber, GPIO_DIRECTION direction);
-uint8_t get_gpio_pin_direction(GPIO_TypeDef *GPIO, uint8_t pinnumber);
+void gpio_set_pin_direction(GPIO_TypeDef *GPIO, uint8_t pinnumber, GPIO_DIRECTION direction);
+uint8_t gpio_get_pin_direction(GPIO_TypeDef *GPIO, uint8_t pinnumber);
 
-void set_gpio_pin_value(GPIO_TypeDef *GPIO, uint8_t pinnumber, GPIO_VALUE value);
-uint8_t get_gpio_pin_value(GPIO_TypeDef *GPIO, uint8_t pinnumber);
+void gpio_set_pin_value(GPIO_TypeDef *GPIO, uint8_t pinnumber, GPIO_VALUE value);
+uint8_t gpio_get_pin_value(GPIO_TypeDef *GPIO, uint8_t pinnumber);
 
-void set_gpio_pin_irq_type(GPIO_TypeDef *GPIO, uint8_t pinnumber, GPIO_IRQ_TYPE type);
-void set_gpio_pin_irq_en(GPIO_TypeDef *GPIO, uint8_t pinnumber, uint8_t enable);
-uint32_t get_gpio_irq_status(GPIO_TypeDef *GPIO);
+void gpio_set_pin_irq_type(GPIO_TypeDef *GPIO, uint8_t pinnumber, GPIO_IRQ_TYPE type);
+void gpio_set_pin_irq_en(GPIO_TypeDef *GPIO, uint8_t pinnumber, uint8_t enable);
+uint32_t gpio_get_irq_status(GPIO_TypeDef *GPIO);
 
 void soc_hw_ldo_on(void);
-void set_pin_function(int pinnumber, int function);
+void gpio_set_pin_function(int pinnumber, int function);
 
 void gprs_io_init(void);
 uint8_t gprs_io_read(uint8_t pin_num);

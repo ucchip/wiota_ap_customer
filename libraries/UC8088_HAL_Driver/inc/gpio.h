@@ -42,6 +42,16 @@ typedef enum
     GPIO_PIN_16 = 16,
     GPIO_PIN_17 = 17,
     GPIO_PIN_18 = 18,
+    GPIO_PIN_19 = 19,
+    GPIO_PIN_20 = 20,
+    GPIO_PIN_21 = 21,
+    GPIO_PIN_22 = 22,
+    GPIO_PIN_24 = 24,
+    GPIO_PIN_25 = 25,
+    GPIO_PIN_26 = 26,
+    GPIO_PIN_27 = 27,
+    GPIO_PIN_28 = 28,
+    GPIO_PIN_29 = 29,
 } GPIO_PIN; /* pin number */
 
 typedef enum
@@ -115,30 +125,25 @@ typedef enum
 
 #define PADFUN                  REGP(SOC_CTRL_PADFUN)
 
-void set_pin_function(int pinnumber, int function);
-int get_pin_function(int pinnumber);
+void gpio_set_pin_function(int pinnumber, int function);
+int gpio_get_pin_function(int pinnumber);
 
-void set_gpio_pin_direction(int pinnumber, int direction);
-int get_gpio_pin_direction(int pinnumber);
+void gpio_set_pin_direction(int pinnumber, int direction);
+int gpio_get_pin_direction(int pinnumber);
 
-void set_gpio_pin_value(int pinnumber, int value);
-int get_gpio_pin_value(int pinnumber);
-void set_gpio_pin_value_reverse(int pinnumber);
+void gpio_set_pin_value(int pinnumber, int value);
+int gpio_get_pin_value(int pinnumber);
+void gpio_set_pin_value_reverse(int pinnumber);
 
-void set_gpio_pin_irq_type(int pinnumber, int type);
-void set_gpio_pin_irq_en(int pinnumber, int enable);
-int get_gpio_irq_status();
+void gpio_set_pin_irq_type(int pinnumber, int type);
+void gpio_set_pin_irq_en(int pinnumber, int enable);
+int gpio_get_irq_status();
 
 void gpio_init(void);
 void gpio_deinit(void);
-void set_gpio_init(uint8_t pin_number, uint8_t en_func, uint8_t en_pullup);
-void set_gpio_pin_mux(GPIO_CFG_TypeDef* GPIO_CFG, GPIO_PIN pin, GPIO_FUNCTION func);
-GPIO_FUNCTION get_gpio_pin_mux(GPIO_CFG_TypeDef* GPIO_CFG, GPIO_PIN pin);
-
-void gpoi_8088_to_8288_init(void);
-#ifndef TEST_SINGLE_MAIN
+void gpio_set_init(uint8_t pin_number, uint8_t en_func, uint8_t en_pullup);
+void gpio_set_pin_mux(GPIO_CFG_TypeDef* GPIO_CFG, GPIO_PIN pin, GPIO_FUNCTION func);
+GPIO_FUNCTION gpio_get_pin_mux(GPIO_CFG_TypeDef* GPIO_CFG, GPIO_PIN pin);
+void gpio_set_pin_pupd(GPIO_CFG_TypeDef *GPIO_CFG, GPIO_PIN pin, GPIO_PUPD pupd);
 void gpoi_8088_to_8288_change_value();
-#else
-void gpoi_8088_to_8288_change_value(unsigned int test1, unsigned int test2);
-#endif
 #endif // _GPIO_H_

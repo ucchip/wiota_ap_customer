@@ -18,7 +18,7 @@
 //#include "vsi.h"
 //#include "scheduler_frame_for_gpio.h"
 extern void scheduler_tick_notify(void);
-void set_pin_function(int pinnumber, int function)
+void gpio_set_pin_function(int pinnumber, int function)
 {
     volatile int old_function;
 
@@ -28,7 +28,7 @@ void set_pin_function(int pinnumber, int function)
     *(volatile int *)(SOC_CTRL_PADFUN) = old_function;
 }
 
-int get_pin_function(int pinnumber)
+int gpio_get_pin_function(int pinnumber)
 {
     volatile int old_function;
     old_function = *(volatile int *)(SOC_CTRL_PADFUN);
@@ -36,7 +36,7 @@ int get_pin_function(int pinnumber)
     return old_function;
 }
 
-void set_gpio_pin_direction(int pinnumber, int direction)
+void gpio_set_pin_direction(int pinnumber, int direction)
 {
     volatile int old_dir;
     old_dir = *(volatile int *)(GPIO_REG_PADDIR);
@@ -47,7 +47,7 @@ void set_gpio_pin_direction(int pinnumber, int direction)
     *(volatile int *)(GPIO_REG_PADDIR) = old_dir;
 }
 
-int get_gpio_pin_direction(int pinnumber)
+int gpio_get_pin_direction(int pinnumber)
 {
     volatile int old_dir;
     old_dir = *(volatile int *)(GPIO_REG_PADDIR);
@@ -55,7 +55,7 @@ int get_gpio_pin_direction(int pinnumber)
     return old_dir;
 }
 
-void set_gpio_pin_value(int pinnumber, int value)
+void gpio_set_pin_value(int pinnumber, int value)
 {
     volatile int v;
     v = *(volatile int *)(GPIO_REG_PADOUT);
@@ -66,7 +66,7 @@ void set_gpio_pin_value(int pinnumber, int value)
     *(volatile int *)(GPIO_REG_PADOUT) = v;
 }
 
-int get_gpio_pin_value(int pinnumber)
+int gpio_get_pin_value(int pinnumber)
 {
     volatile int v;
     v = *(volatile int *)(GPIO_REG_PADIN);
@@ -74,22 +74,22 @@ int get_gpio_pin_value(int pinnumber)
     return v;
 }
 
-void set_gpio_pin_value_reverse(int pinnumber)
+void gpio_set_pin_value_reverse(int pinnumber)
 {
     static int last_value = 0;
     if (last_value)
     {
-        set_gpio_pin_value(pinnumber, 0);
+        gpio_set_pin_value(pinnumber, 0);
         last_value = 0;
     }
     else
     {
-        set_gpio_pin_value(pinnumber, 1);
+        gpio_set_pin_value(pinnumber, 1);
         last_value = 1;
     }
 }
 
-void set_gpio_pin_irq_en(int pinnumber, int enable)
+void gpio_set_pin_irq_en(int pinnumber, int enable)
 {
     int v;
     v = *(volatile int *)(GPIO_REG_INTEN);
@@ -100,7 +100,7 @@ void set_gpio_pin_irq_en(int pinnumber, int enable)
     *(volatile int *)(GPIO_REG_INTEN) = v;
 }
 
-void set_gpio_pin_irq_type(int pinnumber, int type)
+void gpio_set_pin_irq_type(int pinnumber, int type)
 {
     int type0;
     int type1;
@@ -122,7 +122,7 @@ void set_gpio_pin_irq_type(int pinnumber, int type)
     *(volatile int *)(GPIO_REG_INTTYPE1) = type1;
 }
 
-void set_gpio_pin_mux(GPIO_CFG_TypeDef *GPIO_CFG, GPIO_PIN pin, GPIO_FUNCTION func)
+void gpio_set_pin_mux(GPIO_CFG_TypeDef *GPIO_CFG, GPIO_PIN pin, GPIO_FUNCTION func)
 {
     CHECK_PARAM(PARAM_GPIO_CFG(GPIO_CFG));
     CHECK_PARAM(PARAM_GPIO_PIN(pin));
@@ -146,7 +146,7 @@ void set_gpio_pin_mux(GPIO_CFG_TypeDef *GPIO_CFG, GPIO_PIN pin, GPIO_FUNCTION fu
     }
 }
 
-GPIO_FUNCTION get_gpio_pin_mux(GPIO_CFG_TypeDef *GPIO_CFG, GPIO_PIN pin)
+GPIO_FUNCTION gpio_get_pin_mux(GPIO_CFG_TypeDef *GPIO_CFG, GPIO_PIN pin)
 {
     CHECK_PARAM(PARAM_GPIO_CFG(GPIO_CFG));
     CHECK_PARAM(PARAM_GPIO_PIN(pin));
@@ -165,7 +165,20 @@ GPIO_FUNCTION get_gpio_pin_mux(GPIO_CFG_TypeDef *GPIO_CFG, GPIO_PIN pin)
     }
 }
 
-void set_gpio_init(uint8_t pin_number, uint8_t en_func, uint8_t en_pullup)
+void gpio_set_pin_pupd(GPIO_CFG_TypeDef *GPIO_CFG, GPIO_PIN pin, GPIO_PUPD pupd)
+{
+    CHECK_PARAM(PARAM_GPIO_CFG(GPIO_CFG));
+    CHECK_PARAM(PARAM_GPIO_PIN(pin));
+    CHECK_PARAM(PARAM_GPIO_PUPD(pupd));
+
+    //set pin pupd
+    if(pupd == GPIO_PUPD_UP)
+        GPIO_CFG->PADCFG |= (1 << pin);
+    else
+        GPIO_CFG->PADCFG &= ~(1 << pin);
+}
+
+void gpio_set_init(uint8_t pin_number, uint8_t en_func, uint8_t en_pullup)
 {
     volatile GPIO_CFG_TypeDef *GPIO_CFG = (GPIO_CFG_TypeDef *)SOC_CTRL_BASE_ADDR;
     if (pin_number > 31)
@@ -186,7 +199,7 @@ void set_gpio_init(uint8_t pin_number, uint8_t en_func, uint8_t en_pullup)
         GPIO_CFG->PADCFG &= ~(1 << pin_number);
 }
 
-int get_gpio_irq_status()
+int gpio_get_irq_status()
 {
     return *(volatile int *)(GPIO_REG_INTSTATUS);
 }
@@ -195,9 +208,9 @@ int get_gpio_irq_status()
 void gpio_init(void)
 {
     int_enable();
-    set_gpio_pin_direction(PIN_NUMBER, GPIO_DIR_IN);
-    set_gpio_pin_irq_type(PIN_NUMBER, GPIO_IT_RISE_EDGE);
-    set_gpio_pin_irq_en(PIN_NUMBER, 1);
+    gpio_set_pin_direction(PIN_NUMBER, GPIO_DIR_IN);
+    gpio_set_pin_irq_type(PIN_NUMBER, GPIO_IT_RISE_EDGE);
+    gpio_set_pin_irq_en(PIN_NUMBER, 1);
 
     enable_event_iqr(GPIO_INT_ID);
     return;
@@ -206,7 +219,7 @@ void gpio_init(void)
 void gpio_deinit(void)
 {
     int_disable();
-    set_gpio_pin_irq_en(PIN_NUMBER, 0);
+    gpio_set_pin_irq_en(PIN_NUMBER, 0);
     disable_event_iqr(GPIO_INT_ID);
     return;
 }
@@ -229,21 +242,12 @@ void ISR_GPIO(void)
 }
 
 #define GPIO_8288_TO_8088_PIN_NUMBER 12
-void gpoi_8088_to_8288_init(void)
-{
-    // set_pin_function(GPIO_8288_TO_8088_PIN_NUMBER,1);
-    set_gpio_pin_direction(GPIO_8288_TO_8088_PIN_NUMBER, GPIO_DIR_OUT);
-    // set_gpio_pin_value(GPIO_8288_TO_8088_PIN_NUMBER,PIN_OUT_LOW);//first is low
-    set_gpio_pin_value(GPIO_8288_TO_8088_PIN_NUMBER, 0); //first is low
-}
 
-#ifndef TEST_SINGLE_MAIN
-// static u32_t g_gpio_record_count =0;
 void gpoi_8088_to_8288_change_value()
 {
-    set_gpio_pin_value(GPIO_8288_TO_8088_PIN_NUMBER, 1);
+    gpio_set_pin_value(GPIO_8288_TO_8088_PIN_NUMBER, 1);
     // rt_thread_mdelay(10);
-    set_gpio_pin_value(GPIO_8288_TO_8088_PIN_NUMBER, 0);
+    gpio_set_pin_value(GPIO_8288_TO_8088_PIN_NUMBER, 0);
 
     // u32_t count = os_getTimeStamp();
     // u32_t distance_count=0;
@@ -258,10 +262,3 @@ void gpoi_8088_to_8288_change_value()
     // g_gpio_record_count = count;
     // TRACE_PRINTF("<<<<<timerA dfe count [%u]\n",distance_count);
 }
-#else
-void gpoi_8088_to_8288_change_value(unsigned int test1, unsigned int test2)
-{
-    TRACE_PRINTF("<<<<<timer [%u]  [%u] \n", test1, test2);
-}
-
-#endif

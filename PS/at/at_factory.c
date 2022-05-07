@@ -7,10 +7,10 @@
 #include "uc_wiota_api.h"
 
 #ifdef UC8088_FACTORY_MODE
-enum factory_can_write_read_type
+enum factory_uart_write_read_type
 {
-    FACTORY_CAN_WRITE = 0,
-    FACTORY_CAN_READ,
+    FACTORY_UART_WRITE = 0,
+    FACTORY_UART_READ,
 };
 
 enum factory_command_type
@@ -22,15 +22,13 @@ enum factory_command_type
     FACTORY_DA = 4,
     FACTORY_UART1 = 5,
     FACTORY_PWM = 6,
-    FACTORY_CAN = 7
 };
 
 #define DAC_DEV_NAME "dac"
 #define ADC_DEV_NAME "adc"
 #define AHT10_I2C_BUS_NAME "hw_i2c"
 #define UART1_DEV_NMAE "uart1"
-#define PWM_DEV_NAME "pwm0"
-#define CAN_DEV_NAME "can1"
+#define PWM_DEV_NAME "pwm2"
 #define AT24C02_ADDR 0xA0
 
 static rt_err_t write_reg(struct rt_i2c_bus_device *bus, rt_uint8_t reg, rt_uint8_t *data)
@@ -83,7 +81,7 @@ static rt_err_t read_regs(struct rt_i2c_bus_device *bus, rt_uint8_t len, rt_uint
     }
 }
 
-static int at_test_i2c(void)
+static int at_factory_test_i2c(void)
 {
     rt_device_t dev;
     unsigned char set_data[4] = {1, 2, 3, 4};
@@ -111,7 +109,6 @@ static int at_test_i2c(void)
 
     for (num = 0; num < 4; num++)
     {
-        at_server_printfln("i2c get %d\n", get_data[num]);
         if (set_data[num] != get_data[num])
         {
             at_server_printfln("i2c data match fail. num=%d, %d!= %d\n", num, set_data[num], get_data[num]);
@@ -122,7 +119,7 @@ static int at_test_i2c(void)
     return 0;
 }
 
-static int at_test_ad(unsigned int channel)
+static int at_factory_test_ad(unsigned int channel)
 {
     rt_adc_device_t adc_dev;
     rt_uint32_t value;
@@ -135,14 +132,13 @@ static int at_test_ad(unsigned int channel)
     }
 
     rt_adc_enable(adc_dev, channel);
-
     value = rt_adc_read(adc_dev, channel);
     rt_adc_disable(adc_dev, channel);
 
     return value;
 }
 
-static int at_test_da(unsigned int channel, unsigned int value)
+static int at_factory_test_da(unsigned int channel, unsigned int value)
 {
     rt_dac_device_t dac_dev;
 
@@ -162,15 +158,18 @@ static int at_test_da(unsigned int channel, unsigned int value)
     return 0;
 }
 
-static int at_factory_test_uart1(void)
+static int at_factory_test_uart1(int cmd)
 {
     static rt_device_t serial;
     unsigned char send_data[4] = {"1234"};
     unsigned char recv_data[4] = {0};
 
     serial = rt_device_find(UART1_DEV_NMAE);
-    if (serial)
+    if (!serial)
+    {
+        rt_kprintf("uart1 find fail\n");
         return 1;
+    }
 
     if (RT_EOK != rt_device_open(serial, RT_DEVICE_OFLAG_RDWR))
     {
@@ -191,77 +190,20 @@ static int at_factory_test_uart1(void)
     return rt_strcmp((const char *)send_data, (const char *)recv_data);
 }
 
-static int at_factory_test_pwm(int channel, unsigned int period)
+static int at_factory_test_pwm(unsigned int period, unsigned int pulse)
 {
     struct rt_device_pwm *pwm_dev;
 
     pwm_dev = (struct rt_device_pwm *)rt_device_find(PWM_DEV_NAME);
     if (RT_NULL == pwm_dev)
     {
+        rt_kprintf("find %s failed!\n", PWM_DEV_NAME);
         return 1;
     }
 
-    rt_pwm_set(pwm_dev, channel, period, 0);
-    rt_pwm_enable(pwm_dev, channel);
-    rt_pwm_disable(pwm_dev, channel);
-
-    return 0;
-}
-
-static int at_factory_test_can(int type, void *data)
-{
-    static rt_device_t can_dev;
-    struct rt_can_msg msg = {0};
-    rt_err_t res;
-    rt_size_t size;
-
-    can_dev = rt_device_find(CAN_DEV_NAME);
-    if (RT_NULL == can_dev)
-    {
-        rt_kprintf("find %s failed!\n", CAN_DEV_NAME);
-        return 1;
-    }
-    res = rt_device_open(can_dev, RT_DEVICE_FLAG_INT_TX | RT_DEVICE_FLAG_INT_RX);
-    if (res != RT_EOK)
-    {
-        rt_kprintf("open %s failed!\n", CAN_DEV_NAME);
-        return 2;
-    }
-
-    if (type == FACTORY_CAN_WRITE)
-    {
-        msg.id = 0x78;
-        msg.ide = RT_CAN_STDID;
-        msg.rtr = RT_CAN_DTR;
-        msg.len = 8;
-
-        msg.data[0] = 0x00;
-        msg.data[1] = 0x11;
-        msg.data[2] = 0x22;
-        msg.data[3] = 0x33;
-        msg.data[4] = 0x44;
-        msg.data[5] = 0x55;
-        msg.data[6] = 0x66;
-        msg.data[7] = 0x77;
-
-        size = rt_device_write(can_dev, 0, &msg, sizeof(msg.data));
-        if (size == 0)
-        {
-            return 2;
-        }
-    }
-    else if (type == FACTORY_CAN_READ)
-    {
-        int len = 0;
-        //rxmsg.hdr = -1;
-        rt_device_read(can_dev, 0, data, 8);
-        rt_kprintf("recv data:");
-        for (len = 0; len < 8; len++)
-        {
-            rt_kprintf("%x", *((int *)(data + len)));
-        }
-        rt_kprintf("\n");
-    }
+    rt_pwm_enable(pwm_dev, 1);
+    rt_pwm_set(pwm_dev, 1, period, pulse);
+    // rt_pwm_disable(pwm_dev, channel);
 
     return 0;
 }
@@ -302,12 +244,13 @@ static at_result_t at_factory_setup(const char *args)
         rt_base_t pin = data;
         rt_base_t value = data1 & 0x1;
 
+        rt_pin_mode(pin, 0);
         rt_pin_write(pin, value);
         break;
     }
     case FACTORY_I2C:
     {
-        if (at_test_i2c())
+        if (at_factory_test_i2c())
         {
             return AT_RESULT_FAILE;
         }
@@ -316,10 +259,11 @@ static at_result_t at_factory_setup(const char *args)
     case FACTORY_AD:
     {
         unsigned int ch = data;
-        int result = at_test_ad(ch);
+
+        int result = at_factory_test_ad(ch);
         if (result < 0)
         {
-            return AT_RESULT_NULL;
+            return AT_RESULT_FAILE;
         }
         at_server_printfln("+FACTORY=%d,%d", type, result);
         break;
@@ -328,49 +272,35 @@ static at_result_t at_factory_setup(const char *args)
     {
         unsigned int ch = data;
         unsigned int val = data1;
-        if (at_test_da(ch, val) < 0)
+
+        if (at_factory_test_da(ch, val) < 0)
         {
-            return AT_RESULT_NULL;
+            return AT_RESULT_FAILE;
         }
         break;
     }
     case FACTORY_UART1:
     {
-        if (at_factory_test_uart1())
+        int cmd = data;
+        if (0 != at_factory_test_uart1(cmd))
         {
-            return AT_RESULT_NULL;
+            return AT_RESULT_FAILE;
         }
         break;
     }
     case FACTORY_PWM:
     {
-        int channel = data;
-        unsigned int period = data1;
+        unsigned int period = data;
+        unsigned int pulse = data1;
 
-        if (at_factory_test_pwm(channel, period))
+        if (at_factory_test_pwm(period, pulse))
         {
-            return AT_RESULT_NULL;
+            return AT_RESULT_FAILE;
         }
-        break;
-    }
-    case FACTORY_CAN:
-    {
-        char recv[8] = {0};
-        if (at_factory_test_can(data, recv))
-        {
-            return AT_RESULT_NULL;
-        }
-
-        if (data == FACTORY_CAN_READ)
-        {
-            at_server_printf("+FACTORY=%d,", type);
-            at_send_data(recv, sizeof(recv) / sizeof(recv[0]));
-        }
-
         break;
     }
     default:
-        return AT_RESULT_REPETITIVE_FAILE;
+        return AT_RESULT_CMD_ERR;
     }
     return AT_RESULT_OK;
 }

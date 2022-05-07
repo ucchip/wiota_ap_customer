@@ -108,7 +108,7 @@ static rt_err_t usart_configure(struct rt_serial_device *serial, struct serial_c
     uart->uc_uart_cfg.Baud_rate     = cfg->baud_rate;
     uart->uc_uart_cfg.Reset     = RESET_LOW;
     uart->uc_uart_cfg.level     = BYTE_1;
-    
+
     switch (cfg->data_bits)
     {
     case DATA_BITS_5:
@@ -174,18 +174,18 @@ static rt_err_t usart_control(struct rt_serial_device *serial, int cmd, void *ar
         /* disable rx irq */
         uc_uart_enable_intrx(uart->handle, 0);
         /* disable interrupt */
-        IER &= ~(uart->config->irq_type); 
+        IER &= ~(uart->config->irq_type);
         break;
-        
+
     /* enable interrupt */
     case RT_DEVICE_CTRL_SET_INT:
         /* enable rx irq */
         uc_uart_enable_intrx(uart->handle, 1);
         /* enable interrupt */
-        IER |= uart->config->irq_type; 
+        IER |= uart->config->irq_type;
         break;
     }
-    
+
     return RT_EOK;
 }
 
@@ -195,7 +195,7 @@ static int usart_putc(struct rt_serial_device *serial, char c)
     RT_ASSERT(serial != RT_NULL);
 
     uart = rt_container_of(serial, struct uc8088_uart, serial);
-    
+
     uc_uart_sendchar(uart->handle, c);
 
     return 0;
@@ -206,7 +206,7 @@ static int usart_getc(struct rt_serial_device *serial)
 	rt_uint8_t val = -1;
     struct uc8088_uart *uart;
     char ret_val = -1;
-    
+
     RT_ASSERT(serial != RT_NULL);
     uart = rt_container_of(serial, struct uc8088_uart, serial);
 
@@ -248,7 +248,7 @@ void usart_handler(void)
         }
 #endif
     }
-        
+
     if (IPR & (1 << 24))
     {
         ICP |= (1 << 24);
@@ -274,7 +274,7 @@ int rt_hw_usart_init(void)
         uart_obj[i].serial.ops    = &uc8088_uart_ops;
         uart_obj[i].serial.config = config;
         /* register UART device */
-        result = rt_hw_serial_register(&uart_obj[i].serial, 
+        result = rt_hw_serial_register(&uart_obj[i].serial,
                                         uart_obj[i].config->name,
                                        RT_DEVICE_FLAG_STREAM
                                        | RT_DEVICE_FLAG_RDWR
@@ -292,7 +292,7 @@ static rt_err_t virtual_usart_configure(struct rt_serial_device *serial, struct 
 }
 
 static rt_err_t virtual_usart_control(struct rt_serial_device *serial, int cmd, void *arg)
-{    
+{
     return RT_EOK;
 }
 
@@ -328,7 +328,7 @@ static struct rt_serial_device virtual_usart_serial =
 
 int virtual_usart_init(void)
 {
-    rt_hw_serial_register(&virtual_usart_serial, 
+    rt_hw_serial_register(&virtual_usart_serial,
                                         "uartx",
                                        RT_DEVICE_FLAG_STREAM
                                        | RT_DEVICE_FLAG_RDWR

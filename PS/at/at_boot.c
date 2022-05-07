@@ -7,8 +7,9 @@
 #include "ati_prs.h"
 #include "uc_boot_uart.h"
 #include "uc_boot_download.h"
+#ifdef _WATCHDOG_APP_
 #include "uc_watchdog_app.h"
-
+#endif
 //static at_result_t at_ymodem_exec(void)
 //{
 //    boot_set_modem(BOOT_SHARE_ENTER_DOWNLOAD);
@@ -56,11 +57,11 @@ static at_result_t at_ymodem_setup(const char *args)
         watchdog_app_disable();
 #endif
         at_server_printfln("OK\n");
-        
+
         boot_uart_wait_tx_done();
         rt_hw_interrupt_disable();
 
-        boot_riscv_reboot();        
+        boot_riscv_reboot();
     }
 
     return ret;

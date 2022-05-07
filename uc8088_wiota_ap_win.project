@@ -55,9 +55,6 @@
     </VirtualDirectory>
     <VirtualDirectory Name="components">
       <VirtualDirectory Name="drivers">
-        <VirtualDirectory Name="can">
-          <File Name="rt-thread/components/drivers/can/can.c"/>
-        </VirtualDirectory>
         <VirtualDirectory Name="i2c">
           <File Name="rt-thread/components/drivers/i2c/i2c_dev.c"/>
           <File Name="rt-thread/components/drivers/i2c/i2c_core.c"/>
@@ -219,8 +216,6 @@
       <File Name="libraries/HAL_Drivers/drv_wdt.c"/>
       <File Name="libraries/HAL_Drivers/SConscript"/>
       <File Name="libraries/HAL_Drivers/drv_adc.c"/>
-      <File Name="libraries/HAL_Drivers/drv_can.c"/>
-      <File Name="libraries/HAL_Drivers/drv_can.h"/>
       <File Name="libraries/HAL_Drivers/drv_dac.c"/>
       <File Name="libraries/HAL_Drivers/drv_gpio.c"/>
       <File Name="libraries/HAL_Drivers/drv_hw_i2c.c"/>
@@ -230,7 +225,6 @@
     </VirtualDirectory>
     <VirtualDirectory Name="UC8088_HAL_Driver">
       <VirtualDirectory Name="inc">
-        <File Name="libraries/UC8088_HAL_Driver/inc/uc_can.h"/>
         <File Name="libraries/UC8088_HAL_Driver/inc/gpio.h"/>
         <File Name="libraries/UC8088_HAL_Driver/inc/pulpino.h"/>
         <File Name="libraries/UC8088_HAL_Driver/inc/spim.h"/>
@@ -251,7 +245,6 @@
         <File Name="libraries/UC8088_HAL_Driver/inc/uc_adda.h"/>
       </VirtualDirectory>
       <VirtualDirectory Name="src">
-        <File Name="libraries/UC8088_HAL_Driver/src/uc_can.c"/>
         <File Name="libraries/UC8088_HAL_Driver/src/uc_adda.c"/>
         <File Name="libraries/UC8088_HAL_Driver/src/gpio.c"/>
         <File Name="libraries/UC8088_HAL_Driver/src/spim.c"/>
@@ -330,7 +323,7 @@
       <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
         <![CDATA[]]>
       </Environment>
-      <Debugger IsRemote="yes" RemoteHostName="127.0.0.1" RemoteHostPort="2331" DebuggerPath="" IsExtended="no">
+      <Debugger IsRemote="yes" RemoteHostName="127.0.0.1" RemoteHostPort="2331" DebuggerPath="..\..\Program Files (x86)\UCCHIP_IDE\riscv-gnu-toolchain\bin\riscv32-unknown-elf-gdb.exe" IsExtended="no">
         <DebuggerSearchPaths/>
         <PostConnectCommands>monitor reset
 monitor halt

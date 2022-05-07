@@ -119,7 +119,7 @@ static at_result_t at_uart_query(void)
 {
     struct rt_serial_device *serial = (struct rt_serial_device *)at_get_server()->device;
 
-    at_server_printfln("AT+UART=%d,%d,%d,%d,%d", serial->config.baud_rate, serial->config.data_bits,
+    at_server_printfln("+UART=%d,%d,%d,%d,%d", serial->config.baud_rate, serial->config.data_bits,
                        serial->config.stop_bits, serial->config.parity, 1);
 
     return AT_RESULT_OK;

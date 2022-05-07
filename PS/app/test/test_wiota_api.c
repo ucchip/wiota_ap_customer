@@ -57,7 +57,7 @@ void test_show_recv_data(u32_t user_id, u8_t *recv_data, u32_t data_len, u8_t ty
 {
     //    u8_t *fake_data = NULL;
 
-    rt_kprintf("user_id 0x%x, reportData ", user_id);
+    rt_kprintf("user_id 0x%x, type %d, reportData ", user_id, type);
     for (u16_t index = 0; index < data_len; index++)
     {
         rt_kprintf("%u ", *recv_data++);
@@ -83,7 +83,7 @@ void test_set_all_para(void)
     sub_system_config_t config = {0};
     // get config first
     uc_wiota_get_system_config(&config);
-    config.ap_max_power = 24;
+    config.symbol_length = 3;
     // set config
     uc_wiota_set_system_config(&config);
 }
@@ -115,7 +115,7 @@ void test_handle_scan_freq(void)
     // uc_wiota_set_frequency_point(fPoint[0]/* fPoint[x] */);
     rt_free(scan_info.data); // !!!need be manually released after use
     scan_info.data = NULL;
-    g_freqPoint = fPoint[10];
+    g_freqPoint = fPoint[12];
     is_need_to_restart = TRUE;
 }
 
@@ -160,7 +160,8 @@ void test_send_normal_data(void)
     u16_t conNum, disConNum;
 
     iote_info_t *conNode = uc_wiota_get_iote_info(&conNum, &disConNum);
-    u8_t *fake_data = generate_fake_data(120, 10);
+    // u8_t *fake_data = generate_fake_data(8, 10);
+    u8_t fake_data[17] = {"Hello WIoTa IoTe"};
 
     while (conNode != NULL)
     {
@@ -168,26 +169,27 @@ void test_send_normal_data(void)
         if (conNode->iote_status == STATUS_CONNECTED)
         {
             u32_t user_id = conNode->user_id;
-            if (UC_OP_SUCC == uc_wiota_send_data(fake_data, 120, &user_id, 1, 10000, test_show_result))
+            if (UC_OP_SUCC == uc_wiota_send_data(fake_data, 16, &user_id, 1, 10000, RT_NULL))
             {
-                rt_kprintf("send data to 0x%x suc!", user_id);
+                rt_kprintf("send data to 0x%x suc!\n", user_id);
             }
             else
             {
-                rt_kprintf("send data to 0x%x failed!", user_id);
+                rt_kprintf("send data to 0x%x failed!\n", user_id);
             }
         }
+
         // paging
         else if (conNode->iote_status == STATUS_DISCONNECTED)
         {
             u32_t user_id = conNode->user_id;
-            if (UC_OP_SUCC == uc_wiota_send_data(fake_data, 120, &user_id, 1, 10000, test_show_result))
+            if (UC_OP_SUCC == uc_wiota_send_data(fake_data, 16, &user_id, 1, 10000, RT_NULL))
             {
-                rt_kprintf("send data to 0x%x suc!", user_id);
+                rt_kprintf("send data to 0x%x suc!\n", user_id);
             }
             else
             {
-                rt_kprintf("send data to 0x%x failed!", user_id);
+                rt_kprintf("send data to 0x%x failed!\n", user_id);
             }
         }
         else
@@ -197,8 +199,8 @@ void test_send_normal_data(void)
         conNode = conNode->next;
     }
 
-    rt_free(fake_data);
-    fake_data = NULL;
+    // rt_free(fake_data);
+    // fake_data = NULL;
 }
 
 // test! send normal/ota broadcast data
@@ -212,8 +214,9 @@ void test_send_broadcast_data(broadcast_mode_e mode)
 
     if (NORMAL_BROADCAST == mode)
     {
-        testData = generate_fake_data(50, 10);
-        uc_wiota_send_broadcast_data(testData, 50, mode, timeout, NULL);
+        // testData = generate_fake_data(10, 10);
+        u8_t bcData[10] = {"AP ready!"};
+        uc_wiota_send_broadcast_data(bcData, 9, mode, timeout, NULL);
     }
     else if (OTA_BROADCAST == mode)
     {
@@ -243,17 +246,16 @@ void test_send_broadcast_data(broadcast_mode_e mode)
                 }
             }
         }
+        rt_free(testData); // !!!need be manually released after use
+        testData = NULL;
+        rt_free(tempData);
+        tempData = NULL;
     }
     else
     {
         rt_kprintf("test_send_broadcast_data invalid mode %u\n", mode);
         return;
     }
-
-    rt_free(testData); // !!!need be manually released after use
-    testData = NULL;
-    rt_free(tempData);
-    testData = NULL;
 }
 
 // test! query iote infomation
@@ -346,10 +348,10 @@ void test_wiota_exit_and_restart(void)
         test_set_frequency_point();
 
         // test! set/get connection timeout after wiota init, before wiota start
-        test_set_connection_timeout();
+        // test_set_connection_timeout();
 
         // test! set all dynamic parameter after wiota init, before wiota start
-        // test_set_all_para();
+        test_set_all_para();
 
         uc_wiota_run();
     }
@@ -360,21 +362,25 @@ void app_interface_main_task(void *pPara)
     // wiota init
     uc_wiota_init();
 
+    uc_wiota_set_freq_info(145);
+
+    test_set_all_para();
+
     // wiota start
     uc_wiota_run();
 
     // test! scan frequency point collection, after wiota start
-    test_handle_scan_freq();
+    // test_handle_scan_freq();
 
     // test! wiota exit and restart
-    if (is_need_to_restart)
-    {
-        test_wiota_exit_and_restart();
-        is_need_to_restart = FALSE;
-    }
+    // if (is_need_to_restart)
+    // {
+    //     test_wiota_exit_and_restart();
+    //     is_need_to_restart = FALSE;
+    // }
 
     // test! set hopping freq
-    test_set_hopping_freq();
+    // test_set_hopping_freq();
 
     // test! register callback after wiota start or init
     test_register_callback();
@@ -394,19 +400,21 @@ void app_interface_main_task(void *pPara)
     while (1)
     {
         // test! send normal/ota broadcast data after wiota start
-        // test_send_broadcast_data(NORMAL_BROADCAST);
+        test_send_broadcast_data(NORMAL_BROADCAST);
         // test_send_broadcast_data(OTA_BROADCAST);
+
+        rt_thread_mdelay(4000);
 
         // test! send normal data to iote
         test_send_normal_data();
 
         // test! query iote information after wiota start
-        test_query_iote_info();
+        // test_query_iote_info();
 
         // test! read temperature of ap8288
-        test_read_temp();
+        // test_read_temp();
 
-        rt_thread_mdelay(10000);
+        rt_thread_mdelay(2000);
     }
     return;
 }

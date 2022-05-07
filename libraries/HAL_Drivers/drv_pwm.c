@@ -1,74 +1,229 @@
 
 #include <board.h>
-#include<rtthread.h>
-#include<rtdevice.h>
+#include <rtthread.h>
+#include <rtdevice.h>
 
 #ifdef RT_USING_PWM
 //#include "drv_config.h"
 
 //#define DRV_DEBUG
-#define LOG_TAG             "drv.pwm"
+#define LOG_TAG "drv.pwm"
 #include <drv_log.h>
 
 #include "uc_pwm.h"
+#include "gpio.h"
 
+enum
+{
+#ifdef BSP_USING_PWM0
+    PWM0_INDEX,
+#endif
+#ifdef BSP_USING_PWM1
+    PWM1_INDEX,
+#endif
+#ifdef BSP_USING_PWM2
+    PWM2_INDEX,
+#endif
+#ifdef BSP_USING_PWM3
+    PWM3_INDEX,
+#endif
+};
 
-struct rt_device_pwm pwm_device;
-static uint32_t pwm_count = 0;
-static uint32_t pwm_duty = 0;
+#ifdef BSP_USING_PWM0
+#ifndef PWM0_CONFIG
+#define PWM0_CONFIG            \
+    {                          \
+        .pwm_handle = UC_PWM0, \
+        .name = "pwm0",        \
+    }
+#endif /* PWM0_CONFIG */
+#endif /* BSP_USING_PWM0 */
+
+#ifdef BSP_USING_PWM1
+#ifndef PWM1_CONFIG
+#define PWM1_CONFIG            \
+    {                          \
+        .pwm_handle = UC_PWM1, \
+        .name = "pwm1",        \
+    }
+#endif /* PWM1_CONFIG */
+#endif /* BSP_USING_PWM1 */
+
+#ifdef BSP_USING_PWM2
+#ifndef PWM2_CONFIG
+#define PWM2_CONFIG            \
+    {                          \
+        .pwm_handle = UC_PWM2, \
+        .name = "pwm2",        \
+    }
+#endif /* PWM2_CONFIG */
+#endif /* BSP_USING_PWM2 */
+
+#ifdef BSP_USING_PWM3
+#ifndef PWM3_CONFIG
+#define PWM3_CONFIG            \
+    {                          \
+        .pwm_handle = UC_PWM3, \
+        .name = "pwm3",        \
+    }
+#endif /* PWM3_CONFIG */
+#endif /* BSP_USING_PWM3 */
+
+struct uc8x88_pwm
+{
+    struct rt_device_pwm pwm_device;
+    PWM_TypeDef *pwm_handle;
+    rt_uint8_t channel;
+    char *name;
+};
+
+static struct uc8x88_pwm uc8088_pwm_obj[] =
+    {
+#ifdef BSP_USING_PWM0
+        PWM0_CONFIG,
+#endif
+
+#ifdef BSP_USING_PWM1
+        PWM1_CONFIG,
+#endif
+
+#ifdef BSP_USING_PWM2
+        PWM2_CONFIG,
+#endif
+
+#ifdef BSP_USING_PWM3
+        PWM3_CONFIG,
+#endif
+};
+
+static rt_err_t drv_pwm_control(struct rt_device_pwm *device, int cmd, void *arg);
+static struct rt_pwm_ops drv_ops =
+    {
+        drv_pwm_control};
+
+static rt_err_t drv_pwm_enable(PWM_TypeDef *hpwm, struct rt_pwm_configuration *configuration, rt_bool_t enable)
+{
+    if (enable)
+    {
+        pwm_enable(hpwm);
+    }
+    else
+    {
+        pwm_disable(hpwm);
+    }
+
+    return RT_EOK;
+}
+
+static rt_err_t drv_pwm_get(PWM_TypeDef *hpwm, struct rt_pwm_configuration *configuration)
+{
+    uint32_t pwm_count = 0;
+    uint32_t pwm_duty = 0;
+
+    pwm_count = pwm_get_period(hpwm);
+    pwm_duty = pwm_get_duty(hpwm);
+    configuration->period = pwm_count;
+    configuration->pulse = pwm_duty;
+
+    return RT_EOK;
+}
+
+static rt_err_t drv_pwm_set(PWM_TypeDef *hpwm, struct rt_pwm_configuration *configuration)
+{
+    uint32_t pwm_count = 0;
+    uint32_t pwm_duty = 0;
+
+    pwm_count = configuration->period;
+    pwm_duty = configuration->pulse;
+    pwm_set_period(hpwm, pwm_count);
+    pwm_set_duty(hpwm, pwm_duty);
+
+    return RT_EOK;
+}
 
 static rt_err_t drv_pwm_control(struct rt_device_pwm *device, int cmd, void *arg)
 {
-    rt_err_t result = RT_EOK;
     struct rt_pwm_configuration *configuration = (struct rt_pwm_configuration *)arg;
-
+    PWM_TypeDef *hpwm = (PWM_TypeDef *)device->parent.user_data;
+    rt_kprintf("drv_pwm_enable %d,%d,%d,%d\n", cmd, configuration->channel, configuration->period, configuration->pulse);
     switch (cmd)
     {
-    case PWM_CMD_ENABLE:        
-        pwm_enable(UC_PWM);
-        break;
-    
-    case PWM_CMD_DISABLE:    
-        pwm_disable(UC_PWM);
-        break;
-    
+    case PWM_CMD_ENABLE:
+        return drv_pwm_enable(hpwm, configuration, RT_TRUE);
+    case PWM_CMD_DISABLE:
+        return drv_pwm_enable(hpwm, configuration, RT_FALSE);
     case PWM_CMD_SET:
-        pwm_count = configuration->period;
-        pwm_duty = configuration->pulse;
-        set_pwm_cnt_max(UC_PWM, pwm_count);
-        set_pwm_duty(UC_PWM, pwm_duty);
-        break;
-        
+        return drv_pwm_set(hpwm, configuration);
     case PWM_CMD_GET:
-        configuration->period = pwm_count;
-        configuration->pulse = pwm_duty;
-        break;
-        
+        return drv_pwm_get(hpwm, configuration);
     default:
-        result = RT_EINVAL;
-        break;
+        return RT_EINVAL;
+    }
+}
+
+static rt_err_t uc8088_hw_pwm_init(struct uc8x88_pwm *device)
+{
+    rt_err_t result = RT_EOK;
+    PWM_TypeDef *pwm = RT_NULL;
+
+    RT_ASSERT(device != RT_NULL);
+
+    pwm = (PWM_TypeDef *)device->pwm_handle;
+
+    if (pwm == UC_PWM0)
+    {
+        gpio_set_pin_mux(UC_GPIO_CFG, GPIO_PIN_26, GPIO_FUNC_1);
+    }
+    else if (pwm == UC_PWM1)
+    {
+        gpio_set_pin_mux(UC_GPIO_CFG, GPIO_PIN_27, GPIO_FUNC_1);
+    }
+    else if (pwm == UC_PWM2)
+    {
+        rt_kprintf("gpio_set_pin_mux 28\n");
+        gpio_set_pin_mux(UC_GPIO_CFG, GPIO_PIN_28, GPIO_FUNC_1);
+    }
+    else if (pwm == UC_PWM3)
+    {
+        gpio_set_pin_mux(UC_GPIO_CFG, GPIO_PIN_29, GPIO_FUNC_1);
     }
 
     return result;
 }
 
-static struct rt_pwm_ops drv_ops =
+static int uc8088_pwm_init(void)
 {
-    drv_pwm_control
-};
+    int i = 0;
+    int result = RT_EOK;
 
-int rt_hw_pwm_init(void)
-{    
-    rt_err_t result;
-    result = rt_device_pwm_register(&pwm_device, "pwm", &drv_ops, RT_NULL);
-    if (result != RT_EOK)
+    for (i = 0; i < sizeof(uc8088_pwm_obj) / sizeof(uc8088_pwm_obj[0]); i++)
     {
-        LOG_E("pwm register err code: %d", result);
-        return result;
-    }
-    LOG_D("pwm init success");
-    return RT_EOK;
-}
-//INIT_DEVICE_EXPORT(rt_hw_pwm_init);
-#endif /* RT_USING_PWM */
+        /* pwm init */
+        if (uc8088_hw_pwm_init(&uc8088_pwm_obj[i]) != RT_EOK)
+        {
+            LOG_E("%s init failed", uc8088_pwm_obj[i].name);
+            result = -RT_ERROR;
+            goto __exit;
+        }
+        else
+        {
+            LOG_D("%s init success", uc8088_pwm_obj[i].name);
 
+            /* register pwm device */
+            if (rt_device_pwm_register(&uc8088_pwm_obj[i].pwm_device, uc8088_pwm_obj[i].name, &drv_ops, uc8088_pwm_obj[i].pwm_handle) == RT_EOK)
+            {
+                LOG_D("%s register success", uc8088_pwm_obj[i].name);
+            }
+            else
+            {
+                LOG_E("%s register failed", uc8088_pwm_obj[i].name);
+                result = -RT_ERROR;
+            }
+        }
+    }
+
+__exit:
+    return result;
+}
+INIT_DEVICE_EXPORT(uc8088_pwm_init);
+#endif /* RT_USING_PWM */

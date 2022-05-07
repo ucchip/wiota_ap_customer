@@ -7,24 +7,42 @@ cwd = GetCurrentDir()
 path = [cwd + '/inc']
 
 src = Split('''
-src/gpio.c
 src/spim.c
-src/uc_adda.c
+src/uc_spi.c
+src/uc_spi_flash.c
 src/uc_boot_strap.c
 src/uc_exceptions.c
-src/uc_i2c.c
 src/uc_int.c
-src/uc_pwm.c
-src/uc_rtc.c
-src/uc_spi_flash.c
-src/uc_spi.c
 src/uc_string.c
-src/uc_timer.c
-src/uc_uart.c
-src/uc_uartx.c
 src/uc_utils.c
-src/uc_watchdog.c
 ''')
+
+if GetDepend(['RT_USING_PIN']):
+    src += ['src/gpio.c']
+
+if GetDepend(['RT_USING_SERIAL']):
+    src += ['src/uc_uart.c']
+
+if GetDepend(['RT_USING_HWTIMER']):
+    src += ['src/uc_timer.c']
+
+if GetDepend(['RT_USING_PWM']):
+    src += ['src/uc_pwm.c']
+
+if GetDepend(['RT_USING_ADC','RT_USING_DAC']):
+    src += Glob('src/uc_adda.c')
+
+if GetDepend('RT_USING_RTC'):
+    src += ['src/uc_rtc.c']
+
+if GetDepend(['RT_USING_WDT']):
+    src += ['src/uc_watchdog.c']
+
+if GetDepend(['RT_USING_I2C']):
+    src += ['src/uc_i2c.c']
+
+if GetDepend(['RT_USING_I2C', 'RT_USING_I2C_BITOPS']):
+    src += ['drv_soft_i2c.c']
 
 group = DefineGroup('UC8088_HAL_Drivers', src, depend = [''], CPPPATH = path)
 

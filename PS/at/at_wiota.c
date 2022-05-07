@@ -848,15 +848,12 @@ static at_result_t at_scan_freq_setup(const char *args)
         uc_wiota_scan_freq(freq_arry, freq_num, timeout, NULL, &scan_info);
         if (UC_OP_SUCC == scan_info.result)
         {
-            uc_scan_freq_t *freqList = (uc_scan_freq_t *)scan_info.data;
+            uc_scan_freq_t *freq_list = (uc_scan_freq_t *)scan_info.data;
             at_server_printfln("+WIOTASCANFREQ:");
             for (u8_t idx = 0; idx < (scan_info.data_len / sizeof(uc_scan_freq_t)); idx++)
             {
-#ifdef WIOTA_RECORD_TEST
-                // rt_kprintf(";$;%d,%u,%d,%d,%d;$;\n", RECORD_SCANFREQ, freqList->freq_idx, freqList->snr, freqList->rssi, freqList->is_synced);
-#endif
-                at_server_printfln("%u,%d,%d,%d", freqList->freq_idx, freqList->rssi, freqList->snr, freqList->is_synced);
-                freqList++;
+                at_server_printfln("freq_idx=%u, snr=%d, rssi=%d, is_synced=%d", freq_list->freq_idx, freq_list->snr, freq_list->rssi, freq_list->is_synced);
+                freq_list++;
             }
 
             ret = AT_RESULT_OK;
@@ -923,7 +920,7 @@ static at_result_t at_scan_freq_exec(void)
     return ret;
 }
 
-static at_result_t at_read_temp_exec(void)
+static at_result_t at_read_temp_query(void)
 {
     uc_temp_recv_t read_temp = {0};
 
@@ -966,7 +963,21 @@ static at_result_t at_rf_power_setup(const char *args)
     return AT_RESULT_OK;
 }
 
-static at_result_t at_version_exec(void)
+static at_result_t at_rf_power_query(void)
+{
+    if (wiota_state != AT_WIOTA_RUN)
+    {
+        at_server_printfln("please run wiota first");
+        return AT_RESULT_REPETITIVE_FAILE;
+    }
+    sub_system_config_t config = {0};
+    uc_wiota_get_system_config(&config);
+
+    at_server_printfln("+WIOTAPOW:%d", config.ap_max_power);
+    return AT_RESULT_OK;
+}
+
+static at_result_t at_version_query(void)
 {
     u8_t wiota_version_8088[15] = {0};
     u8_t git_info_8088[36] = {0};
@@ -1913,9 +1924,9 @@ AT_CMD_EXPORT("AT+WIOTAIOTEINFO", RT_NULL, RT_NULL, at_iote_info_query, RT_NULL,
 AT_CMD_EXPORT("AT+WIOTABC", "=<len>,<mode>,<timeout>", RT_NULL, RT_NULL, at_broadcast_setup, RT_NULL);
 AT_CMD_EXPORT("AT+WIOTASEND", "=<len>,<user_id>,<user_id_num>,<timeout>", RT_NULL, RT_NULL, at_send_data_setup, RT_NULL);
 AT_CMD_EXPORT("AT+WIOTASCANFREQ", "=<timeout>,<data_len>,<freq_num>", RT_NULL, RT_NULL, at_scan_freq_setup, at_scan_freq_exec);
-AT_CMD_EXPORT("AT+WIOTATEMP", RT_NULL, RT_NULL, RT_NULL, RT_NULL, at_read_temp_exec);
-AT_CMD_EXPORT("AT+WIOTAPOW", "=<power>", RT_NULL, RT_NULL, at_rf_power_setup, RT_NULL);
-AT_CMD_EXPORT("AT+WIOTAVERSION", RT_NULL, RT_NULL, RT_NULL, RT_NULL, at_version_exec);
+AT_CMD_EXPORT("AT+WIOTATEMP", RT_NULL, RT_NULL, at_read_temp_query, RT_NULL, RT_NULL);
+AT_CMD_EXPORT("AT+WIOTAPOW", "=<power>", RT_NULL, at_rf_power_query, at_rf_power_setup, RT_NULL);
+AT_CMD_EXPORT("AT+WIOTAVERSION", RT_NULL, RT_NULL, at_version_query, RT_NULL, RT_NULL);
 AT_CMD_EXPORT("AT+WIOTAHOPPING", "=<type>,<value>", RT_NULL, RT_NULL, at_hopping_setup, RT_NULL);
 AT_CMD_EXPORT("AT+WIOTAIOTENUM", "=<max_num>", RT_NULL, RT_NULL, at_max_iote_num_setup, RT_NULL);
 AT_CMD_EXPORT("AT+WIOTABCMCS", "=<bc_mcs>", RT_NULL, RT_NULL, at_bc_mcs_setup, RT_NULL);
