@@ -63,7 +63,6 @@ if PLATFORM == 'gcc':
     #    CFLAGS += ' -O2'
 
     POST_ACTION = SIZE + ' $TARGET\n'
-    POST_ACTION += './Other/packages/current_version.sh PS/app/include/uc_wiota_version.h' + '\n'
     POST_ACTION += 'python3 bin_bswap32_to_h.py -i ./bin/ap8288.bin -o ./flat_ap8288.h' + '\n'
     POST_ACTION += './bintools -u $TARGET ' + TARGET_NAME + '\n'
     POST_ACTION += 'mv -f flat.bin ' + TARGET_NAME + '\n'

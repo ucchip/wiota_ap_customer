@@ -331,7 +331,6 @@ load</PostConnectCommands>
         <StartupCommands/>
       </Debugger>
       <PreBuild>
-        <Command Enabled="yes">.\Other\packages\current_version.exe</Command>
         <Command Enabled="yes">.\bin_bswap32_to_h.exe -i  .\bin\ap8288.bin -o flat_ap8288.h</Command>
         <Command Enabled="yes"/>
       </PreBuild>
