@@ -241,6 +241,22 @@ void ISR_GPIO(void)
     return;
 }
 
+/* set ldo to 3.3v */
+void soc_hw_ldo_on(void)
+{
+    unsigned int ldo_re = 0xe00000;
+	int a = (*((volatile unsigned int *)(0x1a10422c)));
+	int b = (a | ldo_re);
+	*(volatile unsigned int *)(0x1a10422c) = b;
+	
+	volatile unsigned int *pad_mux = (unsigned int *)0x1a107000;
+	
+	*pad_mux &= (~(0x1));
+	
+	gpio_set_pin_value(GPIO_PIN_26, 1);
+    gpio_set_pin_value(GPIO_PIN_6, 1);
+}
+
 #define GPIO_8288_TO_8088_PIN_NUMBER 12
 
 void gpoi_8088_to_8288_change_value()
