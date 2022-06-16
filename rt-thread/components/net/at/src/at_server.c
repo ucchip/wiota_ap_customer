@@ -650,7 +650,7 @@ __exit:
 
     return result;
 }
-INIT_COMPONENT_EXPORT(at_server_init);
+//INIT_COMPONENT_EXPORT(at_server_init);
 
 RT_WEAK void at_port_reset(void)
 {
