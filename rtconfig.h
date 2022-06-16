@@ -122,4 +122,7 @@
 #define UC8088_FACTORY_MODE
 #define WIOTA_AP_STATE_INFO
 
+/* IoT - internet of things */
+
+
 #endif
