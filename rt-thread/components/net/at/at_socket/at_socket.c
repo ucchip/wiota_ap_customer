@@ -1085,6 +1085,7 @@ static uint32_t ipstr_to_u32(char *ipstr)
 {
     char ipBytes[4] = { 0 };
     uint32_t i;
+    uint32_t *result = (uint32_t *)ipBytes;
 
     for (i = 0; i < 4; i++, ipstr++)
     {
@@ -1094,7 +1095,7 @@ static uint32_t ipstr_to_u32(char *ipstr)
             break;
         }
     }
-    return *(uint32_t *) ipBytes;
+    return *result;
 }
 
 struct hostent *at_gethostbyname(const char *name)
@@ -1219,7 +1220,6 @@ int at_getaddrinfo(const char *nodename, const char *servname,
             {
                 return EAI_NONAME;
             }
-
             if (ai_family == AF_AT || ai_family == AF_INET)
             {
                 return EAI_NONAME;
@@ -1229,7 +1229,6 @@ int at_getaddrinfo(const char *nodename, const char *servname,
         {
             char ip_str[16] = { 0 };
             size_t idx = 0;
-
             for (idx = 0; idx < strlen(nodename) && !isalpha(nodename[idx]); idx++);
 
             if(idx < strlen(nodename))

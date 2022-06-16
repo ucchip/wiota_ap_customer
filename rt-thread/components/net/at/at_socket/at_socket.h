@@ -15,7 +15,7 @@
 #include <rtdevice.h>
 #include <rthw.h>
 
-#include <netdb.h>
+#include <socket/netdb.h>
 #include <sys/socket.h>
 
 #ifdef __cplusplus

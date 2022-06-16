@@ -12,7 +12,7 @@ if GetDepend(['RT_USING_AT','UC8088_MODULE']):
 if GetDepend(['WIOTA_FACTORY_FUNC']):
     src += ['at/at_factory.c']
 
-lib = ['libPS_gcc']
+lib = ['libwin_wiota_ap']
 libpath = [cwd + '/lib']
 
 group = DefineGroup('PS', src, depend = [''], CPPPATH = path, LIBS = lib, LIBPATH = libpath)

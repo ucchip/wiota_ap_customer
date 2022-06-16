@@ -12,12 +12,16 @@
 #ifdef UC8088_MODULE
 #include "at.h"
 #else
+#ifndef WIOTA_APP_DEMO
 #include "test_wiota_api.h"
+#endif
 #endif
 #ifdef _WATCHDOG_APP_
 #include "uc_watchdog_app.h"
 #endif
-
+#ifdef WIOTA_APP_DEMO
+#include "manager_app.h"
+#endif
 #define L1_TEST_SUBMODULE
 
 void ExtISR()
@@ -33,11 +37,13 @@ int main(void)
         watchdog_app_enable();
     }
 #endif
-
+#ifdef WIOTA_APP_DEMO
+    manager_enter();
+#else
 #ifdef UC8088_MODULE
     at_server_init();
 #else
     app_task_init();
 #endif
-    rt_kprintf("! main ok !\n");
+#endif
 }

@@ -31,6 +31,8 @@ enum factory_command_type
 #define PWM_DEV_NAME "pwm2"
 #define AT24C02_ADDR 0xA0
 
+#ifdef AT_USING_SERVER
+
 static rt_err_t write_reg(struct rt_i2c_bus_device *bus, rt_uint8_t reg, rt_uint8_t *data)
 {
     rt_uint8_t buf[8];
@@ -207,7 +209,9 @@ static int at_factory_test_pwm(unsigned int period, unsigned int pulse)
 
     return 0;
 }
+#endif
 
+#ifdef AT_USING_SERVER
 static at_result_t at_factory_setup(const char *args)
 {
     int type = 0, data = 0, data1 = 0;
@@ -304,6 +308,7 @@ static at_result_t at_factory_setup(const char *args)
     }
     return AT_RESULT_OK;
 }
-
 AT_CMD_EXPORT("AT+FACTORY", "=<type>,<data>,<data1>", RT_NULL, RT_NULL, at_factory_setup, RT_NULL);
+#endif // #ifdef AT_USING_SERVER
+
 #endif

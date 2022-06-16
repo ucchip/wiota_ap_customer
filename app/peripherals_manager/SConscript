@@ -1,0 +1,13 @@
+from building import *
+
+cwd = GetCurrentDir()
+src = []
+path = []
+
+if GetDepend(['WIOTA_APP_DEMO']):
+    path += [cwd]
+    src += Glob("*.c")
+
+group = DefineGroup('peripherals_manager', src, depend = [''], CPPPATH = path)
+
+Return('group')

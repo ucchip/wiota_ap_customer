@@ -36,7 +36,9 @@ struct mq_attr
 
 int     mq_close(mqd_t mqdes);
 int     mq_getattr(mqd_t mqdes, struct mq_attr *mqstat);
+#ifndef HAVE_SIGEVENT
 int     mq_notify(mqd_t mqdes, const struct sigevent *notification);
+#endif
 mqd_t   mq_open(const char *name, int oflag, ...);
 ssize_t mq_receive(mqd_t mqdes, char *msg_ptr, size_t msg_len, unsigned *msg_prio);
 int     mq_send(mqd_t mqdes, const char *msg_ptr, size_t msg_len, unsigned msg_prio);

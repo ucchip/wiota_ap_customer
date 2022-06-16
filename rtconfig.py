@@ -10,7 +10,7 @@ CROSS_TOOL  = 'gcc'
 
 if  CROSS_TOOL == 'gcc':
     PLATFORM    = 'gcc'
-    EXEC_PATH   = '/opt/riscv/bin/'
+    EXEC_PATH   = r'D:/Program Files (x86)/UCCHIP_IDE/riscv-gnu-toolchain/bin'
 else:
     print('Please make sure your toolchains is GNU GCC!')
     exit(0)
@@ -63,6 +63,9 @@ if PLATFORM == 'gcc':
     #    CFLAGS += ' -O2'
 
     POST_ACTION = SIZE + ' $TARGET\n'
-    POST_ACTION += 'python3 bin_bswap32_to_h.py -i ./bin/ap8288.bin -o ./flat_ap8288.h' + '\n'
-    POST_ACTION += './bintools -u $TARGET ' + TARGET_NAME + '\n'
-    POST_ACTION += 'mv -f flat.bin ' + TARGET_NAME + '\n'
+    POST_ACTION += 'Other/packages/current_version.exe PS/app/include/uc_wiota_version.h' + '\n'
+    POST_ACTION += 'bin_bswap32_to_h.exe -i ./bin/ap8288.bin -o ./flat_ap8288.h' + '\n'
+    #POST_ACTION += 'riscv32-unknown-elf-objdump -d rtthread.elf > rtthread.asm' + '\n'
+    POST_ACTION += 'bintools.exe -u $TARGET ' + TARGET_NAME + '\n'
+    POST_ACTION += 'cp -f flat.bin ' + TARGET_NAME + '\n'
+    POST_ACTION += 'rm -f flat.bin \n'

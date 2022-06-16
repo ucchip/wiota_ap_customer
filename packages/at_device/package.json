@@ -1,0 +1,28 @@
+{
+  "name": "at_device_ucc",
+  "description": "AT component porting or samples for different devices",
+  "description_zh": "AT 组件在不同设备上的移植或示例", 
+  "enable": "PKG_USING_AT_DEVICE_UCC",
+  "keywords": [
+    "at_device_ucc"
+  ],
+  "category": "iot",
+  "author": {
+    "name": "RealThread",
+    "email": "package_team@rt-thread.com",
+    "github": "RT-Thread-packages"
+  },
+  "license": "LGPL-2.1",
+  "repository": "https://git.ucchip.com/embedded_group/rt-packages_ucc/iot/at_device",
+  "icon": "https://www.rt-thread.org/qa/template/fxiaomi/style/image/logo.png",
+  "homepage": "https://git.ucchip.com/embedded_group/rt-packages_ucc/iot/at_device#readme",
+  "doc": "https://www.rt-thread.org/document/site/rtthread-application-note/components/at/an0014-rtthread-system-at-client/",
+  "site": [
+    {
+      "version": "latest",
+      "URL": "https://git.ucchip.com/embedded_group/rt-packages_ucc/iot/at_device.git",
+      "filename": "at_device.zip",
+      "VER_SHA": "master"
+    }
+  ]
+}

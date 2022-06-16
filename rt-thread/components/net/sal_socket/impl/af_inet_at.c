@@ -14,7 +14,7 @@
 #include <sal.h>
 
 #include <at_socket.h>
-#include <af_inet.h>
+#include "af_inet.h"
 
 #include <netdev.h>
 

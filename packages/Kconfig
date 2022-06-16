@@ -1,0 +1,6 @@
+menu "IoT - internet of things"
+
+source "$PKGS_DIR_WIOTA/at_device/Kconfig"
+source "$PKGS_DIR_WIOTA/uc_wolfMQTT/Kconfig"
+
+endmenu

@@ -1,0 +1,34 @@
+# AT device configuretion
+menuconfig PKG_USING_UCC_AT_DEVICE
+    bool "AT DEVICE: Ucchip AT component porting or samples for different device"
+    default n
+    select RT_USING_AT
+    select AT_USING_CLIENT
+    select AT_USING_SOCKET
+        
+if PKG_USING_UCC_AT_DEVICE
+
+    config PKG_AT_DEVICE_PATH
+        string
+        default "/packages/at_device"
+
+        choice
+            prompt "Version"
+            help
+                Select the UCC_AT_DEVICE version
+
+            config PKG_USING_UCC_AT_DEVICE_LATEST_VERSION
+                bool "latest"
+
+            config PKG_AT_DEVICE_VER
+                string
+                default "latest"
+                
+        endchoice
+        
+        source "$PKGS_DIR_WIOTA/at_device/class/ml305/Kconfig"
+        source "$PKGS_DIR_WIOTA/at_device/class/ml302/Kconfig"
+		
+endif
+
+

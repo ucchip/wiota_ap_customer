@@ -73,10 +73,6 @@ static int watchdog_reset(void)
 
 static at_result_t at_rst_exec(void)
 {
-    if (uc_wiota_get_state() < 0)
-    {
-        rt_kprintf("please init wiota first\n");
-    }
     scheduler_reset();
     if (!watchdog_reset())
     {

@@ -47,4 +47,8 @@ void uc8088_systick_init(void);
 
 void timer1_compare_handler(void);
 
+#ifndef AT_USING_SERVER
+#define at_server_printfln(...)
+#endif
+
 #endif

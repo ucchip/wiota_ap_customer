@@ -5,6 +5,271 @@
       <![CDATA[00010001N0005Debug000000000000]]>
     </Plugin>
   </Plugins>
+  <VirtualDirectory Name="packages">
+    <VirtualDirectory Name="uc_wolfMQTT">
+      <VirtualDirectory Name="port">
+        <File Name="packages/uc_wolfMQTT/port/mqttnet.h"/>
+        <File Name="packages/uc_wolfMQTT/port/mqttnet.c"/>
+        <File Name="packages/uc_wolfMQTT/port/mqttctx.h"/>
+        <File Name="packages/uc_wolfMQTT/port/mqttctx.c"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="wolfmqtt">
+        <File Name="packages/uc_wolfMQTT/wolfmqtt/visibility.h"/>
+        <File Name="packages/uc_wolfMQTT/wolfmqtt/mqtt_packet.h"/>
+        <File Name="packages/uc_wolfMQTT/wolfmqtt/mqtt_socket.h"/>
+        <File Name="packages/uc_wolfMQTT/wolfmqtt/version.h"/>
+        <File Name="packages/uc_wolfMQTT/wolfmqtt/options.h"/>
+        <File Name="packages/uc_wolfMQTT/wolfmqtt/mqtt_types.h"/>
+        <File Name="packages/uc_wolfMQTT/wolfmqtt/mqtt_client.h"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="examples">
+        <File Name="packages/uc_wolfMQTT/examples/wolfmqtt_example.c"/>
+        <File Name="packages/uc_wolfMQTT/examples/wolfmqtt_example2.c"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="src">
+        <File Name="packages/uc_wolfMQTT/src/mqtt_packet.c"/>
+        <File Name="packages/uc_wolfMQTT/src/mqtt_socket.c"/>
+        <File Name="packages/uc_wolfMQTT/src/mqtt_client.c"/>
+      </VirtualDirectory>
+    </VirtualDirectory>
+    <VirtualDirectory Name="at_device">
+      <VirtualDirectory Name="class">
+        <VirtualDirectory Name="ec20">
+          <File Name="packages/at_device/class/ec20/at_socket_ec20.c"/>
+          <File Name="packages/at_device/class/ec20/at_device_ec20.h"/>
+          <File Name="packages/at_device/class/ec20/at_device_ec20.c"/>
+        </VirtualDirectory>
+        <VirtualDirectory Name="n21">
+          <File Name="packages/at_device/class/n21/at_device_n21.c"/>
+          <File Name="packages/at_device/class/n21/at_socket_n21.c"/>
+          <File Name="packages/at_device/class/n21/at_device_n21.h"/>
+        </VirtualDirectory>
+        <VirtualDirectory Name="n720">
+          <File Name="packages/at_device/class/n720/at_device_n720.h"/>
+          <File Name="packages/at_device/class/n720/at_socket_n720.c"/>
+          <File Name="packages/at_device/class/n720/at_device_n720.c"/>
+        </VirtualDirectory>
+        <VirtualDirectory Name="ml302">
+          <File Name="packages/at_device/class/ml302/at_device_ml302.c"/>
+          <File Name="packages/at_device/class/ml302/at_socket_ml302.c"/>
+          <File Name="packages/at_device/class/ml302/at_device_ml302.h"/>
+        </VirtualDirectory>
+        <VirtualDirectory Name="esp8266">
+          <File Name="packages/at_device/class/esp8266/at_socket_esp8266.c"/>
+          <File Name="packages/at_device/class/esp8266/at_device_esp8266.c"/>
+          <File Name="packages/at_device/class/esp8266/at_device_esp8266.h"/>
+        </VirtualDirectory>
+        <VirtualDirectory Name="m5311">
+          <File Name="packages/at_device/class/m5311/at_device_m5311.h"/>
+          <File Name="packages/at_device/class/m5311/at_socket_m5311.c"/>
+          <File Name="packages/at_device/class/m5311/at_device_m5311.c"/>
+        </VirtualDirectory>
+        <VirtualDirectory Name="n58">
+          <File Name="packages/at_device/class/n58/at_socket_n58.c"/>
+          <File Name="packages/at_device/class/n58/at_device_n58.h"/>
+          <File Name="packages/at_device/class/n58/at_device_n58.c"/>
+        </VirtualDirectory>
+        <VirtualDirectory Name="l610">
+          <File Name="packages/at_device/class/l610/at_device_l610.c"/>
+          <File Name="packages/at_device/class/l610/at_socket_l610.c"/>
+          <File Name="packages/at_device/class/l610/at_device_l610.h"/>
+        </VirtualDirectory>
+        <VirtualDirectory Name="m6315">
+          <File Name="packages/at_device/class/m6315/at_device_m6315.c"/>
+          <File Name="packages/at_device/class/m6315/at_socket_m6315.c"/>
+          <File Name="packages/at_device/class/m6315/at_device_m6315.h"/>
+        </VirtualDirectory>
+        <VirtualDirectory Name="bc26">
+          <File Name="packages/at_device/class/bc26/at_device_bc26.h"/>
+          <File Name="packages/at_device/class/bc26/at_device_bc26.c"/>
+          <File Name="packages/at_device/class/bc26/at_socket_bc26.c"/>
+        </VirtualDirectory>
+        <VirtualDirectory Name="esp32">
+          <File Name="packages/at_device/class/esp32/at_socket_esp32.c"/>
+          <File Name="packages/at_device/class/esp32/at_device_esp32.c"/>
+          <File Name="packages/at_device/class/esp32/at_device_esp32.h"/>
+        </VirtualDirectory>
+        <VirtualDirectory Name="ml305">
+          <File Name="packages/at_device/class/ml305/at_device_ml305.h"/>
+          <File Name="packages/at_device/class/ml305/at_device_ml305.c"/>
+          <File Name="packages/at_device/class/ml305/at_socket_ml305.c"/>
+        </VirtualDirectory>
+        <VirtualDirectory Name="sim800c">
+          <File Name="packages/at_device/class/sim800c/at_device_sim800c.h"/>
+          <File Name="packages/at_device/class/sim800c/at_socket_sim800c.c"/>
+          <File Name="packages/at_device/class/sim800c/at_device_sim800c.c"/>
+        </VirtualDirectory>
+        <VirtualDirectory Name="m26">
+          <File Name="packages/at_device/class/m26/at_socket_m26.c"/>
+          <File Name="packages/at_device/class/m26/at_device_m26.h"/>
+          <File Name="packages/at_device/class/m26/at_device_m26.c"/>
+        </VirtualDirectory>
+        <VirtualDirectory Name="sim76xx">
+          <File Name="packages/at_device/class/sim76xx/at_device_sim76xx.c"/>
+          <File Name="packages/at_device/class/sim76xx/at_device_sim76xx.h"/>
+          <File Name="packages/at_device/class/sim76xx/at_socket_sim76xx.c"/>
+        </VirtualDirectory>
+        <VirtualDirectory Name="a9g">
+          <File Name="packages/at_device/class/a9g/at_socket_a9g.c"/>
+          <File Name="packages/at_device/class/a9g/at_device_a9g.c"/>
+          <File Name="packages/at_device/class/a9g/at_device_a9g.h"/>
+        </VirtualDirectory>
+        <VirtualDirectory Name="me3616">
+          <File Name="packages/at_device/class/me3616/at_socket_me3616.c"/>
+          <File Name="packages/at_device/class/me3616/at_device_me3616.c"/>
+          <File Name="packages/at_device/class/me3616/at_device_me3616.h"/>
+        </VirtualDirectory>
+        <VirtualDirectory Name="rw007">
+          <File Name="packages/at_device/class/rw007/at_device_rw007.c"/>
+          <File Name="packages/at_device/class/rw007/at_socket_rw007.c"/>
+          <File Name="packages/at_device/class/rw007/at_device_rw007.h"/>
+        </VirtualDirectory>
+        <VirtualDirectory Name="w60x">
+          <File Name="packages/at_device/class/w60x/at_socket_w60x.c"/>
+          <File Name="packages/at_device/class/w60x/at_device_w60x.c"/>
+          <File Name="packages/at_device/class/w60x/at_device_w60x.h"/>
+        </VirtualDirectory>
+        <VirtualDirectory Name="bc28">
+          <File Name="packages/at_device/class/bc28/at_device_bc28.h"/>
+          <File Name="packages/at_device/class/bc28/at_socket_bc28.c"/>
+          <File Name="packages/at_device/class/bc28/at_device_bc28.c"/>
+        </VirtualDirectory>
+        <VirtualDirectory Name="ec200x">
+          <File Name="packages/at_device/class/ec200x/at_device_ec200x.h"/>
+          <File Name="packages/at_device/class/ec200x/at_socket_ec200x.c"/>
+          <File Name="packages/at_device/class/ec200x/at_device_ec200x.c"/>
+        </VirtualDirectory>
+        <VirtualDirectory Name="air720">
+          <File Name="packages/at_device/class/air720/at_socket_air720.c"/>
+          <File Name="packages/at_device/class/air720/at_device_air720.h"/>
+          <File Name="packages/at_device/class/air720/at_device_air720.c"/>
+        </VirtualDirectory>
+        <VirtualDirectory Name="mw31">
+          <File Name="packages/at_device/class/mw31/at_socket_mw31.c"/>
+          <File Name="packages/at_device/class/mw31/at_device_mw31.c"/>
+          <File Name="packages/at_device/class/mw31/at_device_mw31.h"/>
+        </VirtualDirectory>
+      </VirtualDirectory>
+      <VirtualDirectory Name="inc">
+        <File Name="packages/at_device/inc/at_device.h"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="samples">
+        <File Name="packages/at_device/samples/at_sample_esp8266.c"/>
+        <File Name="packages/at_device/samples/at_sample_esp32.c"/>
+        <File Name="packages/at_device/samples/at_sample_ml302.c"/>
+        <File Name="packages/at_device/samples/at_sample_ec20.c"/>
+        <File Name="packages/at_device/samples/at_sample_air720.c"/>
+        <File Name="packages/at_device/samples/at_sample_n21.c"/>
+        <File Name="packages/at_device/samples/at_sample_mw31.c"/>
+        <File Name="packages/at_device/samples/at_sample_rw007.c"/>
+        <File Name="packages/at_device/samples/at_sample_ml305.c"/>
+        <File Name="packages/at_device/samples/at_sample_ec200x.c"/>
+        <File Name="packages/at_device/samples/at_sample_n58.c"/>
+        <File Name="packages/at_device/samples/at_sample_sim76xx.c"/>
+        <File Name="packages/at_device/samples/at_sample_me3616.c"/>
+        <File Name="packages/at_device/samples/at_sample_m6315.c"/>
+        <File Name="packages/at_device/samples/at_sample_client.c"/>
+        <File Name="packages/at_device/samples/at_sample_bc26.c"/>
+        <File Name="packages/at_device/samples/at_sample_bc28.c"/>
+        <File Name="packages/at_device/samples/at_sample_m26.c"/>
+        <File Name="packages/at_device/samples/at_sample_l610.c"/>
+        <File Name="packages/at_device/samples/at_sample_w60x.c"/>
+        <File Name="packages/at_device/samples/at_sample_n720.c"/>
+        <File Name="packages/at_device/samples/at_sample_sim800c.c"/>
+        <File Name="packages/at_device/samples/at_sample_m5311.c"/>
+        <File Name="packages/at_device/samples/at_sample_a9g.c"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="src">
+        <File Name="packages/at_device/src/at_device.c"/>
+      </VirtualDirectory>
+    </VirtualDirectory>
+  </VirtualDirectory>
+  <VirtualDirectory Name="app">
+    <VirtualDirectory Name="wiota_manager">
+      <VirtualDirectory Name="manager_wiota">
+        <File Name="app/wiota_manager/manager_wiota/manager_userid.c"/>
+        <File Name="app/wiota_manager/manager_wiota/manager_wiota.h"/>
+        <File Name="app/wiota_manager/manager_wiota/manager_wiota.c"/>
+        <File Name="app/wiota_manager/manager_wiota/manager_userid.h"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="manager_wiota_base">
+        <File Name="app/wiota_manager/manager_wiota_base/manager_operation_data.h"/>
+        <File Name="app/wiota_manager/manager_wiota_base/manager_operation_data.c"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="manager_wiota_to_network">
+        <File Name="app/wiota_manager/manager_wiota_to_network/manager_wiota_respons.h"/>
+        <File Name="app/wiota_manager/manager_wiota_to_network/manager_request_reserve_addr.c"/>
+        <File Name="app/wiota_manager/manager_wiota_to_network/manager_wiota_attribute.c"/>
+        <File Name="app/wiota_manager/manager_wiota_to_network/manager_wiota_respons.c"/>
+        <File Name="app/wiota_manager/manager_wiota_to_network/manager_wiota_attribute.h"/>
+        <File Name="app/wiota_manager/manager_wiota_to_network/manager_request_reserve_addr.h"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="manager_network_data">
+        <File Name="app/wiota_manager/manager_network_data/manger_net_messager.h"/>
+        <File Name="app/wiota_manager/manager_network_data/manger_net_messager.c"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="manager_iote_data">
+        <File Name="app/wiota_manager/manager_iote_data/manager_iote_message.h"/>
+        <File Name="app/wiota_manager/manager_iote_data/manager_iote_message.c"/>
+      </VirtualDirectory>
+      <File Name="app/wiota_manager/manager_logic_cmd.h"/>
+      <File Name="app/wiota_manager/manager_logic.h"/>
+      <File Name="app/wiota_manager/manager_logic.c"/>
+    </VirtualDirectory>
+    <VirtualDirectory Name="codec">
+      <VirtualDirectory Name="cbor">
+        <File Name="app/codec/cbor/uc_cbor_create.c"/>
+        <File Name="app/codec/cbor/uc_cbor.c"/>
+        <File Name="app/codec/cbor/uc_cbor_test.c"/>
+        <File Name="app/codec/cbor/uc_cbor_demo.c"/>
+        <File Name="app/codec/cbor/uc_cbor_encoder.c"/>
+        <File Name="app/codec/cbor/uc_cbor_get.c"/>
+        <File Name="app/codec/cbor/uc_cbor.h"/>
+        <File Name="app/codec/cbor/uc_cbor_error.c"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="coding">
+        <File Name="app/codec/coding/uc_coding_demo.c"/>
+        <File Name="app/codec/coding/uc_coding.h"/>
+        <File Name="app/codec/coding/uc_coding.c"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="fastlz">
+        <File Name="app/codec/fastlz/fastlz.h"/>
+        <File Name="app/codec/fastlz/fastlz.c"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="cJSON">
+        <File Name="app/codec/cJSON/cJSON.c"/>
+        <File Name="app/codec/cJSON/cJSON_demo.c"/>
+        <File Name="app/codec/cJSON/cJSON.h"/>
+      </VirtualDirectory>
+    </VirtualDirectory>
+    <VirtualDirectory Name="peripherals_manager">
+      <File Name="app/peripherals_manager/peripherals_manager.h"/>
+      <File Name="app/peripherals_manager/peripherals_manager.c"/>
+    </VirtualDirectory>
+    <VirtualDirectory Name="platfrom">
+      <File Name="app/platfrom/manager_module.h"/>
+      <File Name="app/platfrom/manager_queue.c"/>
+      <File Name="app/platfrom/manager_task.h"/>
+      <File Name="app/platfrom/manager_queue.h"/>
+      <File Name="app/platfrom/manager_list.c"/>
+      <File Name="app/platfrom/manager_task.c"/>
+      <File Name="app/platfrom/manager_list.h"/>
+    </VirtualDirectory>
+    <VirtualDirectory Name="net_passthrough">
+      <File Name="app/net_passthrough/wiota_mqtt.c"/>
+      <File Name="app/net_passthrough/wiota_mqtt.h"/>
+      <File Name="app/net_passthrough/net_passthrough.c"/>
+      <File Name="app/net_passthrough/net_passthrough.h"/>
+    </VirtualDirectory>
+    <VirtualDirectory Name="custom_data">
+      <File Name="app/custom_data/test_custom_data.h"/>
+      <File Name="app/custom_data/test_custom_data.c"/>
+      <File Name="app/custom_data/custom_data.c"/>
+      <File Name="app/custom_data/custom_data.h"/>
+    </VirtualDirectory>
+    <File Name="app/manager_app.h"/>
+    <File Name="app/manager_app.c"/>
+  </VirtualDirectory>
   <VirtualDirectory Name="boot">
     <VirtualDirectory Name="inc">
       <File Name="boot/inc/uc_boot_spim2flash.h"/>
@@ -20,6 +285,7 @@
       <VirtualDirectory Name="include">
         <File Name="PS/app/include/uc_wiota_version.h"/>
         <File Name="PS/app/include/uc_wiota_api.h"/>
+        <File Name="PS/app/include/uc_wiota_static.h"/>
       </VirtualDirectory>
       <VirtualDirectory Name="test">
         <File Name="PS/app/test/test_wiota_api.c"/>
@@ -281,7 +547,6 @@
     <File Name="board/crt0.flash.S"/>
     <File Name="board/SConscript"/>
   </VirtualDirectory>
-  <Dependencies Name="Debug"/>
   <Settings Type="Executable">
     <GlobalSettings>
       <Compiler Options="" C_Options="" Assembler="">
@@ -330,23 +595,20 @@ load</PostConnectCommands>
         <StartupCommands/>
       </Debugger>
       <PreBuild>
-        <Command Enabled="yes">./Other/packages/current_version.sh PS/app/include/uc_wiota_version.h</Command>
-        <Command Enabled="yes">python3 bin_bswap32_to_h.py -i $(WorkspacePath)/bin/ap8288.bin -o $(WorkspacePath)/flat_ap8288.h</Command>
+        <Command Enabled="yes"/>
       </PreBuild>
       <PostBuild>
-        <Command Enabled="yes">riscv32-unknown-elf-objdump -d $(IntermediateDirectory)/$(ProjectName) &gt;$(IntermediateDirectory)/$(ProjectName).asm</Command>
-        <Command Enabled="yes">./bintools -d $(IntermediateDirectory)/$(ProjectName) $(ProjectName).uzf</Command>
-        <Command Enabled="yes">cp $(ProjectName).uzf $(ProjectName).uzf.bin</Command>
+        <Command Enabled="yes"/>
       </PostBuild>
-      <CustomBuild Enabled="no">
-        <RebuildCommand/>
-        <CleanCommand/>
-        <BuildCommand/>
+      <CustomBuild Enabled="yes">
+        <RebuildCommand>scons -c -j4;scons  -j4</RebuildCommand>
+        <CleanCommand>scons -c -j4</CleanCommand>
+        <BuildCommand>scons -j4</BuildCommand>
         <PreprocessFileCommand/>
         <SingleFileCommand/>
         <MakefileGenerationCommand/>
         <ThirdPartyToolName/>
-        <WorkingDirectory/>
+        <WorkingDirectory>./</WorkingDirectory>
       </CustomBuild>
       <AdditionalRules>
         <CustomPostBuild/>
@@ -360,4 +622,5 @@ load</PostConnectCommands>
       </Completion>
     </Configuration>
   </Settings>
+  <Dependencies Name="Debug"/>
 </CodeLite_Project>

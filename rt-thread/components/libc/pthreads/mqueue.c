@@ -268,7 +268,7 @@ int mq_timedsend(mqd_t                  mqdes,
     return mq_send(mqdes, msg_ptr, msg_len, msg_prio);
 }
 RTM_EXPORT(mq_timedsend);
-
+#ifndef HAVE_SIGEVENT
 int mq_notify(mqd_t mqdes, const struct sigevent *notification)
 {
     rt_set_errno(-RT_ERROR);
@@ -276,7 +276,7 @@ int mq_notify(mqd_t mqdes, const struct sigevent *notification)
     return -1;
 }
 RTM_EXPORT(mq_notify);
-
+#endif
 int mq_close(mqd_t mqdes)
 {
     if (mqdes == RT_NULL)

@@ -1,0 +1,87 @@
+# uc_wolfMQTT configuretion
+menuconfig PKG_USING_UC_WOLFMQTT
+    bool "uc_wolfMQTT: MQTT client "
+    default n
+    select RT_USING_SAL
+    select SAL_USING_POSIX
+        
+if PKG_USING_UC_WOLFMQTT
+
+    config PKG_UC_WOLFMQTT_PATH
+        string
+        default "/uc_wolfMQTT"
+		
+    choice
+        prompt "version"
+        help
+            Select the uc_wolfmqtt version
+
+        config PKG_UC_WOLFMQTT_LATEST_VERSION
+            bool "latest"
+
+    endchoice
+
+    config PKG_UC_WOLFMQTT_VER
+       string
+       default "latest" if PKG_UC_WOLFMQTT_LATEST_VERSION
+
+    config ENABLE_MQTT_TLS
+        bool "Enable TLS Support"
+        default n
+        
+    config WOLFMQTT_SN
+        bool "Enable MQTT-SN(Sensor Network) Support"
+        default n
+        
+    config WOLFMQTT_V5
+        bool "Enable MQTT v5.0 support"
+        default n        
+
+    if WOLFMQTT_V5
+        config WOLFMQTT_PROPERTY_CB
+            bool "Enable property callback support"
+            default n
+    endif
+        
+    config WOLFMQTT_NONBLOCK
+        bool "Enable Non-blocking support"
+        default n
+        
+    config WOLFMQTT_NO_TIMEOUT
+        bool "Disable socket timeout code"
+        default n
+        
+    config WOLFMQTT_DISCONNECT_CB
+        bool "Enable Disconnect callback support"
+        default n
+        
+    config WOLFMQTT_MULTITHREAD
+        bool "Enable Multi-threading"
+        default n
+        select RT_USING_LIBC
+        select RT_USING_PTHREADS
+
+    config DEBUG_WOLFMQTT
+        bool "Enable Debugging"
+        default n
+
+    if DEBUG_WOLFMQTT
+        config WOLFMQTT_DEBUG_CLIENT
+            bool "Enable Debugging client"
+            default n
+
+        config WOLFMQTT_DEBUG_SOCKET
+            bool "Enable Debugging socket"
+            default n
+
+        config WOLFMQTT_DEBUG_THREAD
+            bool "Enable Debugging thread"
+            default n
+    endif
+
+    config WOLFMQTT_NO_ERROR_STRINGS
+        bool "Disable error strings"
+        default n	
+endif
+
+

@@ -28,6 +28,7 @@
 //}
 //AT_CMD_EXPORT("AT+YMODEM", RT_NULL, RT_NULL, RT_NULL, RT_NULL, at_ymodem_exec);
 
+#ifdef AT_USING_SERVER
 static at_result_t at_ymodem_setup(const char *args)
 {
     at_result_t ret = AT_RESULT_PARSE_FAILE;
@@ -86,3 +87,5 @@ static at_result_t at_reflash_exec(void)
 
 AT_CMD_EXPORT("AT+YMODEM", "=<type>", RT_NULL, RT_NULL, at_ymodem_setup, RT_NULL);
 AT_CMD_EXPORT("AT+REFLASH", RT_NULL, RT_NULL, RT_NULL, RT_NULL, at_reflash_exec);
+
+#endif // #ifdef AT_USING_SERVER

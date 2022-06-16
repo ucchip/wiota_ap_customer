@@ -1,0 +1,27 @@
+{
+  "name": "uc_wolfMQTT",
+  "description": "UCchip wolfMQTT: This is an implementation of the MQTT Client written in C for embedded use.",
+  "description_zh": "UCchip wolfMQTT 是应用于嵌入式系统、使用C语言编写的MQTT客户端",
+  "enable": "PKG_USING_UC_WOLFMQTT",
+  "keywords": [
+    "mqtt",
+    "socket"
+  ],
+  "category": "iot",
+  "author": {
+    "name": "masda",
+    "email": "shengda.ma@ucchip.com",
+    "gitlib": "Shengda Ma"
+  },
+  "license": "MIT",
+  "repository": "ssh://git@git.ucchip.com:30022/embedded_group/rt-packages_ucc/iot/uc_wolfMQTT",
+  "homepage": "ssh://git@git.ucchip.com:30022/embedded_group/rt-packages_ucc/iot/uc_wolfMQTT#readme",
+  "site": [
+    {
+      "version": "latest",
+      "URL": "ssh://git@git.ucchip.com:30022/embedded_group/rt-packages_ucc/iot/uc_wolfMQTT.git",
+      "filename": "uc_wolfMQTT.zip",
+      "VER_SHA": "master"
+    }
+  ]
+}

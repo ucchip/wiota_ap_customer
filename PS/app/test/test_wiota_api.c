@@ -38,7 +38,7 @@ u8_t *generate_fake_data(u32_t data_len, u8_t repeat_num)
     return fake_data;
 }
 
-void test_show_access_func(u32_t user_id)
+void test_show_access_func(u32_t user_id, u8_t group_idx, u8_t subframe_idx)
 {
     rt_kprintf("user_id 0x%x accessed\n", user_id);
 }
@@ -339,22 +339,21 @@ void test_remove_iote_from_blacklist(void)
 // test! wiota exit and restart
 void test_wiota_exit_and_restart(void)
 {
-    if (UC_OP_SUCC == uc_wiota_exit())
-    {
-        rt_thread_mdelay(2000);
-        uc_wiota_init();
+    uc_wiota_exit();
 
-        // test! set frequency point after wiota start, before wiota start
-        test_set_frequency_point();
+    rt_thread_mdelay(2000);
+    uc_wiota_init();
 
-        // test! set/get connection timeout after wiota init, before wiota start
-        // test_set_connection_timeout();
+    // test! set frequency point after wiota start, before wiota start
+    test_set_frequency_point();
 
-        // test! set all dynamic parameter after wiota init, before wiota start
-        test_set_all_para();
+    // test! set/get connection timeout after wiota init, before wiota start
+    // test_set_connection_timeout();
 
-        uc_wiota_run();
-    }
+    // test! set all dynamic parameter after wiota init, before wiota start
+    test_set_all_para();
+
+    uc_wiota_run();
 }
 
 void app_interface_main_task(void *pPara)

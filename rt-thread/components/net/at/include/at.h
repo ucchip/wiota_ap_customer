@@ -201,6 +201,17 @@ rt_size_t at_server_recv(at_server_t server, char *buf, rt_size_t size, rt_int32
 
 /* AT server request arguments parse */
 int at_req_parse_args(const char *req_args, const char *req_expr, ...);
+
+#else
+
+#ifndef at_server_printf
+#define at_server_printf(...)
+#endif
+
+#ifndef at_server_printfln
+#define at_server_printfln(...)
+#endif
+
 #endif /* AT_USING_SERVER */
 
 #ifdef AT_USING_CLIENT

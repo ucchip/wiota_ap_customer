@@ -145,7 +145,7 @@ static rt_err_t drv_pwm_control(struct rt_device_pwm *device, int cmd, void *arg
 {
     struct rt_pwm_configuration *configuration = (struct rt_pwm_configuration *)arg;
     PWM_TypeDef *hpwm = (PWM_TypeDef *)device->parent.user_data;
-    rt_kprintf("drv_pwm_enable %d,%d,%d,%d\n", cmd, configuration->channel, configuration->period, configuration->pulse);
+    // rt_kprintf("drv_pwm_enable %d,%d,%d,%d\n", cmd, configuration->channel, configuration->period, configuration->pulse);
     switch (cmd)
     {
     case PWM_CMD_ENABLE:
@@ -180,7 +180,7 @@ static rt_err_t uc8088_hw_pwm_init(struct uc8x88_pwm *device)
     }
     else if (pwm == UC_PWM2)
     {
-        rt_kprintf("gpio_set_pin_mux 28\n");
+        // rt_kprintf("gpio_set_pin_mux 28\n");
         gpio_set_pin_mux(UC_GPIO_CFG, GPIO_PIN_28, GPIO_FUNC_1);
     }
     else if (pwm == UC_PWM3)

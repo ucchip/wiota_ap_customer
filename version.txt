@@ -84,3 +84,9 @@ v0.11_ap8088修改如下：
 	2、修改多终端死机问题
 	3、默认关闭at回显，修改部分查询指令为cmd？的形式，具体请比对at_wiota.c
 	4、修改部分已知bug
+	
+v0.12_ap8088修改如下：
+	1、兼容新板子
+	2、添加app demo，如需使用请将代码根目录下的rtcofig.h.demo替换rtconfig.h，demo的功能和使用请参考相关文档，注：正常的at版本和demo版本不可同时打开
+	3、全部采用scons编译，请安装rt-thread的环境（rt-thread官网可下载）
+	4、修改协议栈已知bug

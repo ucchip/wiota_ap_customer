@@ -29,14 +29,6 @@ const u32_t U_FRAME_LEN[4][4] = {{73120, 145696, 291232, 582176},
 
 typedef enum
 {
-    AT_WIOTA_DEFAULT = 0,
-    AT_WIOTA_INIT = 1,
-    AT_WIOTA_RUN = 2,
-    AT_WIOTA_EXIT = 3,
-} at_wiota_state_e;
-
-typedef enum
-{
     AT_WIOTA_ADD_BLACKLIST = 0,
     AT_WIOTA_REMOVE_BLACKLIST = 1,
 } at_blacklist_mode_e;
@@ -89,8 +81,8 @@ typedef struct at_test_statistical_data
     int snr;
 } t_at_test_statistical_data;
 
-#define AT_TEST_COMMUNICATION_HEAD "The test mode."
-#define AT_TEST_COMMUNICATION_HEAD_LEN 16
+#define AT_TEST_COMMUNICATION_HEAD "testMode"
+#define AT_TEST_COMMUNICATION_HEAD_LEN 9
 
 typedef struct at_test_communication
 {
@@ -101,10 +93,10 @@ typedef struct at_test_communication
     // iote  statistical time
     char timeout;
     char mcs_num;
+    short test_len;
     short all_len;
     //short data_len;
     //t_at_test_statistical_data data;
-    char *reserved;
 } t_at_test_communication;
 
 typedef enum
@@ -201,8 +193,6 @@ typedef struct at_test_queue_data
 
 t_at_test_data g_t_test_data = {0};
 
-static int wiota_state = AT_WIOTA_DEFAULT;
-
 static at_result_t at_freq_query(void)
 {
     at_server_printfln("+WIOTAFREQ=%u", uc_wiota_get_freq_info());
@@ -241,7 +231,7 @@ static at_result_t at_system_config_setup(const char *args)
     int temp[7] = {0};
     sub_system_config_t config;
 
-    if (wiota_state < AT_WIOTA_INIT && wiota_state != AT_WIOTA_EXIT)
+    if (uc_wiota_get_state() != WIOTA_STATE_INIT)
     {
         at_server_printfln("please init wiota first");
         return AT_RESULT_REPETITIVE_FAILE;
@@ -273,10 +263,9 @@ static at_result_t at_system_config_setup(const char *args)
 
 static at_result_t at_wiota_init_exec(void)
 {
-    if (wiota_state == AT_WIOTA_DEFAULT || wiota_state == AT_WIOTA_EXIT)
+    if (uc_wiota_get_state() == WIOTA_STATE_DEFAULT || uc_wiota_get_state() == WIOTA_STATE_EXIT)
     {
         uc_wiota_init();
-        wiota_state = AT_WIOTA_INIT;
 
         return AT_RESULT_OK;
     }
@@ -285,7 +274,7 @@ static at_result_t at_wiota_init_exec(void)
 }
 
 #if 1
-void uc_wiota_show_access_func(u32_t user_id)
+void uc_wiota_show_access_func(u32_t user_id, u8_t group_idx, u8_t subframe_idx)
 {
     rt_kprintf("user_id 0x%x accessed  time %d\n", user_id, g_t_test_data.time);
 
@@ -441,24 +430,15 @@ static at_result_t at_wiota_func_setup(const char *args)
         return AT_RESULT_PARSE_FAILE;
     }
 
-    if (1 == state && wiota_state == AT_WIOTA_INIT)
+    if (1 == state && uc_wiota_get_state() == WIOTA_STATE_INIT)
     {
         uc_wiota_run();
 
         uc_wiota_register_callback();
-
-        wiota_state = AT_WIOTA_RUN;
     }
-    else if (0 == state && wiota_state == AT_WIOTA_RUN)
+    else if (0 == state && uc_wiota_get_state() == WIOTA_STATE_RUN)
     {
-        if (UC_OP_SUCC == uc_wiota_exit())
-        {
-            wiota_state = AT_WIOTA_EXIT;
-        }
-        else
-        {
-            return AT_RESULT_FAILE;
-        }
+        uc_wiota_exit();
     }
     else
     {
@@ -472,7 +452,7 @@ static at_result_t at_blacklist_query(void)
     blacklist_t *head_node = NULL;
     u16_t blacklist_num = 0;
 
-    if (wiota_state < AT_WIOTA_INIT && wiota_state != AT_WIOTA_EXIT)
+    if (uc_wiota_get_state() < WIOTA_STATE_INIT)
     {
         at_server_printfln("please init wiota first");
         return AT_RESULT_REPETITIVE_FAILE;
@@ -494,7 +474,7 @@ static at_result_t at_blacklist_setup(const char *args)
     u32_t user_id = 0;
     u32_t mode = 0;
 
-    if (wiota_state < AT_WIOTA_INIT && wiota_state != AT_WIOTA_EXIT)
+    if (uc_wiota_get_state() < WIOTA_STATE_INIT)
     {
         at_server_printfln("please init wiota first");
         return AT_RESULT_REPETITIVE_FAILE;
@@ -526,7 +506,7 @@ static at_result_t at_iote_info_query(void)
     iote_info_t *iote_info = NULL;
     u16_t con_num, discon_num;
 
-    if (wiota_state < AT_WIOTA_INIT && wiota_state != AT_WIOTA_EXIT)
+    if (uc_wiota_get_state() < WIOTA_STATE_INIT)
     {
         at_server_printfln("please init wiota first");
         return AT_RESULT_REPETITIVE_FAILE;
@@ -536,7 +516,7 @@ static at_result_t at_iote_info_query(void)
 
     while (iote_info != NULL)
     {
-        at_server_printfln("+WIOTAIOTEINFO=0x%x,%d,%d,%d", iote_info->user_id, iote_info->iote_status, con_num, discon_num);
+        at_server_printfln("+WIOTAIOTEINFO=0x%x,%d/%d,%d,%d,%d", iote_info->user_id, iote_info->group_idx, iote_info->subframe_idx, iote_info->iote_status, con_num, discon_num);
         iote_info = iote_info->next;
     }
     return AT_RESULT_OK;
@@ -553,7 +533,7 @@ static at_result_t at_active_time_setup(const char *args)
 {
     u32_t active_time = 0;
 
-    if (wiota_state < AT_WIOTA_INIT && wiota_state != AT_WIOTA_EXIT)
+    if (uc_wiota_get_state() < WIOTA_STATE_INIT)
     {
         at_server_printfln("please init wiota first");
         return AT_RESULT_REPETITIVE_FAILE;
@@ -852,7 +832,7 @@ static at_result_t at_scan_freq_setup(const char *args)
             at_server_printfln("+WIOTASCANFREQ:");
             for (u8_t idx = 0; idx < (scan_info.data_len / sizeof(uc_scan_freq_t)); idx++)
             {
-                at_server_printfln("freq_idx=%u, snr=%d, rssi=%d, is_synced=%d", freq_list->freq_idx, freq_list->snr, freq_list->rssi, freq_list->is_synced);
+                at_server_printfln("%u,%d,%d,%d", freq_list->freq_idx, freq_list->rssi, freq_list->snr, freq_list->is_synced);
                 freq_list++;
             }
 
@@ -878,7 +858,7 @@ static at_result_t at_scan_freq_exec(void)
     uc_scan_recv_t scan_info = {0};
     u8_t ret = AT_RESULT_NULL;
 
-    if (wiota_state != AT_WIOTA_RUN)
+    if (uc_wiota_get_state() != WIOTA_STATE_RUN)
     {
         at_server_printfln("please run wiota first");
         return AT_RESULT_REPETITIVE_FAILE;
@@ -924,7 +904,7 @@ static at_result_t at_read_temp_query(void)
 {
     uc_temp_recv_t read_temp = {0};
 
-    if (wiota_state != AT_WIOTA_RUN)
+    if (uc_wiota_get_state() != WIOTA_STATE_RUN)
     {
         at_server_printfln("please run wiota first");
         return AT_RESULT_REPETITIVE_FAILE;
@@ -946,7 +926,7 @@ static at_result_t at_rf_power_setup(const char *args)
 {
     s32_t rf_power = 0;
 
-    if (wiota_state != AT_WIOTA_RUN)
+    if (uc_wiota_get_state() != WIOTA_STATE_RUN)
     {
         at_server_printfln("please run wiota first");
         return AT_RESULT_REPETITIVE_FAILE;
@@ -965,7 +945,7 @@ static at_result_t at_rf_power_setup(const char *args)
 
 static at_result_t at_rf_power_query(void)
 {
-    if (wiota_state != AT_WIOTA_RUN)
+    if (uc_wiota_get_state() != WIOTA_STATE_RUN)
     {
         at_server_printfln("please run wiota first");
         return AT_RESULT_REPETITIVE_FAILE;
@@ -1147,11 +1127,11 @@ static at_result_t at_wiotacrc_setup(const char *args)
 static at_result_t at_wiota_loop_test_setup(const char *args)
 {
     int cmd = 0;
-    int data_len = 0;
     int mcs = 0;
     int packet_num = 0;
+    int is_dl = 0;
 
-    args = parse((char *)(++args), "d,d,d,d", &cmd, &data_len, &mcs, &packet_num);
+    args = parse((char *)(++args), "d,d,d,d", &cmd, &mcs, &packet_num, &is_dl);
     if (!args)
     {
         return AT_RESULT_PARSE_FAILE;
@@ -1163,46 +1143,15 @@ static at_result_t at_wiota_loop_test_setup(const char *args)
     }
     else if (cmd == 1)
     {
-        u8_t *send_buf = NULL;
-        u8_t *p_send_buf = NULL;
-
-        if (data_len > 0)
+        // for (int i = 0; i < 10; i++)
+        // {
+        u32_t tick1 = uc_wiota_read_def_counter();
+        if (0 == ap_pgw_handle_loop_test_msg(mcs, packet_num, is_dl))
         {
-            send_buf = (u8_t *)rt_malloc(data_len);
-            if (send_buf == NULL)
-            {
-                at_server_printfln("rt_malloc failed!");
-                return AT_RESULT_NULL;
-            }
-            rt_memset(send_buf, 0, data_len);
-
-            p_send_buf = send_buf;
-            at_server_printfln("OK");
-            at_server_printf(">");
-            while (data_len)
-            {
-                if (get_char_timeout(rt_tick_from_millisecond(WIOTA_WAIT_DATA_TIMEOUT), (char *)p_send_buf) != RT_EOK)
-                {
-                    at_server_printfln("get char failed!");
-                    rt_free(send_buf);
-                    send_buf = NULL;
-                    return AT_RESULT_NULL;
-                }
-                data_len--;
-                p_send_buf++;
-            }
-            // for (int i = 0; i < 10; i++)
-            // {
-            u32_t tick1 = uc_wiota_read_def_counter();
-            if (0 == ap_pgw_handle_loop_test_msg(send_buf, p_send_buf - send_buf, mcs, packet_num))
-            {
-                u32_t tick2 = uc_wiota_read_def_counter();
-                at_server_printfln("loop test end %d\n", tick2 - tick1);
-            }
-            // }
-            rt_free(send_buf);
-            send_buf = NULL;
+            u32_t tick2 = uc_wiota_read_def_counter();
+            at_server_printfln("loop test end %d\n", tick2 - tick1);
         }
+        // }
     }
     else
     {
@@ -1212,7 +1161,7 @@ static at_result_t at_wiota_loop_test_setup(const char *args)
     return AT_RESULT_OK;
 }
 
-static at_result_t at_wiota_mem_setup(const char *args)
+static at_result_t at_wiota_read_reg_setup(const char *args)
 {
     u32_t addr = 0;
     u32_t type = 0;
@@ -1222,7 +1171,24 @@ static at_result_t at_wiota_mem_setup(const char *args)
     {
         return AT_RESULT_PARSE_FAILE;
     }
-    at_server_printfln("+WIOTAMEM=0x%x", uc_wiota_query_addr_content(type, addr));
+
+    at_server_printfln("+WIOTAMEM=0x%x", uc_wiota_read_value_from_reg(type, addr));
+
+    return AT_RESULT_OK;
+}
+
+static at_result_t at_wiota_write_reg_setup(const char *args)
+{
+    u32_t addr = 0;
+    u32_t value = 0;
+
+    args = parse((char *)(++args), "y,y", &value, &addr);
+    if (!args)
+    {
+        return AT_RESULT_PARSE_FAILE;
+    }
+
+    uc_wiota_write_value_to_reg(value, addr);
 
     return AT_RESULT_OK;
 }
@@ -1249,7 +1215,7 @@ static at_result_t at_wiota_state_setup(const char *args)
     int user_id = 0;
     int state_type = 0;
 
-    if (wiota_state < AT_WIOTA_INIT && wiota_state != AT_WIOTA_EXIT)
+    if (uc_wiota_get_state() < WIOTA_STATE_INIT)
     {
         at_server_printfln("please init wiota first");
         return AT_RESULT_REPETITIVE_FAILE;
@@ -1592,17 +1558,15 @@ static void at_test_mode_time_fun(void *parameter)
 
 static void at_test_send_to_iote(t_at_test_communication *data)
 {
-    if (1 == g_t_test_data.flag)
+    if (1 == g_t_test_data.flag || g_t_test_data.type == 5)
     {
         rt_kprintf("%s line %d data->all_len: %d  g_t_test_data.mcs_num: %d\n", __FUNCTION__, __LINE__, data->all_len, g_t_test_data.mcs_num);
-        rt_tick_t data_reserved;
-        data_reserved = rt_tick_get();
-        memcpy(&data->reserved + 4, &data_reserved, sizeof(rt_tick_t));
-
-        ap_pgw_handle_loop_test_msg((unsigned char *)data, data->all_len, g_t_test_data.mcs_num, g_t_test_data.send_num);
-
-        at_test_get_statistical_data_loop();
-
+        //rt_tick_t data_reserved;
+        //data_reserved = rt_tick_get();
+        //memcpy(&data->reserved + 4, &data_reserved, sizeof(rt_tick_t));
+        ap_pgw_handle_loop_test_msg(g_t_test_data.mcs_num, g_t_test_data.send_num, g_t_test_data.test_data_len);
+        if (g_t_test_data.type == 4)
+            at_test_get_statistical_data_loop();
         rt_kprintf("%s line %d\n", __FUNCTION__, __LINE__);
         return;
     }
@@ -1616,11 +1580,18 @@ static void at_test_send_to_iote(t_at_test_communication *data)
             continue;
         }
 
+        if (4 == g_t_test_data.type)
+        {
+            if (0 == ap_pgw_get_loop_test_is_rach())
+            {
+                continue;
+            }
+        }
         if (temp_all_list->send_manager_flag == AT_TEST_FIRST_COMMAND_WAIT_SEND)
         {
             uc_result_e res;
             rt_kprintf("%s line %d command %d timeout %d id 0x%x\n", __FUNCTION__, __LINE__, data->command, data->timeout, temp_all_list->user_id);
-            res = uc_wiota_send_data((unsigned char *)data, data->all_len, &(temp_all_list->user_id), 1, 60000, RT_NULL);
+            res = uc_wiota_send_data((unsigned char *)data, sizeof(t_at_test_communication), &(temp_all_list->user_id), 1, 60000, RT_NULL);
             rt_kprintf("%s line %d ap send command result %d\n", __FUNCTION__, __LINE__, res);
             if (UC_OP_SUCC == res)
             {
@@ -1640,7 +1611,9 @@ static void at_test_send_to_iote(t_at_test_communication *data)
             if (temp_all_list->send_all_counter < 3)
             {
                 temp_all_list->send_num = 1;
-                uc_wiota_send_data((unsigned char *)data, data->all_len, &(temp_all_list->user_id), 1, 60000, at_test_down_callback);
+                u8_t *rand_data = gen_rand_test_data(data->test_len);
+                uc_wiota_send_data((unsigned char *)rand_data, data->test_len, &(temp_all_list->user_id), 1, 60000, at_test_down_callback);
+                rt_free(rand_data);
                 temp_all_list->send_all_counter++;
             }
             else
@@ -1655,7 +1628,9 @@ static void at_test_send_to_iote(t_at_test_communication *data)
         {
             if (temp_all_list->send_all_counter)
             {
-                uc_wiota_send_data((unsigned char *)data, data->all_len, &(temp_all_list->user_id), 1, 60000, at_test_loop_callback);
+                u8_t *rand_data = gen_rand_test_data(data->all_len);
+                uc_wiota_send_data((unsigned char *)rand_data, data->all_len, &(temp_all_list->user_id), 1, 60000, at_test_loop_callback);
+                rt_free(rand_data);
                 temp_all_list->send_all_counter = 0;
             }
         }
@@ -1681,8 +1656,7 @@ static void at_test_mode_task_fun(void *parameter)
     unsigned int queue_data = 0;
     t_at_test_queue_data *pqueue_data = RT_NULL;
 
-    t_at_test_communication *communication = rt_malloc(
-        (sizeof(t_at_test_communication) + 4) > g_t_test_data.test_data_len ? (sizeof(t_at_test_communication) + 4) : g_t_test_data.test_data_len);
+    t_at_test_communication *communication = rt_malloc(sizeof(t_at_test_communication));
 
     if (4 == g_t_test_data.type)
     {
@@ -1698,9 +1672,11 @@ static void at_test_mode_task_fun(void *parameter)
     communication->command = g_t_test_data.type;
     communication->timeout = g_t_test_data.time;
     communication->mcs_num = g_t_test_data.mcs_num;
-    communication->all_len = sizeof(t_at_test_communication) > g_t_test_data.test_data_len ? sizeof(t_at_test_communication) : g_t_test_data.test_data_len;
 
-    if (g_t_test_data.type != 4)
+    communication->test_len = g_t_test_data.test_data_len;
+    communication->all_len = sizeof(t_at_test_communication) > communication->test_len ? sizeof(t_at_test_communication) : communication->test_len;
+
+    if (g_t_test_data.type != 4 && g_t_test_data.type != 5)
     {
         g_t_test_data.test_mode_timer = rt_timer_create("teMode",
                                                         at_test_mode_time_fun,
@@ -1791,7 +1767,7 @@ static at_result_t at_test_mode_start(const char *args)
     if (g_t_test_data.time > 0)
         return AT_RESULT_PARSE_FAILE;
 
-    if (wiota_state != AT_WIOTA_RUN)
+    if (uc_wiota_get_state() != WIOTA_STATE_RUN)
     {
         rt_kprintf("at_test_mode_start wiota_state error\n");
         return AT_RESULT_REPETITIVE_FAILE;
@@ -1812,9 +1788,18 @@ static at_result_t at_test_mode_start(const char *args)
 
     if (g_t_test_data.send_num < 10)
         g_t_test_data.send_num = 10;
+
+    if (g_t_test_data.type < 4)
+    {
+        if (g_t_test_data.test_data_len > 300)
+            g_t_test_data.test_data_len = 300;
+        if (g_t_test_data.test_data_len < 26)
+            g_t_test_data.test_data_len = 26;
+    }
+
     rt_kprintf("type = %d, timeout = %d\n", g_t_test_data.type, g_t_test_data.time);
 
-    if (g_t_test_data.type > 4)
+    if (g_t_test_data.type > 5)
     {
         rt_kprintf("at_test_mode_start type>4 is error\n");
         return AT_RESULT_PARSE_FAILE;
@@ -1913,6 +1898,22 @@ static at_result_t at_test_mode_stop_exec(void)
 
     return AT_RESULT_OK;
 }
+#ifdef WIOTA_BC_MODE_TEST
+extern void set_bc_mode(u8_t mode);
+static at_result_t at_wiota_bcmode_setup(const char *args)
+{
+    u32_t mode = 0;
+
+    args = parse((char *)(++args), "d", &mode);
+    if (!args)
+    {
+        return AT_RESULT_PARSE_FAILE;
+    }
+    set_bc_mode(mode);
+
+    return AT_RESULT_OK;
+}
+#endif
 
 AT_CMD_EXPORT("AT+WIOTAINIT", RT_NULL, RT_NULL, RT_NULL, RT_NULL, at_wiota_init_exec);
 AT_CMD_EXPORT("AT+WIOTAFREQ", "=<freq_idx>", RT_NULL, at_freq_query, at_freq_setup, RT_NULL);
@@ -1932,13 +1933,16 @@ AT_CMD_EXPORT("AT+WIOTAIOTENUM", "=<max_num>", RT_NULL, RT_NULL, at_max_iote_num
 AT_CMD_EXPORT("AT+WIOTABCMCS", "=<bc_mcs>", RT_NULL, RT_NULL, at_bc_mcs_setup, RT_NULL);
 AT_CMD_EXPORT("AT+WIOTALOG", "=<mode>", RT_NULL, RT_NULL, at_wiotalog_setup, RT_NULL);
 AT_CMD_EXPORT("AT+WIOTACRC", "=<crc_limit>", RT_NULL, at_wiotacrc_query, at_wiotacrc_setup, RT_NULL);
-AT_CMD_EXPORT("AT+WIOTALOOPTEST", "=<cmd>,<data_len>,<mcs>,<packet_num>", RT_NULL, RT_NULL, at_wiota_loop_test_setup, RT_NULL);
-AT_CMD_EXPORT("AT+WIOTAMEM", "=<type>,<addr>", RT_NULL, RT_NULL, at_wiota_mem_setup, RT_NULL);
+AT_CMD_EXPORT("AT+WIOTALOOPTEST", "=<cmd>,<mcs>,<packet_num>,<is_dl>", RT_NULL, RT_NULL, at_wiota_loop_test_setup, RT_NULL);
+AT_CMD_EXPORT("AT+WIOTAREADREG", "=<type>,<addr>", RT_NULL, RT_NULL, at_wiota_read_reg_setup, RT_NULL);
+AT_CMD_EXPORT("AT+WIOTAWRITEREG", "=<vlaue>,<addr>", RT_NULL, RT_NULL, at_wiota_write_reg_setup, RT_NULL);
 AT_CMD_EXPORT("AT+WIOTARATE", "=<rate_mode>,<rate_value>", RT_NULL, RT_NULL, at_wiota_rate_setup, RT_NULL);
+#ifdef WIOTA_BC_MODE_TEST
+AT_CMD_EXPORT("AT+WIOTABCMODE", "=<mode>", RT_NULL, RT_NULL, at_wiota_bcmode_setup, RT_NULL);
+#endif
 #ifdef WIOTA_AP_STATE_INFO
 AT_CMD_EXPORT("AT+WIOTASTATE", "=<get_or_reset>,<user_id>,<state_type>", RT_NULL, RT_NULL, at_wiota_state_setup, RT_NULL);
 #endif
 AT_CMD_EXPORT("AT+THROUGHTSTART", "=<type>,<time>,<general_report>,<test_data_len>,<mcs_num>,<send_num>", RT_NULL, RT_NULL, at_test_mode_start, RT_NULL);
 AT_CMD_EXPORT("AT+THROUGHTSTOP", RT_NULL, RT_NULL, RT_NULL, RT_NULL, at_test_mode_stop_exec);
-
 #endif

@@ -223,12 +223,12 @@ static int uc8x88_hwtimer_init(void)
         if (rt_device_hwtimer_register(&uc8x88_hwtimer_obj[i].time_device, uc8x88_hwtimer_obj[i].name, uc8x88_hwtimer_obj[i].tim_handle) == RT_EOK)
         {
             LOG_D("%s register success", uc8x88_hwtimer_obj[i].name);
-            rt_kprintf("<<<<%s register success\n", uc8x88_hwtimer_obj[i].name);
+            // rt_kprintf("<<<<%s register success\n", uc8x88_hwtimer_obj[i].name);
         }
         else
         {
             LOG_E("%s register failed", uc8x88_hwtimer_obj[i].name);
-            rt_kprintf("<<<%s register failed\n", uc8x88_hwtimer_obj[i].name);
+            // rt_kprintf("<<<%s register failed\n", uc8x88_hwtimer_obj[i].name);
             result = -RT_ERROR;
         }
     }

@@ -218,5 +218,5 @@ void ISR_TB_OVF(void )
     TIMER_Set_Count(UC_TIMER1, 0);
 
     gpoi_8088_to_8288_change_value();
-    rt_kprintf("<<<uc_8088_tick_handler \n");
+    // rt_kprintf("<<<uc_8088_tick_handler \n");
 }

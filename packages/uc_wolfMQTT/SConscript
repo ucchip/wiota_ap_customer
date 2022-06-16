@@ -1,0 +1,10 @@
+from building import *
+
+cwd = GetCurrentDir()
+path = [cwd, ]
+src = Glob('./port/*.c')
+src += Glob('./src/*.c')
+
+group = DefineGroup('uc_wolfMQTT', src, depend = ['PKG_USING_UC_WOLFMQTT'], CPPPATH = path)
+
+Return('group')

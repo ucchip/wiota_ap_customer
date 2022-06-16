@@ -131,6 +131,12 @@ typedef struct
 
 typedef struct
 {
+    u8_t group_idx;
+    u8_t subframe_idx;
+}dev_pos_t;
+
+typedef struct
+{
     void *semaphore;
     u32_t result;
     u32_t scramble_id_num;
@@ -143,6 +149,14 @@ typedef struct
     u32_t scramble_id_num;
     u32_t *scramble_id;
 }uc_query_recv_t;
+
+typedef struct
+{
+    u32_t user_id;
+    u16_t data_len;
+    u8_t type;
+    u8_t *data;
+}uc_recv_ul_data_t;
 
 typedef struct
 {
@@ -225,7 +239,7 @@ typedef enum
 {
     UC_RATE_NORMAL = 0, //not currently supported
     UC_RATE_MID = 1,    //muti sm mode
-    UC_RATE_HIGH = 3    //grant mode
+    UC_RATE_HIGH = 2    //grant mode
 }uc_data_rate_mode_e;
 
 typedef enum
@@ -238,30 +252,48 @@ typedef enum
     UC_MCS_LEVEL_5,
     UC_MCS_LEVEL_6,
     UC_MCS_LEVEL_7,
-    UC_MCS_LEVEL_INVALID = 8,
+    UC_MCS_LEVEL_AUTO = 8,
+    UC_MCS_LEVEL_INVALID = 9,
 }uc_mcs_level_e;
+
+typedef enum
+{
+    WIOTA_STATE_DEFAULT = 0,
+    WIOTA_STATE_INIT = 1,
+    WIOTA_STATE_RUN = 2,
+    WIOTA_STATE_EXIT = 3
+} wiota_run_state_e;
 
 extern boolean ap_pgw_get_grant_mode(void);
 extern void scheduler_reset(void);
 #ifdef UC8088_FACTORY_MODE
 extern s32_t ap_pgw_handle_factory_msg(u32_t subType, u32_t data);
-extern s32_t ap_pgw_handle_loop_test_msg(u8_t *data, u16_t dataLen, u8_t mcs, u32_t packetNum);
+extern s32_t ap_pgw_handle_loop_test_msg(u8_t mcs, u32_t packetNum, u8_t dlMode);
 extern void ap_pgw_set_save_loop_test_id_flag(boolean isSave);
+extern u8_t ap_pgw_get_loop_test_is_rach(void);
+extern u8_t *gen_rand_test_data(u16_t data_len);
 #endif
 
 typedef void (*uc_send_callback)(uc_send_recv_t *result);
 typedef void (*uc_scan_callback)(uc_scan_recv_t *result);
 typedef void (*uc_temp_callback)(uc_temp_recv_t *result);
 typedef void (*uc_query_callback)(uc_query_recv_t *result);
-typedef void (*uc_iote_access)(u32_t user_id);
+typedef void (*uc_iote_access)(u32_t user_id, u8_t group_idx, u8_t subframe_idx);
 typedef void (*uc_iote_drop)(u32_t user_id);
 typedef void (*uc_recv)(u32_t user_id, u8_t *data, u32_t data_len, u8_t type);
 
+void uc_wiota_set_state(wiota_run_state_e state);
+
 u8_t uc_wiota_get_state(void);
 
-u32_t uc_wiota_query_addr_content(u32_t type, u32_t addr);
+u32_t uc_wiota_read_value_from_reg(u32_t type, u32_t addr);
+
+void uc_wiota_write_value_to_reg(u32_t value, u32_t addr);
 
 u32_t uc_wiota_read_def_counter(void);
+
+// This function definition has been moved to uc_wiota_static.h
+//void uc_wiota_get_freq_list(u8_t *list);
 
 /*********************************************************************************
  This function is get version of sw
@@ -734,9 +766,9 @@ void uc_wiota_run(void);
         in:NULL.
         out:NULL.
 
- return:uc_result_e.
+ return:NULL.
 **********************************************************************************/
-uc_result_e uc_wiota_exit(void);
+void uc_wiota_exit(void);
 
 /*********************************************************************************
  This function is to set the connection timeout of iote in idle state.
@@ -808,6 +840,8 @@ void uc_wiota_log_switch(uc_log_type_e log_type, u8_t is_open);
  return:NULL.
 **********************************************************************************/
 uc_result_e uc_wiota_query_scrambleid_by_userid(u32_t *user_id, u32_t user_id_num, uc_query_callback callback, uc_query_recv_t *query_result);
+
+dev_pos_t *uc_wiota_get_dev_pos_by_scrambleid(u32_t *scramble_id, u32_t scramble_id_num);
 #ifdef __cplusplus
 }
 #endif
