@@ -15,6 +15,7 @@ src/uc_exceptions.c
 src/uc_int.c
 src/uc_string.c
 src/uc_utils.c
+src/uc_vsscanf.c
 ''')
 
 if GetDepend(['RT_USING_PIN']):

@@ -326,7 +326,7 @@ void passthrough_manager_task(void *pPara)
 
         while (uc_mqtt_get_state() == STATE_CONNECT)
         {
-            nQueueRes = manager_recv_queue(net_passthrough_handle, (void *)&page, -1);
+            nQueueRes = manager_recv_queue(net_passthrough_handle, (void *)&page, 200);
             if ((QUEUE_EOK != nQueueRes) || (RT_NULL == page))
             {
                 continue;

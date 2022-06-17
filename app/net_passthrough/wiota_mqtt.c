@@ -408,6 +408,8 @@ void uc_mqtt_connect(MqttMsgCb msg_cb)
 
 void uc_mqtt_disconnect(void)
 {
+	if (STATE_DISCONNECT == uc_mqtt_state)
+		return ;
     rt_kprintf("uc_mqtt_disconnect()\n");
     uc_mqtt_state = STATE_DISCONNECT;
     mqttclient_disconn(&mqttCtx);
@@ -478,7 +480,7 @@ void uc_mqtt_wait_msg(void *pPara)
     }
     if (nRet != MQTT_CODE_SUCCESS)
     {
-//        uc_mqtt_disconnect();
+        uc_mqtt_disconnect();
     }
 }
 
