@@ -1,40 +1,25 @@
+# for module compiling
+import os
+Import('RTT_ROOT')
 from building import *
 
-cwd = GetCurrentDir()
-src = []
+objs = []
+cwd  = GetCurrentDir()
+list = os.listdir(cwd)
+
 path = []
-
-src_manager_iote_data = Glob(cwd + '/manager_iote_data/*.c')
-path_manager_iote_data = [cwd + '/manager_iote_data']
-
-src_manager_network_data = Glob(cwd + '/manager_network_data/*.c')
-path_manager_network_data = [cwd + '/manager_network_data']
-
-src_manager_wiota = Glob(cwd + '/manager_wiota/*.c')
-path_manager_wiota = [cwd + '/manager_wiota']
-
-
-src_manager_wiota_base = Glob(cwd + '/manager_wiota_base/*.c')
-path_manager_wiota_base = [cwd + '/manager_wiota_base']
-
-src_manager_wiota_to_network = Glob(cwd + '/manager_wiota_to_network/*.c')
-path_manager_wiota_to_network = [cwd + '/manager_wiota_to_network']
-
+src = []
 if GetDepend(['WIOTA_APP_DEMO']):
     path += [cwd]
-    path += path_manager_wiota
-    path += path_manager_wiota_base
-    path += path_manager_wiota_to_network
-    path += path_manager_network_data
-    path += path_manager_iote_data
-
     src += Glob("*.c")
-    src += src_manager_wiota
-    src += src_manager_wiota_base
-    src += src_manager_wiota_to_network
-    src += src_manager_network_data
-    src += src_manager_iote_data
 
-group = DefineGroup('wiota_manager', src, depend = [''], CPPPATH = path)
+group1 = DefineGroup('manager1', src, depend = [''], CPPPATH = path)
 
-Return('group')
+for d in list:
+    path = os.path.join(cwd, d)
+    if os.path.isfile(os.path.join(path, 'SConscript')):
+        objs = objs + SConscript(os.path.join(d, 'SConscript'))
+
+group = DefineGroup('app', objs, depend = [''], CPPPATH = [])
+objs += group1
+Return('objs')
