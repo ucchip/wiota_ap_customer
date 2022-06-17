@@ -6,7 +6,6 @@ Debug/
 *.mk
 *.txt
 *.uzf
-*.a
 .build-debug/
 uc8088_wiota_lib.txt
 uc8088_wiota_lib_test.txt
