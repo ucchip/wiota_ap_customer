@@ -9,8 +9,8 @@ src = Glob('app/test/*.c')
 if GetDepend(['RT_USING_AT','UC8088_MODULE']):
     src += ['at/at_wiota.c', 'at/at_boot.c']
 
-if GetDepend(['WIOTA_FACTORY_FUNC']):
-    src += ['at/at_factory.c']
+    if GetDepend(['UC8088_FACTORY_TEST']):
+        src += ['at/at_factory.c']
 
 lib = ['libwin_wiota_ap']
 libpath = [cwd + '/lib']

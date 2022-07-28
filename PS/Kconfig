@@ -12,12 +12,8 @@ config _FPGA_TRACE_TEST_
     bool "default open(_FPGA_TRACE_TEST_)"
     default y
 
-config UC8088_FACTORY_MODE
-    bool "factory mode,recv and send test, default open(UC8088_FACTORY_MODE)"
-    default y
-
-config WIOTA_ULDL_PROCESS_TRACE
-    bool "ul and dl process log, default open(WIOTA_ULDL_PROCESS_TRACE)"
+config UC8088_FACTORY_TEST
+    bool "factory mode,recv and send test, default open(UC8088_FACTORY_TEST)"
     default y
 
 config WIOTA_RECORD_TEST

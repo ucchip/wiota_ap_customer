@@ -6,91 +6,96 @@
 #include <uc_print.h>
 
 int check_spi_flash();
-void load_block(unsigned int addr, unsigned int len, int* dest);
+void load_block(unsigned int addr, unsigned int len, int *dest);
 void uart_send_block_done(unsigned int i);
 void jump_and_start(volatile int *ptr);
 
-/*keep bootstrap code as simple 
+/*keep bootstrap code as simple
  * as possible, we don't even have
  * uart here!
  * default SPI only works in legacy MODE!!!
  */
 
-#define	REG_XIP_CTRL			*((volatile uint32_t *)0x1A10C02C)
-#define REG_XIP_CMD     		*((volatile uint32_t *)0x1A10C030)
-#define SEG_TBL_SIZE    20
-#define REG_MTR_CFG_0   0x1A107040
-#define REG_MTR_CFG_1   0x1A107044
-#define REG_MTR_CFG_2   0x1A107048
-#define REG_MTR_CFG_3   0x1A10704C
-#define REG_MTR_CFG_4   0x1A107050
-#define REG_MTR_CFG_5   0x1A107054
-#define REG_MTR_CFG_6   0x1A107058
-#define REG_MTR_CFG_7   0x1A10705C
+#define REG_XIP_CTRL *((volatile uint32_t *)0x1A10C02C)
+#define REG_XIP_CMD *((volatile uint32_t *)0x1A10C030)
+#define SEG_TBL_SIZE 20
+#define REG_MTR_CFG_0 0x1A107040
+#define REG_MTR_CFG_1 0x1A107044
+#define REG_MTR_CFG_2 0x1A107048
+#define REG_MTR_CFG_3 0x1A10704C
+#define REG_MTR_CFG_4 0x1A107050
+#define REG_MTR_CFG_5 0x1A107054
+#define REG_MTR_CFG_6 0x1A107058
+#define REG_MTR_CFG_7 0x1A10705C
 
-#define	SYS_CLK			(131072000)
+#define SYS_CLK (131072000)
 
-extern uint32_t _stbl_end ;
+extern uint32_t _stbl_end;
 extern uint32_t _sdata, edata;
 extern uint32_t _rom_start;
 uint16_t auto_dummy = 0;
 __reset int flash_read_sr();
 
-__attribute__((section(".critical"))) \
-void flash_qspi_en()
+__attribute__((section(".critical"))) void flash_qspi_en()
 {
-	uint32_t data;
-	while(REG_XIP_CTRL & 0x1);
-	/* enable write */
-	//warm up cache
-	//flash read sr cannot be interrupted
-	//by cache fetch
-	while ((flash_read_sr()&0x3));
-	spi_setup_cmd_addr(0x06, 8, 0, 0);
-	spi_set_datalen(0);
-	spi_start_transaction(SPI_CMD_WR, SPI_CSN0);
-	while(REG_XIP_CTRL & 0x1);
-	while ((spi_get_status()) != 1);
-	// enables QPI
-	// cmd 0x01 SR-1 CR-1 Spansion QFLASH
-	spi_setup_cmd_addr(0x01,8,0,0);
-	spi_set_datalen(16);
-	data = 0x00020000;
-	spi_write_fifo((int *)&data,16); //cr1-bit1;
-	spi_start_transaction(SPI_CMD_WR, SPI_CSN0);
-	while(REG_XIP_CTRL & 0x1);
-	while ((spi_get_status()) != 1);
-	/* check flash SR-1 */
-	while ((flash_read_sr()&0x3));
+    uint32_t data;
+    while (REG_XIP_CTRL & 0x1)
+        ;
+    /* enable write */
+    //warm up cache
+    //flash read sr cannot be interrupted
+    //by cache fetch
+    while ((flash_read_sr() & 0x3))
+        ;
+    spi_setup_cmd_addr(0x06, 8, 0, 0);
+    spi_set_datalen(0);
+    spi_start_transaction(SPI_CMD_WR, SPI_CSN0);
+    while (REG_XIP_CTRL & 0x1)
+        ;
+    while ((spi_get_status()) != 1)
+        ;
+    // enables QPI
+    // cmd 0x01 SR-1 CR-1 Spansion QFLASH
+    spi_setup_cmd_addr(0x01, 8, 0, 0);
+    spi_set_datalen(16);
+    data = 0x00020000;
+    spi_write_fifo((int *)&data, 16); //cr1-bit1;
+    spi_start_transaction(SPI_CMD_WR, SPI_CSN0);
+    while (REG_XIP_CTRL & 0x1)
+        ;
+    while ((spi_get_status()) != 1)
+        ;
+    /* check flash SR-1 */
+    while ((flash_read_sr() & 0x3))
+        ;
 }
 
-__attribute__((section(".critical"))) \
-int xip_dummy_set()
+__attribute__((section(".critical"))) int xip_dummy_set()
 {
-	uint32_t data;
-	register int i;
-	REG_XIP_CTRL |= 0x00008000;
-	
-	for (i=4;i<12;i++)
-	{
-		spi_setup_dummy(i, 0);
-		spi_start_transaction(SPI_CMD_QRD, SPI_CSN0);
-		spi_read_fifo((int *) &data,32);
-		
-		if (data == 0xdeadbeef)
-		{
-			break;
-		}
-	}
-	
-	/* set xip fetcher parameter*/ 
-	/* this must be done with code in cache */
-    while(REG_XIP_CTRL & 0x1);
-	/* set xip QSPI RD cmd and read dummy, spansion or GD only */
-	REG_XIP_CMD = 0x11101011;
-	REG_XIP_CTRL = (0x0000a006 | i << 3);
-  return i;
+    uint32_t data;
+    register int i;
+    REG_XIP_CTRL |= 0x00008000;
 
+    for (i = 4; i < 12; i++)
+    {
+        spi_setup_dummy(i, 0);
+        spi_start_transaction(SPI_CMD_QRD, SPI_CSN0);
+        spi_read_fifo((int *)&data, 32);
+
+        if (data == 0xdeadbeef)
+        {
+            break;
+        }
+    }
+
+    /* set xip fetcher parameter*/
+    /* this must be done with code in cache */
+    while (REG_XIP_CTRL & 0x1)
+        ;
+    /* set xip QSPI RD cmd and read dummy, spansion or GD only */
+    REG_XIP_CMD = 0x11101011;
+    REG_XIP_CTRL = (0x0000a006 | i << 3);
+    return i;
 }
 
 /* keep RESET section under 2 cache blocks, otherwise
@@ -98,107 +103,108 @@ int xip_dummy_set()
  */
 __reset void boot_strap()
 {
-	uint32_t data;
-	uint32_t stbl_flash_addr;
-	uint32_t stbls[SEG_TBL_SIZE];
-	uint32_t *mtr_addr = (uint32_t *) REG_MTR_CFG_0;
-	register int i;
-	register int count;
-	uint8_t *src, *dest;
-        //    uint16_t auto_dummy=0;
-        //    dcdc in ldo mode
-        volatile uint32_t * ptr = (volatile uint32_t*)(0x1a104200);
-        *ptr |= 0x100;
+    uint32_t data;
+    uint32_t stbl_flash_addr;
+    uint32_t stbls[SEG_TBL_SIZE];
+    uint32_t *mtr_addr = (uint32_t *)REG_MTR_CFG_0;
+    register int i;
+    register int count;
+    uint8_t *src, *dest;
+    //    uint16_t auto_dummy=0;
+    //    dcdc in ldo mode
+    volatile uint32_t *ptr = (volatile uint32_t *)(0x1a104200);
+    *ptr |= 0x100;
 
-        volatile uint32_t * ptr4 = (volatile uint32_t*)(0x1a104204);
-        *ptr4 &= (~(0x7<<15));
-        *ptr4 |= (0x1<<18);
-        *ptr4 &= (~(0x1<<19));
-        *ptr4 |= (0xf<<20);
+    volatile uint32_t *ptr4 = (volatile uint32_t *)(0x1a104204);
+    *ptr4 &= (~(0x7 << 15));
+    *ptr4 |= (0x1 << 18);
+    *ptr4 &= (~(0x1 << 19));
+    *ptr4 |= (0xf << 20);
 
-        //1.9v  010
-        volatile uint32_t * ptr5 = (volatile uint32_t*)(0x1a10422c);
+    //1.9v  010
+    volatile uint32_t *ptr5 = (volatile uint32_t *)(0x1a10422c);
 
-        *ptr5&= (~(0x0<<28));
-        *ptr5 |= (0x1<<29);
-        *ptr5 &= (~(0x0<<30));
+    *ptr5 &= (~(0x0 << 28));
+    *ptr5 |= (0x1 << 29);
+    *ptr5 &= (~(0x0 << 30));
 
-	/* turn off device IRQ */
-	IER = 0;
-	IPR = 0;
-	/* soft reset,
-	* spi master will only kick in 
+    /* turn off device IRQ */
+    IER = 0;
+    IPR = 0;
+    /* soft reset,
+	* spi master will only kick in
 	* when xip controller release SPI
-	*/  
-	//  spi_setup_cmd_addr(0xF0, 8, 0, 0);
-	//  spi_set_datalen(0);
-	//  spi_start_transaction(SPI_CMD_WR, SPI_CSN0);
-	//  while ((spi_get_status() & 0xFFFF) != 1);    
+	*/
+    //  spi_setup_cmd_addr(0xF0, 8, 0, 0);
+    //  spi_set_datalen(0);
+    //  spi_start_transaction(SPI_CMD_WR, SPI_CSN0);
+    //  while ((spi_get_status() & 0xFFFF) != 1);
 
-  /* now safe to kickin mode switch spi cmd */
-  // enables QPI
- //*(volatile int*) (SPI_REG_CLKDIV) = 0x4;
-     /* load segment and zip control register */
-   stbl_flash_addr = (uint32_t)(&_stbl_end) - (SEG_TBL_SIZE<<2);
-   stbl_flash_addr <<= 8; //24bit flash addr, shift to higher 24bits.
-   /* read segmentation table */
+    /* now safe to kickin mode switch spi cmd */
+    // enables QPI
+    //*(volatile int*) (SPI_REG_CLKDIV) = 0x4;
+    /* load segment and zip control register */
+    stbl_flash_addr = (uint32_t)(&_stbl_end) - (SEG_TBL_SIZE << 2);
+    stbl_flash_addr <<= 8; //24bit flash addr, shift to higher 24bits.
+    /* read segmentation table */
 
-//   spi_setup_cmd_addr(0x11101011,32,stbl_flash_addr,24); //0xEB read 
-   spi_setup_cmd_addr(0x03,8,stbl_flash_addr,24); //0xEB read 
-  
-   spi_set_datalen((SEG_TBL_SIZE<<5)); //cmd send read 8 more bits.
-   spi_setup_dummy(0, 0);
-   while(REG_XIP_CTRL & 0x1);
-   spi_start_transaction(SPI_CMD_RD, SPI_CSN0);
-   while(REG_XIP_CTRL & 0x1);
-   spi_read_fifo((int *) stbls,(SEG_TBL_SIZE<<5));
-   /* we only have 8 mtr regs now */
-   for (i=7;i>=0;i--)
-   {
-       *(mtr_addr + i) = stbls[i];
-   }
-   /* now safe to access RO memory area */
-   /* cp init data from RO to RAM */
-   count = ((uint32_t)&edata - (uint32_t)&_sdata);
-   dest = (uint8_t *) &_sdata;
-   src = (uint8_t * ) stbls[19];
-   for (i=0;i<count;i++)
-   {
-      *(dest++) = *(src++);
-   }
-   
-   
-//  uint32_t f = 0x88f117A5 + factor + 0x1000000;
-  volatile uint32_t * ptr1 = (volatile uint32_t*)(0x1a104210);
-  volatile uint32_t * ptr2 = (volatile uint32_t*)(0x1a104218);
-  volatile uint32_t * ptr3 = (volatile uint32_t*)(0x1a10420c);
-  *(ptr1) = 0x891917e5 + 0;
-  *(ptr2) = 0x4fab5555;
-  
+    //   spi_setup_cmd_addr(0x11101011,32,stbl_flash_addr,24); //0xEB read
+    spi_setup_cmd_addr(0x03, 8, stbl_flash_addr, 24); //0xEB read
+
+    spi_set_datalen((SEG_TBL_SIZE << 5)); //cmd send read 8 more bits.
+    spi_setup_dummy(0, 0);
+    while (REG_XIP_CTRL & 0x1)
+        ;
+    spi_start_transaction(SPI_CMD_RD, SPI_CSN0);
+    while (REG_XIP_CTRL & 0x1)
+        ;
+    spi_read_fifo((int *)stbls, (SEG_TBL_SIZE << 5));
+    /* we only have 8 mtr regs now */
+    for (i = 7; i >= 0; i--)
+    {
+        *(mtr_addr + i) = stbls[i];
+    }
+    /* now safe to access RO memory area */
+    /* cp init data from RO to RAM */
+    count = ((uint32_t)&edata - (uint32_t)&_sdata);
+    dest = (uint8_t *)&_sdata;
+    src = (uint8_t *)stbls[19];
+    for (i = 0; i < count; i++)
+    {
+        *(dest++) = *(src++);
+    }
+
+    //  uint32_t f = 0x88f117A5 + factor + 0x1000000;
+    volatile uint32_t *ptr1 = (volatile uint32_t *)(0x1a104210);
+    volatile uint32_t *ptr2 = (volatile uint32_t *)(0x1a104218);
+    volatile uint32_t *ptr3 = (volatile uint32_t *)(0x1a10420c);
+    *(ptr1) = 0x891917e5 + 0;
+    *(ptr2) = 0x4fab5555;
+
 #if 0
 {
 	uint64_t ullTmp;
 	uint32_t nFra = 0, nTmp;
 	uint16_t usInt, usTmp;
-	
+
 	usTmp = SYS_CLK / 16384000;
 	usInt = (SYS_CLK / 26000000) & 0x1F;
 	ullTmp = (uint64_t)(SYS_CLK % 26000000) * (1 << 23);
-	
+
 	while(ullTmp >= 26000000)
 	{
 		ullTmp = ullTmp - 26000000;
 		nFra = nFra + 1;
 	}
-	
+
 	nTmp = ullTmp;
-	
+
 	if(nTmp >= 13000000)
 		nFra = nFra + 1;
-	
+
 	data = *((volatile uint32_t *)0x1A104218);
 	data = data & 0xFEFFFFFF;
-	
+
 	if(0 == (usTmp & 0x1))
 	{
 		*((volatile uint32_t *)0x1A104218) = data | 0x1A00000;
@@ -206,7 +212,7 @@ __reset void boot_strap()
 	}
 	else
 		*((volatile uint32_t *)0x1A104218) = data | 0xA00000;
-	
+
 	*((volatile uint32_t *)0x1A104210) = (0x891917E5 & 0xFE003F00) | (0x8 << 21) | (3 << 19) | ((usTmp & 0x1F) << 14) | (7 << 5) | usInt;
 	data = *((volatile uint32_t *)0x1A104214);
 	*((volatile uint32_t *)0x1A104214) = (data & 0x800000FF) | ((nFra & 0x7FFFFF) << 8);
@@ -217,7 +223,7 @@ __reset void boot_strap()
 	/* switch from DCXO clk to PLL clk */
 	while(REG_XIP_CTRL & 0x1);
 	*((volatile uint32_t *)0x1A10420C) = 0x4100BC88;
-	data = PM_CPC; 
+	data = PM_CPC;
 	data |= 0xF1;
 	PM_CPC = data;
 //	while(!((PM_CPC) >> 31));	// wait for sys clk switch to PLL
@@ -227,97 +233,98 @@ __reset void boot_strap()
         }
         *((volatile uint32_t *)0x1A10420C) = 0x4000BC88;
 #else
-  /* switch from DCXO clk to PLL clk */
-  while(REG_XIP_CTRL & 0x1);
-  *(ptr3) = 0x4100bc88;
-  data = PM_CPC; 
-  data |= 0xf1;
-  PM_CPC = data;
-//  while(!((PM_CPC) >> 31));	 //wait for sys clk switch to PLL
-  for(int j=0;j<90;j++)
-  {
-      asm("nop");
-  }
- 
-  *(ptr3) = 0x4000bc88;
+    /* switch from DCXO clk to PLL clk */
+    while (REG_XIP_CTRL & 0x1)
+        ;
+    *(ptr3) = 0x4100bc88;
+    data = PM_CPC;
+    data |= 0xf1;
+    PM_CPC = data;
+    //  while(!((PM_CPC) >> 31));	 //wait for sys clk switch to PLL
+    for (int j = 0; j < 90; j++)
+    {
+        asm("nop");
+    }
+
+    *(ptr3) = 0x4000bc88;
 
 #endif
 
-	
+    flash_qspi_en();
 
-	flash_qspi_en();
-  
-	/* set xip QSPI RD cmd, spansion or GD only */
-	//*((uint32_t *)(REG_XIP_CMD)) = 0x11101011;
-	/* XIP Controller Defs
+    /* set xip QSPI RD cmd, spansion or GD only */
+    //*((uint32_t *)(REG_XIP_CMD)) = 0x11101011;
+    /* XIP Controller Defs
 	* bit 0 RO - sts, 1=busy;BIT 1, Enable Flash Fetch. CAUTION! default 1
 	* bit 2 SPI mode 0=SPI 1=QSPI
 	* bit 3:6 Dummy cycles as in specs, must add extra 2 for modebits.see pdf
-	* bit 7 rsv 
+	* bit 7 rsv
 	* bit 8:13 spi_cmd_len in bits, default 8bits.
 	* xip control Enable+QSPI READ+4+2Dummy. 2Extra mode bits as for s256x4.
-	* cmd is send as 32bit so on SPI is 8bits. 0xEB is only send out on 
+	* cmd is send as 32bit so on SPI is 8bits. 0xEB is only send out on
 	* sdo0,  cmd expand from 8 to 32...
-	* so register valule bit 3-6 is 4b'0110 
+	* so register valule bit 3-6 is 4b'0110
 	* 0x00002036, 6 dummy,QSPI, 32bit cmd
 	* 0x0000203E, 7 dummy, QSPI, 32bit cmd
 	* 0x00002046, 8 dymmy, QSPI, 32bit cmd
 	* 0x00002056, 10 dummy,QSPI, 32bit cmd
 	*/
-	/* RD dummy auto detection 
-	 * read 32bit word from flash addr 0x90, 
+    /* RD dummy auto detection
+	 * read 32bit word from flash addr 0x90,
 	 * compare to get 0xdeadbeef
 	 */
-    spi_setup_cmd_addr(0x11101011,32,0x9000,24); 
-    spi_set_datalen(32);    
+    spi_setup_cmd_addr(0x11101011, 32, 0x9000, 24);
+    spi_set_datalen(32);
     /*bump SPI CLK @ highest division */
-    while(REG_XIP_CTRL & 0x1);
-    *(volatile int*) (SPI_REG_CLKDIV) = 0x0;
-	auto_dummy = xip_dummy_set();
-	return;
+    while (REG_XIP_CTRL & 0x1)
+        ;
+    *(volatile int *)(SPI_REG_CLKDIV) = 0x0;
+    auto_dummy = xip_dummy_set();
+    return;
 }
-
 
 __reset int flash_read_sr()
 {
-  uint32_t rdata;
-  spi_setup_cmd_addr(0x05,8,0,0);
-  spi_set_datalen(32);
-  spi_setup_dummy(0, 0);
-  while(REG_XIP_CTRL & 0x1);
-  spi_start_transaction(SPI_CMD_RD, SPI_CSN0);
-  while(REG_XIP_CTRL & 0x1);
-  while ((spi_get_status() & 0xFFFF) != 1);
-  spi_read_fifo((int *)&rdata, 32);
-  return rdata;
+    uint32_t rdata;
+    spi_setup_cmd_addr(0x05, 8, 0, 0);
+    spi_set_datalen(32);
+    spi_setup_dummy(0, 0);
+    while (REG_XIP_CTRL & 0x1)
+        ;
+    spi_start_transaction(SPI_CMD_RD, SPI_CSN0);
+    while (REG_XIP_CTRL & 0x1)
+        ;
+    while ((spi_get_status() & 0xFFFF) != 1)
+        ;
+    spi_read_fifo((int *)&rdata, 32);
+    return rdata;
 }
 
 __reset void boot_noop()
 {
-	__asm__ ("nop");
+    __asm__("nop");
 }
 
-__reset  int check_spi_flash() {
-  int err = 0;
-  int rd_id[2];
+__reset int check_spi_flash()
+{
+    int err = 0;
+    int rd_id[2];
 
-  // reads flash ID
-  spi_setup_cmd_addr(0x9F, 8, 0, 0);
-  spi_set_datalen(64);
-  spi_setup_dummy(0, 0);
-  spi_start_transaction(SPI_CMD_RD, SPI_CSN0);
-  spi_read_fifo(rd_id, 64);
+    // reads flash ID
+    spi_setup_cmd_addr(0x9F, 8, 0, 0);
+    spi_set_datalen(64);
+    spi_setup_dummy(0, 0);
+    spi_start_transaction(SPI_CMD_RD, SPI_CSN0);
+    spi_read_fifo(rd_id, 64);
 
+    // id should be 0x0102194D
+    if (((rd_id[0] >> 24) & 0xFF) != 0x01)
+        err++;
 
-  // id should be 0x0102194D
-  if (((rd_id[0] >> 24) & 0xFF) != 0x01)
-    err++;
+    // check flash model is 128MB or 256MB 1.8V
+    if ((((rd_id[0] >> 8) & 0xFFFF) != 0x0219) &&
+        (((rd_id[0] >> 8) & 0xFFFF) != 0x2018))
+        err++;
 
-  // check flash model is 128MB or 256MB 1.8V
-  if ( (((rd_id[0] >> 8) & 0xFFFF) != 0x0219) &&
-       (((rd_id[0] >> 8) & 0xFFFF) != 0x2018) )
-    err++;
-
-  return err;
+    return err;
 }
-

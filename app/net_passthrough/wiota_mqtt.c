@@ -20,10 +20,10 @@
 #define MAX_BUFFER_SIZE 2048
 
 static MQTTCtx mqttCtx;
-static struct netdev* netdev = RT_NULL;
+static struct netdev *netdev = RT_NULL;
 static connect_state uc_mqtt_state = STATE_DISCONNECT;
 
-int mqttclient_conn(MQTTCtx* mqttCtx, MqttMsgCb msg_cb)
+int mqttclient_conn(MQTTCtx *mqttCtx, MqttMsgCb msg_cb)
 {
     int rc = MQTT_CODE_SUCCESS;
 
@@ -40,8 +40,8 @@ int mqttclient_conn(MQTTCtx* mqttCtx, MqttMsgCb msg_cb)
     }
 
     /* setup tx/rx buffers */
-    mqttCtx->tx_buf = (byte*)WOLFMQTT_MALLOC(MAX_BUFFER_SIZE);
-    mqttCtx->rx_buf = (byte*)WOLFMQTT_MALLOC(MAX_BUFFER_SIZE);
+    mqttCtx->tx_buf = (byte *)WOLFMQTT_MALLOC(MAX_BUFFER_SIZE);
+    mqttCtx->rx_buf = (byte *)WOLFMQTT_MALLOC(MAX_BUFFER_SIZE);
 
     /* Initialize MqttClient structure */
     rc = MqttClient_Init(&mqttCtx->client, &mqttCtx->net,
@@ -87,8 +87,8 @@ int mqttclient_conn(MQTTCtx* mqttCtx, MqttMsgCb msg_cb)
         /* Send client id in LWT payload */
         mqttCtx->lwt_msg.qos = mqttCtx->qos;
         mqttCtx->lwt_msg.retain = 0;
-        mqttCtx->lwt_msg.topic_name = WOLFMQTT_TOPIC_NAME"lwttopic";
-        mqttCtx->lwt_msg.buffer = (byte*)mqttCtx->client_id;
+        mqttCtx->lwt_msg.topic_name = WOLFMQTT_TOPIC_NAME "lwttopic";
+        mqttCtx->lwt_msg.buffer = (byte *)mqttCtx->client_id;
         mqttCtx->lwt_msg.total_len = (word16)XSTRLEN(mqttCtx->client_id);
     }
     /* Optional authentication */
@@ -113,15 +113,15 @@ int mqttclient_conn(MQTTCtx* mqttCtx, MqttMsgCb msg_cb)
     /* Validate Connect Ack info */
     PRINTF("MQTT Connect Ack: Return Code %u, Session Present %d",
            mqttCtx->connect.ack.return_code,
-           (mqttCtx->connect.ack.flags&
-            MQTT_CONNECT_ACK_FLAG_SESSION_PRESENT) ?
-           1 : 0
-          );
+           (mqttCtx->connect.ack.flags &
+            MQTT_CONNECT_ACK_FLAG_SESSION_PRESENT)
+               ? 1
+               : 0);
 
     return rc;
 }
 
-int mqttclient_disconn(MQTTCtx* mqttCtx)
+int mqttclient_disconn(MQTTCtx *mqttCtx)
 {
     int rc = MQTT_CODE_SUCCESS;
 
@@ -173,7 +173,7 @@ static uint32_t mqttclient_get_interval_tick(uint32_t last_tick)
     return interval;
 }
 
-int mqttclient_waitmessage(MQTTCtx* mqttCtx, int timeout_ms)
+int mqttclient_waitmessage(MQTTCtx *mqttCtx, int timeout_ms)
 {
     int rc = MQTT_CODE_SUCCESS;
 
@@ -223,10 +223,18 @@ int mqttclient_waitmessage(MQTTCtx* mqttCtx, int timeout_ms)
         }
     }
 
+    // debug MQTT reconnect
+    // static int nTest = 0;
+    // nTest++;
+    // if ((nTest & 15) == 15)
+    // {
+    //    uc_mqtt_publish("v1/devices/me/rpc/request/123", (uint8_t *)"{}", rt_strlen("{}"), 0, 0, 0);
+    // }
+
     return rc;
 }
 
-static int mqttclient_subscribe(MQTTCtx* mqttCtx, char* topic_name, uint8_t qos)
+static int mqttclient_subscribe(MQTTCtx *mqttCtx, char *topic_name, uint8_t qos)
 {
     int rc = MQTT_CODE_SUCCESS;
     int i = 0;
@@ -258,7 +266,7 @@ static int mqttclient_subscribe(MQTTCtx* mqttCtx, char* topic_name, uint8_t qos)
     /* show subscribe results */
     for (i = 0; i < mqttCtx->subscribe.topic_count; i++)
     {
-        MqttTopic* topic = &mqttCtx->subscribe.topics[i];
+        MqttTopic *topic = &mqttCtx->subscribe.topics[i];
         PRINTF("  Topic %s, Qos %u, Return Code %u",
                topic->topic_filter,
                topic->qos, topic->return_code);
@@ -267,7 +275,7 @@ static int mqttclient_subscribe(MQTTCtx* mqttCtx, char* topic_name, uint8_t qos)
     return rc;
 }
 
-static int mqttclient_unsubscribe(MQTTCtx* mqttCtx, char* topic_name)
+static int mqttclient_unsubscribe(MQTTCtx *mqttCtx, char *topic_name)
 {
     int rc = MQTT_CODE_SUCCESS;
     int i = 0;
@@ -298,7 +306,7 @@ static int mqttclient_unsubscribe(MQTTCtx* mqttCtx, char* topic_name)
     /* show subscribe results */
     for (i = 0; i < mqttCtx->unsubscribe.topic_count; i++)
     {
-        MqttTopic* topic = &mqttCtx->unsubscribe.topics[i];
+        MqttTopic *topic = &mqttCtx->unsubscribe.topics[i];
         PRINTF("  Topic %s, Qos %u, Return Code %u",
                topic->topic_filter,
                topic->qos, topic->return_code);
@@ -307,7 +315,7 @@ static int mqttclient_unsubscribe(MQTTCtx* mqttCtx, char* topic_name)
     return rc;
 }
 
-static int mqttclient_publish(MQTTCtx* mqttCtx, const char* topic_name, uint8_t* data, uint16_t length, uint8_t qos, uint8_t retain, uint8_t duplicate)
+static int mqttclient_publish(MQTTCtx *mqttCtx, const char *topic_name, uint8_t *data, uint16_t length, uint8_t qos, uint8_t retain, uint8_t duplicate)
 {
     int rc = MQTT_CODE_SUCCESS;
 
@@ -357,7 +365,7 @@ int uc_find_netcard(char *card_name)
     }
     while (!netdev_is_link_up(netdev))
     {
-        rt_thread_mdelay(1000);
+        rt_thread_mdelay(100);
     }
     return 0;
 }
@@ -387,7 +395,7 @@ void uc_mqtt_connect(MqttMsgCb msg_cb)
     // mqttCtx.cmd_timeout_ms = 30000;
     // mqttCtx.max_packet_size = 2048;
 
-    // chengdu
+    // chengdu 000b9f3fd63e 0005kn5gd64g
     mqttCtx.app_name = "mqttclient";
     mqttCtx.client_id = "000b9f3fd63e";
     mqttCtx.host = "117.172.29.2";
@@ -408,9 +416,9 @@ void uc_mqtt_connect(MqttMsgCb msg_cb)
 
 void uc_mqtt_disconnect(void)
 {
-	if (STATE_DISCONNECT == uc_mqtt_state)
-		return ;
     rt_kprintf("uc_mqtt_disconnect()\n");
+    if (uc_mqtt_state == STATE_DISCONNECT)
+        return;
     uc_mqtt_state = STATE_DISCONNECT;
     mqttclient_disconn(&mqttCtx);
 }
@@ -437,18 +445,18 @@ int uc_mqtt_unsubscribe(char *topic)
     return nRet;
 }
 
-int uc_mqtt_publish(char     *topic,
-                    uint8_t  *data, 
-                    uint16_t nLength, 
-                    uint8_t  nQos, 
-                    uint8_t  nRetain, 
-                    uint8_t  nDuplicate)
+int uc_mqtt_publish(char *topic,
+                    uint8_t *data,
+                    uint16_t nLength,
+                    uint8_t nQos,
+                    uint8_t nRetain,
+                    uint8_t nDuplicate)
 {
     int nRet = -1;
-    if ((STATE_DISCONNECT == uc_mqtt_state) || 
-        (RT_NULL == topic) || ('\0' == topic[0]) || 
-        (RT_NULL == data) || 
-        (0 == nLength) || 
+    if ((STATE_DISCONNECT == uc_mqtt_state) ||
+        (RT_NULL == topic) || ('\0' == topic[0]) ||
+        (RT_NULL == data) ||
+        (0 == nLength) ||
         (nQos > 2))
     {
         return nRet;

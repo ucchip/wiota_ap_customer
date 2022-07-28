@@ -287,24 +287,22 @@ rt_inline void pin_irq_hdr(int irqno)
     }
 }
 
-// void ISR_GPIO(void)
-// {
-//     uint32_t irq_status = 0;
+void ISR_GPIO(void)
+{
+    uint32_t irq_status = 0;
 
-//     rt_interrupt_enter();
+    rt_interrupt_enter();
 
-//     irq_status = gpio_get_irq_status(UC_GPIO);
-//     pin_irq_hdr(bit2bitno(irq_status));
+    irq_status = gpio_get_irq_status(UC_GPIO);
+    pin_irq_hdr(bit2bitno(irq_status));
 
-//     ICP |= 1<<25;
+    ICP |= 1<<25;
 
-//     rt_interrupt_leave();
-// }
+    rt_interrupt_leave();
+}
 
 int rt_hw_pin_init(void)
 {
-    //    soc_hw_ldo_on();
-    //    gprs_io_init();
     return rt_device_pin_register("pin", &_uc8088_pin_ops, RT_NULL);
 }
 

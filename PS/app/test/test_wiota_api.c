@@ -38,7 +38,7 @@ u8_t *generate_fake_data(u32_t data_len, u8_t repeat_num)
     return fake_data;
 }
 
-void test_show_access_func(u32_t user_id, u8_t group_idx, u8_t subframe_idx)
+void test_show_access_func(u32_t user_id, u8_t group_idx, u8_t burst_idx, u8_t slot_idx)
 {
     rt_kprintf("user_id 0x%x accessed\n", user_id);
 }
@@ -65,13 +65,13 @@ void test_show_recv_data(u32_t user_id, u8_t *recv_data, u32_t data_len, u8_t ty
     rt_kprintf(", reportDataLen %d\n", data_len);
 
     // fake_data = generate_fake_data(80, 10);
-    // uc_wiota_send_data(fake_data, 80, &user_id, 1, 100, test_show_result);
+    // uc_wiota_send_data(fake_data, 80, user_id, 100, test_show_result);
     // rt_free(fake_data);
     // fake_data = NULL;
     // //for test send two
     // rt_thread_mdelay(100);
     // fake_data = generate_fake_data(80, 10);
-    // uc_wiota_send_data(fake_data, 80, &user_id, 1, 100, test_show_result);
+    // uc_wiota_send_data(fake_data, 80, user_id, 100, test_show_result);
     // rt_free(fake_data);
     // fake_data = NULL;
 }
@@ -129,7 +129,7 @@ void test_set_frequency_point(void)
 void test_set_hopping_freq(void)
 {
     uc_wiota_set_hopping_freq(g_freqPoint + 1);
-    uc_wiota_set_hopping_mode(HOPPING_MODE_1); // hopping_mode_e
+    uc_wiota_set_hopping_mode(2, 3); // after working for 2 frames at original freq_point, skip to the freq hopping freq_point and work for 3 frames
 }
 
 // test! set/get connection timeout
@@ -159,17 +159,19 @@ void test_send_normal_data(void)
 {
     u16_t conNum, disConNum;
 
-    iote_info_t *conNode = uc_wiota_get_iote_info(&conNum, &disConNum);
+    uc_iote_info_t *conNode = uc_wiota_get_iote_info(&conNum, &disConNum);
+    uc_iote_info_t *tempNode = NULL;
+
     // u8_t *fake_data = generate_fake_data(8, 10);
     u8_t fake_data[17] = {"Hello WIoTa IoTe"};
 
-    while (conNode != NULL)
+    rt_slist_for_each_entry(tempNode, &conNode->node, node)
     {
         // active send
-        if (conNode->iote_status == STATUS_CONNECTED)
+        if (conNode->iote_status == STATUS_ONLINE)
         {
             u32_t user_id = conNode->user_id;
-            if (UC_OP_SUCC == uc_wiota_send_data(fake_data, 16, &user_id, 1, 10000, RT_NULL))
+            if (UC_OP_SUCC == uc_wiota_send_data(fake_data, 16, user_id, 10000, RT_NULL))
             {
                 rt_kprintf("send data to 0x%x suc!\n", user_id);
             }
@@ -180,10 +182,10 @@ void test_send_normal_data(void)
         }
 
         // paging
-        else if (conNode->iote_status == STATUS_DISCONNECTED)
+        else if (conNode->iote_status == STATUS_OFFLINE)
         {
             u32_t user_id = conNode->user_id;
-            if (UC_OP_SUCC == uc_wiota_send_data(fake_data, 16, &user_id, 1, 10000, RT_NULL))
+            if (UC_OP_SUCC == uc_wiota_send_data(fake_data, 16, user_id, 10000, RT_NULL))
             {
                 rt_kprintf("send data to 0x%x suc!\n", user_id);
             }
@@ -196,7 +198,6 @@ void test_send_normal_data(void)
         {
             // do something
         }
-        conNode = conNode->next;
     }
 
     // rt_free(fake_data);
@@ -204,7 +205,7 @@ void test_send_normal_data(void)
 }
 
 // test! send normal/ota broadcast data
-void test_send_broadcast_data(broadcast_mode_e mode)
+void test_send_broadcast_data(uc_bc_mode_e mode)
 {
     u8_t *testData;
     u8_t *tempData = NULL;
@@ -261,12 +262,7 @@ void test_send_broadcast_data(broadcast_mode_e mode)
 // test! query iote infomation
 void test_query_iote_info(void)
 {
-    u16_t conNum, disConNum;
-
-    iote_info_t *ioteInfo = NULL;
-
-    ioteInfo = uc_wiota_get_iote_info(&conNum, &disConNum);
-    uc_wiota_print_iote_info(ioteInfo, conNum, disConNum);
+    uc_wiota_print_iote_info();
 }
 
 // test! add iote to blacklist
@@ -274,12 +270,9 @@ void test_add_iote_to_blacklist(void)
 {
     u32_t userIdArry[5] = {0x4c00ccdb, 0xfb3eae00, 0x38f8c8d8, 0x8aff8783, 0x33139955};
     u16_t userIdNum = sizeof(userIdArry) / sizeof(u32_t);
-    blacklist_t *headNode = NULL;
-    u16_t blacklistNum = 0;
 
     uc_wiota_add_iote_to_blacklist(userIdArry, userIdNum);
-    headNode = uc_wiota_get_blacklist(&blacklistNum);
-    uc_wiota_print_blacklist(headNode, blacklistNum);
+    uc_wiota_print_blacklist();
 }
 
 // test! read temperature of ap8288
@@ -328,12 +321,9 @@ void test_remove_iote_from_blacklist(void)
 {
     u32_t userIdArry[4] = {0x38f8c8d8, 0xf6149b11, 0x4eaac480, 0x4c00ccdb};
     u16_t userIdNum = sizeof(userIdArry) / sizeof(u32_t);
-    blacklist_t *headNode = NULL;
-    u16_t blacklistNum = 0;
 
     uc_wiota_remove_iote_from_blacklist(userIdArry, userIdNum);
-    headNode = uc_wiota_get_blacklist(&blacklistNum);
-    uc_wiota_print_blacklist(headNode, blacklistNum);
+    uc_wiota_print_blacklist();
 }
 
 // test! wiota exit and restart

@@ -939,6 +939,7 @@ static int NetRead_ex(void* context, byte* buf, int buf_len,
 #ifndef WOLFMQTT_NO_TIMEOUT
     /* Setup timeout */
     setup_timeout(&tv, timeout_ms);
+    setsockopt(sock->fd, SOL_SOCKET, SO_RCVTIMEO, (char*)&tv, sizeof(tv));
 
     /* Setup select file descriptors to watch */
     FD_ZERO(&errfds);

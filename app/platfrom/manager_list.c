@@ -15,10 +15,27 @@ int count_manager_list(t_manager_list *freq_list)
 {
     int count = 0;
     t_manager_list *op_node = freq_list->next;
-    
-    while(op_node != freq_list)
+
+    while (op_node != freq_list)
     {
-        count ++;
+        count++;
+        rt_kprintf("count %d op_node  0x%x\n", count, op_node);
+        op_node = op_node->next;
+    }
+
+    return count;
+}
+
+int count_the_manager_list(t_manager_list *freq_list, void *target, query_element_callback cb)
+{
+    int count = 0;
+    t_manager_list *op_node = freq_list->next;
+
+    while (op_node != freq_list)
+    {
+        if (0 == cb(op_node, target))
+            count++;
+        rt_kprintf("count %d op_node  0x%x\n", count, op_node);
         op_node = op_node->next;
     }
 
@@ -79,8 +96,8 @@ void insert_tail_manager_list(t_manager_list *freq_list, void *data)
         //old_tail = node;
         node->next = freq_list;
         freq_list->pre = node;
-        
-         //rt_kprintf("%s line %d list current no null old_tail 0x%x\n", __FUNCTION__, __LINE__, old_tail);
+
+        //rt_kprintf("%s line %d list current no null old_tail 0x%x\n", __FUNCTION__, __LINE__, old_tail);
     }
 }
 
@@ -90,7 +107,7 @@ t_manager_list *get_head_list(t_manager_list *freq_list)
 
     if (op_node != freq_list)
         return op_node;
-    
+
     return RT_NULL;
 }
 
@@ -167,7 +184,6 @@ int remove_manager_node(t_manager_list *freq_list, void *parament, del_element_c
     }
     return 1;
 }
-
 
 int modify_manager_node(t_manager_list *freq_list, void *parament, modify_element_callback cb)
 {

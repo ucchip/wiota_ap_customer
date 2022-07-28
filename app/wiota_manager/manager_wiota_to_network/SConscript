@@ -8,6 +8,6 @@ if GetDepend(['WIOTA_APP_DEMO']):
     path += [cwd]
     src += Glob("*.c")
 
-group = DefineGroup('platfrom', src, depend = [''], CPPPATH = path)
+group = DefineGroup('manager_wiota_to_network', src, depend = [''], CPPPATH = path)
 
 Return('group')

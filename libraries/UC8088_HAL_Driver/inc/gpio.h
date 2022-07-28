@@ -139,12 +139,10 @@ void gpio_set_pin_irq_type(int pinnumber, int type);
 void gpio_set_pin_irq_en(int pinnumber, int enable);
 int gpio_get_irq_status();
 
-void gpio_init(void);
-void gpio_deinit(void);
 void gpio_set_init(uint8_t pin_number, uint8_t en_func, uint8_t en_pullup);
 void gpio_set_pin_mux(GPIO_CFG_TypeDef* GPIO_CFG, GPIO_PIN pin, GPIO_FUNCTION func);
 GPIO_FUNCTION gpio_get_pin_mux(GPIO_CFG_TypeDef* GPIO_CFG, GPIO_PIN pin);
 void gpio_set_pin_pupd(GPIO_CFG_TypeDef *GPIO_CFG, GPIO_PIN pin, GPIO_PUPD pupd);
 void soc_hw_ldo_on(void);
-void gpoi_8088_to_8288_change_value();
+void gpio_8088_to_8288_change_value();
 #endif // _GPIO_H_

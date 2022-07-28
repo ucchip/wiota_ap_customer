@@ -12,10 +12,9 @@
 #include <at.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include <rtdevice.h>
-#include "uc_wiota_api.h"
-#include "uc_boot_download.h"
+#include <board.h>
+#include "uc_uboot.h"
 
 #ifdef AT_USING_SERVER
 
@@ -40,46 +39,10 @@ static at_result_t atz_exec(void)
 }
 AT_CMD_EXPORT("ATZ", RT_NULL, RT_NULL, RT_NULL, RT_NULL, atz_exec);
 
-#define AT_WDT_DEVICE_NAME "wdt"
-
-static int watchdog_reset(void)
-{
-    rt_err_t ret = RT_EOK;
-    rt_uint32_t timeout = 1;
-    rt_device_t at_wdg_dev = rt_device_find(AT_WDT_DEVICE_NAME);
-    if (!at_wdg_dev)
-    {
-        rt_kprintf("find %s failed!\n", AT_WDT_DEVICE_NAME);
-        return 1;
-    }
-
-    ret = rt_device_control(at_wdg_dev, RT_DEVICE_CTRL_WDT_SET_TIMEOUT, &timeout);
-    if (ret != RT_EOK)
-    {
-        rt_kprintf("set %s timeout failed!\n", AT_WDT_DEVICE_NAME);
-        return 2;
-    }
-
-    if (rt_device_control(at_wdg_dev, RT_DEVICE_CTRL_WDT_START, RT_NULL) != RT_EOK)
-    {
-        rt_kprintf("start %s failed!\n", AT_WDT_DEVICE_NAME);
-        return 3;
-    }
-
-    rt_device_control(at_wdg_dev, RT_DEVICE_CTRL_WDT_KEEPALIVE, NULL);
-
-    return 0;
-}
-
 static at_result_t at_rst_exec(void)
 {
-    scheduler_reset();
-    if (!watchdog_reset())
-    {
-        at_server_printfln("OK");
-        while (1)
-            ;
-    }
+    uc8088_chip_reset();
+
     return AT_RESULT_FAILE;
 }
 AT_CMD_EXPORT("AT+RST", RT_NULL, RT_NULL, RT_NULL, RT_NULL, at_rst_exec);

@@ -8,16 +8,13 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 
-#define  L1_TEST_SUBMODULE
-//#include "platform_common.h"
+#define L1_TEST_SUBMODULE
 #include <gpio.h>
 #include <stdio.h>
 #include <sectdefs.h>
 #include "uc_event.h"
 #include "uc_int.h"
-//#include "vsi.h"
-//#include "scheduler_frame_for_gpio.h"
-extern void scheduler_tick_notify(void);
+
 void gpio_set_pin_function(int pinnumber, int function)
 {
     volatile int old_function;
@@ -172,7 +169,7 @@ void gpio_set_pin_pupd(GPIO_CFG_TypeDef *GPIO_CFG, GPIO_PIN pin, GPIO_PUPD pupd)
     CHECK_PARAM(PARAM_GPIO_PUPD(pupd));
 
     //set pin pupd
-    if(pupd == GPIO_PUPD_UP)
+    if (pupd == GPIO_PUPD_UP)
         GPIO_CFG->PADCFG |= (1 << pin);
     else
         GPIO_CFG->PADCFG &= ~(1 << pin);
@@ -204,43 +201,6 @@ int gpio_get_irq_status()
     return *(volatile int *)(GPIO_REG_INTSTATUS);
 }
 
-#define PIN_NUMBER 11
-void gpio_init(void)
-{
-    int_enable();
-    gpio_set_pin_direction(PIN_NUMBER, GPIO_DIR_IN);
-    gpio_set_pin_irq_type(PIN_NUMBER, GPIO_IT_RISE_EDGE);
-    gpio_set_pin_irq_en(PIN_NUMBER, 1);
-
-    enable_event_iqr(GPIO_INT_ID);
-    return;
-}
-
-void gpio_deinit(void)
-{
-    int_disable();
-    gpio_set_pin_irq_en(PIN_NUMBER, 0);
-    disable_event_iqr(GPIO_INT_ID);
-    return;
-}
-
-//unsigned int g_gpio_count = 0;
-void ISR_GPIO(void)
-{
-    int temp = *(volatile int *)(GPIO_REG_INTSTATUS);
-
-    if (0 != ((1 << PIN_NUMBER) & temp))
-    {
-        //        g_gpio_count = *(u32_t*)0x3b0014;
-        scheduler_tick_notify();
-    }
-
-    ICP |= 1 << GPIO_INT_ID;
-    //enable_event_iqr(GPIO_INT_ID);
-
-    return;
-}
-
 /* set ldo to 3.3v */
 void soc_hw_ldo_on(void)
 {
@@ -254,27 +214,12 @@ void soc_hw_ldo_on(void)
     *pad_mux &= (~(0x1));
 
     gpio_set_pin_value(GPIO_PIN_26, 1);
+    gpio_set_pin_value(GPIO_PIN_6, 0);
     gpio_set_pin_value(GPIO_PIN_6, 1);
 }
 
-#define GPIO_8288_TO_8088_PIN_NUMBER 12
-
-void gpoi_8088_to_8288_change_value()
+void gpio_8088_to_8288_change_value()
 {
-    gpio_set_pin_value(GPIO_8288_TO_8088_PIN_NUMBER, 1);
-    // rt_thread_mdelay(10);
-    gpio_set_pin_value(GPIO_8288_TO_8088_PIN_NUMBER, 0);
-
-    // u32_t count = os_getTimeStamp();
-    // u32_t distance_count=0;
-    // if(g_gpio_record_count < count)
-    // {
-    //    distance_count = count - g_gpio_record_count;
-    // }
-    // else
-    // {
-    //     distance_count = (~0 - g_gpio_record_count) + count;
-    // }
-    // g_gpio_record_count = count;
-    // TRACE_PRINTF("<<<<<timerA dfe count [%u]\n",distance_count);
+    gpio_set_pin_value(GPIO_PIN_12, 1);
+    gpio_set_pin_value(GPIO_PIN_12, 0);
 }

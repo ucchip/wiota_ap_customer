@@ -1,0 +1,9 @@
+# WebClient configuretion
+menuconfig PKG_USING_WEBCLIENT
+    bool "WebClient: A HTTP/HTTPS Client for RT-Thread"
+    default n
+    config WEBCLIENT_USING_FILE_DOWMLOAD
+    	bool "Using file download(WEBCLIENT_USING_FILE_DOWMLOAD)"
+		depends on PKG_USING_WEBCLIENT
+    	default y
+

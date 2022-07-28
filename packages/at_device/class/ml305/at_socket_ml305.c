@@ -59,12 +59,12 @@ static int ml305_socket_event_send(struct at_device *device, uint32_t event)
 {
     return (int)rt_event_send(device->socket_event, event);
 }
-void *test_event = RT_NULL;
+
 static int ml305_socket_event_recv(struct at_device *device, uint32_t event, uint32_t timeout, rt_uint8_t option)
 {
     int result = RT_EOK;
     rt_uint32_t recved;
-	test_event = device->socket_event;
+
     result = rt_event_recv(device->socket_event, event, option | RT_EVENT_FLAG_CLEAR, timeout, &recved);
     if (result != RT_EOK)
     {
@@ -457,11 +457,11 @@ static void urc_connect_func(struct at_client *client, const char *data, rt_size
     /* get the current socket by receive data */
     sscanf(data, "%d,%*s", &device_socket);
 
-    if (strstr(data, "CONNECT OK"))
+    if (rt_strstr(data, "CONNECT OK"))
     {
         ml305_socket_event_send(device, SET_EVENT(device_socket, ML305_EVENT_CONN_OK));
     }
-    else if (strstr(data, "CONNECT FAIL"))
+    else if (rt_strstr(data, "CONNECT FAIL"))
     {
         ml305_socket_event_send(device, SET_EVENT(device_socket, ML305_EVENT_CONN_FAIL));
     }

@@ -13,13 +13,13 @@ if GetDepend(['WIOTA_APP_DEMO']):
     path += [cwd]
     src += Glob("*.c")
 
-group1 = DefineGroup('manager1', src, depend = [''], CPPPATH = path)
+group1 = DefineGroup('wiota_manager1', src, depend = [''], CPPPATH = path)
 
 for d in list:
     path = os.path.join(cwd, d)
     if os.path.isfile(os.path.join(path, 'SConscript')):
         objs = objs + SConscript(os.path.join(d, 'SConscript'))
 
-group = DefineGroup('app', objs, depend = [''], CPPPATH = [])
+group = DefineGroup('wiota_manager', objs, depend = [''], CPPPATH = [])
 objs += group1
 Return('objs')

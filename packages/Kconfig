@@ -2,5 +2,12 @@ menu "IoT - internet of things"
 
 source "$PKGS_DIR_WIOTA/at_device/Kconfig"
 source "$PKGS_DIR_WIOTA/uc_wolfMQTT/Kconfig"
+source "$PKGS_DIR_WIOTA/webclient/Kconfig"
+
+endmenu
+
+menu "Security packages (AES/MD5)"
+
+source "$PKGS_DIR_WIOTA/tinycrypt/Kconfig"
 
 endmenu

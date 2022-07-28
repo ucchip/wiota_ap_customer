@@ -281,7 +281,7 @@ static void check_link_status_entry(void* parameter)
             {
                 link_down_cnt++;
             }
-            
+
             if (link_down_cnt >= 5)
             {
                 if (ml305->power_en_pin == -1)
@@ -352,7 +352,7 @@ static int ml305_netdev_check_link_status(struct netdev* netdev)
 {
 
 #define ml305_LINK_THREAD_TICK 20
-#define ml305_LINK_THREAD_STACK_SIZE 2048
+#define ml305_LINK_THREAD_STACK_SIZE 1536
 #define ml305_LINK_THREAD_PRIORITY (RT_THREAD_PRIORITY_MAX / 2)
 
     rt_thread_t tid;
@@ -683,7 +683,7 @@ void ml305_netdev_netstat(struct netdev* netdev)
         rt_memset(ipaddr, 0x00, ML305_NETSTAT_IPADDR_SIZE);
         rt_memset(port, 0x00, ML305_NETSTAT_PORT_SIZE);
         rt_memset(state, 0x00, ML305_NETSTAT_STATE_SIZE);
-        if (strstr(at_resp_get_line(resp, i), "+MIPSTATE"))
+        if (rt_strstr(at_resp_get_line(resp, i), "+MIPSTATE"))
         {
             /* parse the third line of response data, get the network connection information */
             if (at_resp_parse_line_args(resp, i, ML305_NETSTAT_EXPRESSION, sock, type, ipaddr, port, state) <= 0)
@@ -933,10 +933,10 @@ static int ml305_copy_module_info(struct at_device* device, struct at_device_ml3
 //static rt_err_t at_send_cmd2(struct at_client* client, at_response_t resp, rt_size_t resp_line, rt_int32_t timeout, const char* cmd)
 //{
 //    rt_err_t result = RT_EOK;
-//    
+//
 //    resp->line_num = resp_line;
 //    resp->timeout = rt_tick_from_millisecond(timeout);
-//    
+//
 //    if (at_obj_exec_cmd(client, resp, cmd) < 0)
 //    {
 //        result = -RT_ERROR;
@@ -1189,7 +1189,7 @@ static int ml305_net_init(struct at_device* device)
         ml305_init_thread_entry(device);
 #endif /* AT_DEVICE_ml305_INIT_ASYN */
     }
-    
+
     return RT_EOK;
 }
 

@@ -31,11 +31,9 @@ typedef int (*modify_element_callback)(t_manager_list *node, void *parament);
 
 typedef int (*test_element_callback)(t_manager_list *node, void *parament);
 
-
-
 void init_manager_list(t_manager_list *freq_list);
 int count_manager_list(t_manager_list *freq_list);
-
+int count_the_manager_list(t_manager_list *freq_list, void *target, query_element_callback cb);
 void insert_head_manager_list(t_manager_list *freq_list, void *data);
 void insert_tail_manager_list(t_manager_list *freq_list, void *data);
 t_manager_list *get_head_list(t_manager_list *freq_list);
@@ -48,6 +46,5 @@ int modify_manager_node(t_manager_list *freq_list, void *parament, modify_elemen
 int remove_manager_node(t_manager_list *freq_list, void *parament, del_element_callback cb);
 void clean_manager_list(t_manager_list *freq_list);
 void test_head_list(t_manager_list *freq_list, void *target, test_element_callback cb);
-
 
 #endif

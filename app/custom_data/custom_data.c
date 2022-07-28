@@ -16,17 +16,16 @@
 #include "uc_wiota_static.h"
 #include "custom_data.h"
 
-
 // Set server information.
-int custom_set_server_info(unsigned char* ip, unsigned char len, unsigned int port)
+int custom_set_server_info(unsigned char *ip, unsigned char len, unsigned int port)
 {
-    custom_data_t* custom_data;
+    custom_data_t *custom_data;
     if (len == 0 || len > 16)
     {
         rt_kprintf("error len! len = %d\n", len);
         return 1;
     }
-    custom_data = (custom_data_t*)uc_wiota_get_user_info();
+    custom_data = (custom_data_t *)uc_wiota_get_user_info();
     // Set IP address.
     memset(custom_data->ip, 0, 16);
     memcpy(custom_data->ip, ip, len);
@@ -36,9 +35,9 @@ int custom_set_server_info(unsigned char* ip, unsigned char len, unsigned int po
 }
 
 // Get server information.
-void custom_get_server_info(unsigned char* ip, unsigned char* len, unsigned int* port)
+void custom_get_server_info(unsigned char *ip, unsigned char *len, unsigned int *port)
 {
-    custom_data_t* custom_data = (custom_data_t*)uc_wiota_get_user_info();
+    custom_data_t *custom_data = (custom_data_t *)uc_wiota_get_user_info();
     // Get IP address.
     memcpy(ip, custom_data->ip, 16);
     // Calculate the number of ip.
@@ -54,15 +53,15 @@ void custom_get_server_info(unsigned char* ip, unsigned char* len, unsigned int*
 }
 
 // Set client id.
-int custom_set_client_id(unsigned char* id, unsigned char len)
+int custom_set_client_id(unsigned char *id, unsigned char len)
 {
-    custom_data_t* custom_data;
+    custom_data_t *custom_data;
     if (len == 0 || len > 16)
     {
         rt_kprintf("error len! len = %d\n", len);
         return 1;
     }
-    custom_data = (custom_data_t*)uc_wiota_get_user_info();
+    custom_data = (custom_data_t *)uc_wiota_get_user_info();
     // Set client id.
     memset(custom_data->client_id, 0, 16);
     memcpy(custom_data->client_id, id, len);
@@ -70,9 +69,9 @@ int custom_set_client_id(unsigned char* id, unsigned char len)
 }
 
 // Get client id.
-void custom_get_client_id(unsigned char* id, unsigned char* len)
+void custom_get_client_id(unsigned char *id, unsigned char *len)
 {
-    custom_data_t* custom_data = (custom_data_t*)uc_wiota_get_user_info();
+    custom_data_t *custom_data = (custom_data_t *)uc_wiota_get_user_info();
     // Get client id.
     memcpy(id, custom_data->client_id, 16);
     // Calculate the number of client id.
@@ -86,9 +85,9 @@ void custom_get_client_id(unsigned char* id, unsigned char* len)
 }
 
 // Set login information.
-int custom_set_login_info(unsigned char* account, unsigned char acc_len, unsigned char* password, unsigned char pwd_len)
+int custom_set_login_info(unsigned char *account, unsigned char acc_len, unsigned char *password, unsigned char pwd_len)
 {
-    custom_data_t* custom_data = (custom_data_t*)uc_wiota_get_user_info();
+    custom_data_t *custom_data = (custom_data_t *)uc_wiota_get_user_info();
     if (account != NULL)
     {
         if (acc_len == 0 || acc_len > 32)
@@ -115,9 +114,9 @@ int custom_set_login_info(unsigned char* account, unsigned char acc_len, unsigne
 }
 
 // Get login information.
-void custom_get_login_info(unsigned char* account, unsigned char* acc_len, unsigned char* password, unsigned char* pwd_len)
+void custom_get_login_info(unsigned char *account, unsigned char *acc_len, unsigned char *password, unsigned char *pwd_len)
 {
-    custom_data_t* custom_data = (custom_data_t*)uc_wiota_get_user_info();
+    custom_data_t *custom_data = (custom_data_t *)uc_wiota_get_user_info();
     // Get account.
     memcpy(account, custom_data->account, 32);
     // Get password.

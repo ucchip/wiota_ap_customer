@@ -8,15 +8,17 @@ __DYNAMIC  =  0;
 
 MEMORY
 {
-    uc_rom      : ORIGIN = 0x00000000, LENGTH = 0x3000   /* 12K uncompressed code sys data, NO RODATA!!!! */
-    instrram    : ORIGIN = 0x00003000, LENGTH = 0xFD000  /* 1M - 0x3000 */
-    datarom     : ORIGIN = 0x00200000, LENGTH = 0xFE000  /* 1M - 0x2000*/
-    staticdata  : ORIGIN = 0x002FE000, LENGTH = 0x2000   /* 8K */
+    uc_boot      : ORIGIN = 0x00000000, LENGTH = 0x7000   /* 28K uncompressed code sys data. */
+    uc_rom      : ORIGIN = 0x00007000, LENGTH = 0x3000   /* 12K uncompressed code sys data, NO RODATA!!!! */
+    instrram    : ORIGIN = 0x0000A000, LENGTH = 0xFD000  /* 1M - 0x3000 */
+    datarom     : ORIGIN = 0x00200000, LENGTH = 0xF7000  /* 1M - 0x2000*/
+    staticdata  : ORIGIN = 0x002F7000, LENGTH = 0x2000   /* 8K */
     dataram     : ORIGIN = 0x00300000, LENGTH = 0x3A000  /* d_sram ends at 256K 340000  0x3B490 */
     ccetraceram : ORIGIN = 0x0033A000, LENGTH = 0x1490   /* 5k temp */
     rvtraceram  : ORIGIN = 0x0033B490, LENGTH = 0x1770   /* 6000 byte */
     stack       : ORIGIN = 0x0033CC00, LENGTH = 0x2000   /* stack and 32ec00 is reserved for trace buffer */
     share       : ORIGIN = 0x0033EC00, LENGTH = 0x10     /*16 byte*/
+    ota_flag       : ORIGIN = 0x00400000, LENGTH = 0x100    
 }
 
 /* Stack information variables */
@@ -31,6 +33,11 @@ _rom_start     = ORIGIN(uc_rom);
 
 SECTIONS
 {
+   .uc_boot :
+   {
+   	. = LENGTH(uc_boot)  - 4 ;
+   	LONG(0x00000000)
+   } > uc_boot = 0x00000000
 
     .vectors :
     {
@@ -45,7 +52,7 @@ SECTIONS
     .fastfunc :
     {
         . = ALIGN(4);
-		*(.crt0);
+	*(.crt0);
         *(.reset)
         *(.download);
         . += 80;
@@ -254,4 +261,12 @@ SECTIONS
         . = ALIGN(4);
         _end = .;
     } > dataram
+
+    .ota_flag :
+    {
+    	LONG(0x46024355);
+    	LONG(28K);
+    	LONG(640K);
+    } > ota_flag
+    
 }

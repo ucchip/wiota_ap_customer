@@ -64,43 +64,7 @@ int app_data_coding(app_ps_header_t *ps_header,
     rt_memset(buf, 0, buf_len);
 
     // copy property
-#if 0
     rt_memcpy(buf + offset, &ps_header->property, sizeof(app_ps_property_t));
-#else
-    buf[offset] = 0;
-    if (ps_header->property.reserved)
-    {
-        buf[offset] |= 1 << 0;
-    }
-    if (ps_header->property.compress_flag)
-    {
-        buf[offset] |= 1 << 1;
-    }
-    if (ps_header->property.segment_flag)
-    {
-        buf[offset] |= 1 << 2;
-    }
-    if (ps_header->property.response_flag)
-    {
-        buf[offset] |= 1 << 3;
-    }
-    if (ps_header->property.is_need_res)
-    {
-        buf[offset] |= 1 << 4;
-    }
-    if (ps_header->property.is_packet_num)
-    {
-        buf[offset] |= 1 << 5;
-    }
-    if (ps_header->property.is_dest_addr)
-    {
-        buf[offset] |= 1 << 6;
-    }
-    if (ps_header->property.is_src_addr)
-    {
-        buf[offset] |= 1 << 7;
-    }
-#endif
     offset += sizeof(app_ps_property_t);
 
     // copy src_addr
@@ -205,74 +169,8 @@ int app_data_decoding(unsigned char *input_data,
     }
 
     // parse property
-#if 0
     rt_memcpy(&ps_header->property, input_data + offset, sizeof(app_ps_property_t));
-#else
-    if (input_data[offset] & (1 << 0))
-    {
-        ps_header->property.reserved = 1;
-    }
-    else
-    {
-        ps_header->property.reserved = 0;
-    }
-    if (input_data[offset] & (1 << 1))
-    {
-        ps_header->property.compress_flag = 1;
-    }
-    else
-    {
-        ps_header->property.compress_flag = 0;
-    }
-    if (input_data[offset] & (1 << 2))
-    {
-        ps_header->property.segment_flag = 1;
-    }
-    else
-    {
-        ps_header->property.segment_flag = 0;
-    }
-    if (input_data[offset] & (1 << 3))
-    {
-        ps_header->property.response_flag = 1;
-    }
-    else
-    {
-        ps_header->property.response_flag = 0;
-    }
-    if (input_data[offset] & (1 << 4))
-    {
-        ps_header->property.is_need_res = 1;
-    }
-    else
-    {
-        ps_header->property.is_need_res = 0;
-    }
-    if (input_data[offset] & (1 << 5))
-    {
-        ps_header->property.is_packet_num = 1;
-    }
-    else
-    {
-        ps_header->property.is_packet_num = 0;
-    }
-    if (input_data[offset] & (1 << 6))
-    {
-        ps_header->property.is_dest_addr = 1;
-    }
-    else
-    {
-        ps_header->property.is_dest_addr = 0;
-    }
-    if (input_data[offset] & (1 << 7))
-    {
-        ps_header->property.is_src_addr = 1;
-    }
-    else
-    {
-        ps_header->property.is_src_addr = 0;
-    }
-#endif
+
     unsigned char is_src_addr = ps_header->property.is_src_addr;
     unsigned char is_dest_addr = ps_header->property.is_dest_addr;
     unsigned char is_packet_num = ps_header->property.is_packet_num;

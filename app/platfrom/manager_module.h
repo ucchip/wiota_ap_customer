@@ -11,8 +11,11 @@ enum manager_tasks_identification
     MANAGER_NETWORK_INDENTIFICATION
 };
 
-#define MEMORY_ASSERT(data) if (RT_NULL == data) {rt_kprintf("%s line %d error:memroy is null\n"); \
-    *((unsigned int*)0) = (~0);\
+#define MEMORY_ASSERT(data)                                                      \
+    if (RT_NULL == data)                                                         \
+    {                                                                            \
+        rt_kprintf("%s line %d error:memroy is null\n", __FUNCTION__, __LINE__); \
+        *((unsigned int *)0) = (~0);                                             \
     }
 
 #endif

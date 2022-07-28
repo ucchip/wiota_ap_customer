@@ -482,7 +482,7 @@ static void server_parser(at_server_t server)
         server->recv_buffer[server->cur_recv_len++] = ch;
         last_ch = ch;
 
-        if (!strstr(server->recv_buffer, server->end_mark))
+        if (!rt_strstr(server->recv_buffer, server->end_mark))
         {
             if (server->cur_recv_len+1 == AT_SERVER_RECV_BUFF_LEN)
             {
@@ -650,7 +650,7 @@ __exit:
 
     return result;
 }
-//INIT_COMPONENT_EXPORT(at_server_init);
+// INIT_COMPONENT_EXPORT(at_server_init);
 
 RT_WEAK void at_port_reset(void)
 {

@@ -241,7 +241,7 @@ int vsscanf(const char* str, const char* fmt, va_list ap)
     char state = S_DEFAULT;
     void* ptr;
     long long num;
-    int base, sign, flags, width, lflags;
+    int base, sign, flags = 0, width, lflags;
     char set[256];
 
     if (!fmt)

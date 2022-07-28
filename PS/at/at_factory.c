@@ -6,7 +6,7 @@
 #include "drivers/pin.h"
 #include "uc_wiota_api.h"
 
-#ifdef UC8088_FACTORY_MODE
+#ifdef UC8088_FACTORY_TEST
 enum factory_uart_write_read_type
 {
     FACTORY_UART_WRITE = 0,
@@ -237,7 +237,7 @@ static at_result_t at_factory_setup(const char *args)
     {
     case FACTORY_WIOTA:
     {
-        if (0 != ap_pgw_handle_factory_msg(data, data1))
+        if (0 != factory_test_hanlde_rs_msg(data, data1))
         {
             return AT_RESULT_FAILE;
         }

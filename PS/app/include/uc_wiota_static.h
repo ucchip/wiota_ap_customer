@@ -1,10 +1,10 @@
 /******************************************************************************
 * Chongqing UCchip InfoTech Co.,Ltd
 * Copyright (c) 2022 UCchip
-* 
+*
 * @file    uc_wiota_static.h
 * @brief   Static data application program interface.
-* 
+*
 * @author  lujun
 * @email   lujun@ucchip.cn
 * @data    2022-06-01
@@ -17,6 +17,9 @@
 extern "C"
 {
 #endif
+
+#define FLASH_OPEN_START_ADDRESS     0x0             // (1336)*1024
+#define FLASH_OPEN_END_ADDRESS       0x1FE000        // (2040)*1024
 
 /*
 * @brief Data transfer unit.
@@ -124,6 +127,14 @@ unsigned char* uc_wiota_get_user_info(void);
 */
 void uc_wiota_save_static_info(unsigned char is_direct);
 
+// erase 4K flash
+unsigned int uc_wiota_flash_erase_4K(unsigned int flash_addr);
+
+// write copy source_addr to dest_addr, without erase
+unsigned int uc_wiota_flash_write(unsigned char *data_addr, unsigned int flash_addr, unsigned short length);
+
+// read copy flash_addr to data_addr
+unsigned int uc_wiota_flash_read(unsigned char *data_addr, unsigned int flash_addr, unsigned short length);
 #ifdef __cplushplus
 }
 #endif // !__cplushplus

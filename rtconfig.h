@@ -15,7 +15,7 @@
 #define RT_USING_HOOK
 #define RT_USING_IDLE_HOOK
 #define RT_IDLE_HOOK_LIST_SIZE 4
-#define IDLE_THREAD_STACK_SIZE 256
+#define IDLE_THREAD_STACK_SIZE 512
 #define RT_USING_TIMER_SOFT
 #define RT_TIMER_THREAD_PRIO 4
 #define RT_TIMER_THREAD_STACK_SIZE 512
@@ -30,6 +30,7 @@
 
 /* Memory Management */
 
+#define RT_USING_MEMPOOL
 #define RT_USING_SMALL_MEM
 #define RT_USING_MEMTRACE
 #define RT_USING_HEAP
@@ -119,10 +120,13 @@
 #define _FPGA_
 #define _RT_THREAD_
 #define _FPGA_TRACE_TEST_
-#define UC8088_FACTORY_MODE
+#define UC8088_FACTORY_TEST
 #define WIOTA_AP_STATE_INFO
 
 /* IoT - internet of things */
+
+
+/* Security packages (AES/MD5) */
 
 
 #endif

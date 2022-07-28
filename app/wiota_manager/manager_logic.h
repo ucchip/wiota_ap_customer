@@ -7,7 +7,6 @@ typedef struct app_logic_message
     void *data;
 } t_app_logic_message;
 
-
 int manager_create_logic_queue(void);
 void manager_wiota_task(void *pPara);
 

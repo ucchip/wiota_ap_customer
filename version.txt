@@ -90,3 +90,14 @@ v0.12_ap8088修改如下：
 	2、添加app demo，如需使用请将代码根目录下的rtcofig.h.demo替换rtconfig.h，demo的功能和使用请参考相关文档，注：正常的at版本和demo版本不可同时打开
 	3、全部采用scons编译，请安装rt-thread的环境（rt-thread官网可下载）
 	4、修改协议栈已知bug
+
+v0.13_ap8088修改如下：
+	1、静态数据结构更改
+	2、flash读写接口
+	3、应用部分接口更改，请对比uc_wiota_api.h
+	4、协议栈bug修改
+	5、添加uboot启动
+	demo 更新：
+		1、优化MQTT稳定性；
+		2、uboot支持ymodem、ota等；
+		3、wiota demo支持id管理、设备分组、组播控制等。

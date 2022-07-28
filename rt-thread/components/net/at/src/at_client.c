@@ -182,7 +182,7 @@ const char *at_resp_get_line_by_kw(at_response_t resp, const char *keyword)
 
     for (line_num = 1; line_num <= resp->line_counts; line_num++)
     {
-        if (strstr(resp_buf, keyword))
+        if (rt_strstr(resp_buf, keyword))
         {
             resp_line_buf = resp_buf;
 
@@ -860,7 +860,7 @@ static int at_client_para_init(at_client_t client)
     client->parser = rt_thread_create(name,
                                       (void (*)(void *parameter))client_parser,
                                       client,
-                                      3072,
+                                      1024 + 512,
                                       RT_THREAD_PRIORITY_MAX / 3 - 1,
                                       5);
     if (client->parser == RT_NULL)
@@ -957,14 +957,13 @@ int at_client_init(const char *dev_name, rt_size_t recv_bufsz)
     if (client->device)
     {
         RT_ASSERT(client->device->type == RT_Device_Class_Char);
-
         /* using DMA mode first */
-        open_result = rt_device_open(client->device, RT_DEVICE_OFLAG_RDWR | RT_DEVICE_FLAG_DMA_RX);
-        /* using interrupt mode when DMA mode not supported */
-        if (open_result == -RT_EIO)
-        {
-            open_result = rt_device_open(client->device, RT_DEVICE_OFLAG_RDWR | RT_DEVICE_FLAG_INT_RX);
-        }
+        // open_result = rt_device_open(client->device, RT_DEVICE_OFLAG_RDWR | RT_DEVICE_FLAG_DMA_RX);
+        // /* using interrupt mode when DMA mode not supported */
+        // if (open_result == -RT_EIO)
+        // {
+        open_result = rt_device_open(client->device, RT_DEVICE_OFLAG_RDWR | RT_DEVICE_FLAG_INT_RX);
+        // }
         RT_ASSERT(open_result == RT_EOK);
 
         rt_device_set_rx_indicate(client->device, at_client_rx_ind);

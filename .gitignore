@@ -6,11 +6,7 @@ Debug/
 *.mk
 *.txt
 *.uzf
-.build-debug/
-uc8088_wiota_lib.txt
-uc8088_wiota_lib_test.txt
-uc8088_rt_thread.txt
-rtthread.map
-Makefile
 *.pyc
-rt-thread/tools/
+*.map
+*.asm
+*.dblite

@@ -24,10 +24,10 @@ void uc_mqtt_disconnect(void);
 int uc_mqtt_subscribe(char *topic, uint8_t nQos);
 int uc_mqtt_unsubscribe(char *topic);
 int uc_mqtt_publish(char     *topic,
-                    uint8_t  *data, 
-                    uint16_t nLength, 
-                    uint8_t  nQos, 
-                    uint8_t  nRetain, 
+                    uint8_t  *data,
+                    uint16_t nLength,
+                    uint8_t  nQos,
+                    uint8_t  nRetain,
                     uint8_t  nDuplicate);
 void uc_mqtt_wait_msg(void *pPara);
 
