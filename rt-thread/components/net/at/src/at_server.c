@@ -448,6 +448,11 @@ static void server_parser(at_server_t server)
     while (1)
     {
         server->get_char(server, &ch, RT_WAITING_FOREVER);
+
+        /* fix bug241: AT dead after receiving wrong data */
+        if (ch == '\0')
+            continue;
+
         if (ESC_KEY == ch)
         {
             break;

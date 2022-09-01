@@ -205,7 +205,7 @@ void manager_get_reserved_address(unsigned int reserved_start_address, unsigned 
         MEMORY_ASSERT(manager_address_node);
         rt_memset(manager_address_node, 0, sizeof(t_manager_address));
 
-        rt_kprintf("manager_address_node 0x%x id %d pos %d\n", manager_address_node, id_array[i], dev_pos_array[i].burst_idx + dev_pos_array[i].group_idx * 8);
+        rt_kprintf("manager_address_node 0x%x id 0x%x pos %d\n", manager_address_node, id_array[i], dev_pos_array[i].burst_idx + dev_pos_array[i].group_idx * 8);
 
         // insert list
         manager_address_node->address = id_array[i];
@@ -378,6 +378,7 @@ unsigned int manager_query_wiotaid(unsigned int mac)
         if (RT_NULL != node)
         {
             t_manager_address *reserve_data = node->data;
+            rt_kprintf("manager query id 0x%x->0x%x(dev id->wiota id)\n", mac,  reserve_data->address);
             return reserve_data->address;
         }
     }

@@ -11,6 +11,9 @@ if GetDepend(['_WATCHDOG_APP_', 'RT_USING_WDT']):
     path += [cwd]
     src += ['uc_watchdog_app.c']
 
+# if GetDepend(['WIOTA_APP_DEMO']):
+#     src += ['wolfmqtt_example2.c']
+
 group = DefineGroup('Applications', src, depend = [''], CPPPATH = path)
 
 Return('group')

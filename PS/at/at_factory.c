@@ -1,4 +1,7 @@
 #include <rtthread.h>
+#ifdef RT_USING_AT
+#ifdef AT_USING_SERVER
+#ifdef UC8088_FACTORY_TEST
 #include <rtdevice.h>
 #include <board.h>
 #include "at.h"
@@ -6,7 +9,6 @@
 #include "drivers/pin.h"
 #include "uc_wiota_api.h"
 
-#ifdef UC8088_FACTORY_TEST
 enum factory_uart_write_read_type
 {
     FACTORY_UART_WRITE = 0,
@@ -30,8 +32,6 @@ enum factory_command_type
 #define UART1_DEV_NMAE "uart1"
 #define PWM_DEV_NAME "pwm2"
 #define AT24C02_ADDR 0xA0
-
-#ifdef AT_USING_SERVER
 
 static rt_err_t write_reg(struct rt_i2c_bus_device *bus, rt_uint8_t reg, rt_uint8_t *data)
 {
@@ -309,6 +309,6 @@ static at_result_t at_factory_setup(const char *args)
     return AT_RESULT_OK;
 }
 AT_CMD_EXPORT("AT+FACTORY", "=<type>,<data>,<data1>", RT_NULL, RT_NULL, at_factory_setup, RT_NULL);
-#endif // #ifdef AT_USING_SERVER
-
-#endif
+#endif // UC8088_FACTORY_TEST
+#endif // AT_USING_SERVER
+#endif // RT_USING_AT

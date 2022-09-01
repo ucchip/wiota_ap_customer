@@ -10,14 +10,12 @@
 
 #include <rtthread.h>
 #include "uc_wiota_static.h"
-#ifdef UC8088_MODULE
+
 #ifdef RT_USING_AT
 #include "at.h"
 #endif
-#else
-#ifndef WIOTA_APP_DEMO
+#ifdef WIOTA_API_TEST
 #include "test_wiota_api.h"
-#endif
 #endif
 #ifdef _WATCHDOG_APP_
 #include "uc_watchdog_app.h"
@@ -25,10 +23,9 @@
 #ifdef WIOTA_APP_DEMO
 #include "manager_app.h"
 #endif
-#define L1_TEST_SUBMODULE
-#if defined(RT_USING_CONSOLE) && defined(RT_USING_DEVICE)
-extern void at_handle_log_uart(int uart_number);
-#endif
+//static void test_hook(struct rt_thread *from, struct rt_thread *to)
+//{
+//}
 
 void ExtISR()
 {
@@ -43,16 +40,19 @@ int main(void)
     {
         watchdog_app_enable();
     }
-#endif
+#endif // _WATCHDOG_APP_
+ //rt_scheduler_sethook(test_hook);
 #ifdef WIOTA_APP_DEMO
     manager_enter();
 #else
-#ifdef UC8088_MODULE
+#ifdef WIOTA_API_TEST
+    wiota_api_test();
+#else
+#ifdef RT_USING_AT
 #ifdef AT_USING_SERVER
     at_server_init();
-#endif
-#else
-    app_task_init();
-#endif
-#endif
+#endif // AT_USING_SERVER
+#endif // RT_USING_AT
+#endif // WIOTA_API_TEST
+#endif // WIOTA_APP_DEMO
 }

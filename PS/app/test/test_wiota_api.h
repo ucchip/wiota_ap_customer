@@ -5,7 +5,7 @@ extern "C"
 {
 #endif
 
-void app_task_init(void);
+void wiota_api_test(void);
 
 #ifdef __cplusplus
 }

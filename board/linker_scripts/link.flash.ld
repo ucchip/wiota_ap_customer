@@ -13,11 +13,10 @@ MEMORY
     instrram    : ORIGIN = 0x0000A000, LENGTH = 0xFD000  /* 1M - 0x3000 */
     datarom     : ORIGIN = 0x00200000, LENGTH = 0xF7000  /* 1M - 0x2000*/
     staticdata  : ORIGIN = 0x002F7000, LENGTH = 0x2000   /* 8K */
-    dataram     : ORIGIN = 0x00300000, LENGTH = 0x3A000  /* d_sram ends at 256K 340000  0x3B490 */
-    ccetraceram : ORIGIN = 0x0033A000, LENGTH = 0x1490   /* 5k temp */
-    rvtraceram  : ORIGIN = 0x0033B490, LENGTH = 0x1770   /* 6000 byte */
-    stack       : ORIGIN = 0x0033CC00, LENGTH = 0x2000   /* stack and 32ec00 is reserved for trace buffer */
-    share       : ORIGIN = 0x0033EC00, LENGTH = 0x10     /*16 byte*/
+    dataram     : ORIGIN = 0x00300000, LENGTH = 0x3A010  /* d_sram ends at 256K 340000  0x3B490 */
+    ccetraceram : ORIGIN = 0x0033A010, LENGTH = 0x1490   /* 5k temp */
+    rvtraceram  : ORIGIN = 0x0033B4A0, LENGTH = 0x1770   /* 6000 byte */
+    stack       : ORIGIN = 0x0033CC10, LENGTH = 0x2000   /* stack and 32ec00 is reserved for trace buffer */
     ota_flag       : ORIGIN = 0x00400000, LENGTH = 0x100    
 }
 
@@ -227,12 +226,6 @@ SECTIONS
         stack = . ;
         _stack = . ;
     } > stack
-
-    .share :
-    {
-        . = ALIGN(4);
-        *(.share_data)
-    } > share
 
     .stab  0 (NOLOAD) :
     {

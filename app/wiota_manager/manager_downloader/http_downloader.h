@@ -8,15 +8,23 @@
  * Change Logs:
  * Date           Author       Notes
  * 2022-07-21     Lujun        the first version
+ * 2022-08-05     Lujun        flash uses Little-Endian stroage
  */
 
 #ifndef _HTTP_DOWNLOADER_H_
 #define _HTTP_DOWNLOADER_H_
 
+// #define HTTP_DOWNLOAD_AP_DEBUG
+// #define HTTP_DOWNLOAD_IOTE_DEBUG
+
+/* the number of retries after download failed */
 #define HTTP_DOWNLOADER_RETRY      3
+/* the delay milliseconds after download failed */
+#define HTTP_DOWNLOADER_DELAY      2000
+/* the block size of downloaded file */
 #define HTTP_DOWNLOADER_BLOCK_SIZE 4096
 
-/* Reading and writing falsh must be in 4 byte */
+/* reading and writing falsh must be in 4 byte */
 #define FLASH_ALIGN_SIZE           4
 #define FLASH_ALIGN(size)          RT_ALIGN(size, FLASH_ALIGN_SIZE)
 
@@ -79,6 +87,6 @@ void manager_downloader_task(void *params);
 
 #ifdef __cplushplus
 }
-#endif // !__cplushplus
+#endif // __cplushplus
 
-#endif // !_HTTP_DOWNLOADER_H_
+#endif // _HTTP_DOWNLOADER_H_

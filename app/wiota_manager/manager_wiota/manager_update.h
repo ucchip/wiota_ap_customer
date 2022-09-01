@@ -3,6 +3,23 @@
 #ifndef _MANAGER_UPDATE_H_
 #define _MANAGER_UPDATE_H_
 
+typedef struct data_offset
+{
+    int offset;
+    int len;    
+} t_data_offset;
+
+typedef struct manager_iote_resend_info
+{
+    char *dev_type;
+    char *old_version;
+    char *new_version;
+    int update_type;
+    int data_info_num;
+    t_data_offset *data_info;
+} t_manager_iote_resend_info;
+
+
 typedef struct manager_netwwork_info
 {
     int access;
@@ -44,6 +61,7 @@ typedef enum
 {
     MANAGER_OTA_STOP = 0,
     MANAGER_OTA_GONGING = 1,
+    MANAGER_OTA_NODATA = 2,
 }MANAGER_OTA_STATE;
 
 
@@ -52,6 +70,8 @@ typedef struct manager_update
     MANAGER_UPDATE_STATE state;
     unsigned int ota_op_address; // ota flash address
     t_manager_update_info info;
+    int sub_flag_num;
+    char *rem_sub_flag;
 } t_manager_update;
 
 typedef enum
@@ -62,6 +82,7 @@ typedef enum
 
 typedef struct http_message
 {
+    int down_file_size;
     int state;
 } t_http_message;
 
@@ -86,8 +107,11 @@ int manager_write_update_file(void *data, int len);
 
 int manager_start_update(void *data);
 
-void manager_ap_update(void);
+void manager_ap_update(int file_size);
 
 int manager_ota_send_state(int state);
+
+int manager_ota_resend_data(void *msg);
+
 
 #endif

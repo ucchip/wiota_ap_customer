@@ -76,65 +76,6 @@ typedef struct slist
     struct slist *next;
 } slist_t;
 
-static inline void slist_init(slist_t *p_slist)
-{
-    p_slist->next = NULL;
-}
-
-static inline boolean slist_is_empty(slist_t *p_slist)
-{
-    return (p_slist == NULL);
-}
-
-static inline u32_t slist_len(slist_t *p_slist)
-{
-    u32_t len = 0;
-    const slist_t *node = p_slist;
-
-    while (node->next != NULL)
-    {
-        len++;
-        node = node->next;
-    }
-    return len;
-}
-
-static inline void slist_append(slist_t *node, slist_t *new_node)
-{
-    slist_t *temp = node;
-
-    while (temp->next != NULL)
-    {
-        temp = temp->next;
-    }
-
-    temp->next = new_node;
-    new_node->next = NULL;
-}
-
-static inline void slist_insert(slist_t *node, slist_t *new_node)
-{
-    new_node->next = node->next;
-    node->next = new_node;
-}
-
-static inline slist_t *slist_remove(slist_t *p_slist, slist_t *node)
-{
-    slist_t *temp = p_slist;
-
-    while (temp->next != NULL && temp->next != node)
-    {
-        temp = temp->next;
-    }
-
-    if (temp->next != (slist_t *)0)
-    {
-        temp->next = temp->next->next;
-    }
-
-    return p_slist;
-}
-
 typedef enum
 {
     UC_LOG_UART = 0,
@@ -356,11 +297,11 @@ u8_t uc_wiota_get_state(void);
 
 u32_t uc_wiota_read_value_from_reg(u32_t type, u32_t addr);
 
-void uc_wiota_write_value_to_reg(u32_t value, u32_t addr);
+//void uc_wiota_write_value_to_reg(u32_t value, u32_t addr);
 
 u32_t uc_wiota_read_def_counter(void);
 
-#ifdef RAMP_RF_SET_SUPPORT
+#if 1//def RAMP_RF_SET_SUPPORT
 void uc_wiota_set_ramp_value(u32_t ramp_value);
 
 void uc_wiota_set_rf_ctrl_idx(u32_t rf_ctrl_idx);
@@ -758,7 +699,7 @@ uc_result_e uc_wiota_send_data(u8_t *send_data, u16_t send_data_len, u32_t user_
  return:
     uc_result_e.
 **********************************************************************************/
-uc_result_e uc_wiota_scan_freq(u8_t *freq, u8_t freq_num, s32_t timeout, uc_scan_callback callback, uc_scan_recv_t *scan_result);
+uc_result_e uc_wiota_scan_freq(u8_t *freq, u8_t freq_num, u8_t scan_type, s32_t timeout, uc_scan_callback callback, uc_scan_recv_t *scan_result);
 
 /*********************************************************************************
  This function is to register iote access prompt callback.

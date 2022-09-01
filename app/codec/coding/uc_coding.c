@@ -232,18 +232,18 @@ int app_data_decoding(unsigned char *input_data,
         // handle data decompress, output data and data_len
         if (compress_flag == 1)
         {
-            decomp_data = (unsigned char *)rt_malloc(APP_MAX_CODING_DATA_LEN);
+            decomp_data = (unsigned char *)rt_malloc(APP_MAX_DECODING_DATA_LEN);
             if (RT_NULL == decomp_data)
             {
-                rt_kprintf("%s, %d malloc fail\n", __FUNCTION__, __LINE__);
+                rt_kprintf("%s line %d malloc fail. len %d\n", __FUNCTION__, __LINE__, APP_MAX_DECODING_DATA_LEN);
                 rt_free(buf);
                 buf = RT_NULL;
                 return -3;
             }
-            rt_memset(decomp_data, 0, APP_MAX_CODING_DATA_LEN);
+            rt_memset(decomp_data, 0, APP_MAX_DECODING_DATA_LEN);
 
             rt_kprintf("data len before decompression %d\n", buf_len);
-            decomp_data_len = fastlz_decompress(buf, buf_len, decomp_data, APP_MAX_CODING_DATA_LEN);
+            decomp_data_len = fastlz_decompress(buf, buf_len, decomp_data, APP_MAX_DECODING_DATA_LEN);
             rt_kprintf("data len after decompression %d\n", decomp_data_len);
             *output_data = decomp_data;
             *output_data_len = decomp_data_len;

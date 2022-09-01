@@ -1,99 +1,108 @@
-/******************************************************************************
-* Chongqing UCchip InfoTech Co.,Ltd
-* Copyright (c) 2022 UCchip
-*
-* @file    custom_data.h
-* @brief   Custom data application program interface.
-*
-* @author  lujun
-* @email   lujun@ucchip.cn
-* @data    2022-06-09
-* @license ???
-******************************************************************************/
+/*
+ * Copyright (c) 2022, Chongqing UCchip InfoTech Co.,Ltd
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * @brief Custom data application program interface.
+ *
+ * Change Logs:
+ * Date           Author       Notes
+ * 2022-06-09     Lujun        the first version
+ * 2022-08-04     Lujun        replace memcpy and memset with rt_memcpy and rt_memset
+ */
+
 #ifndef _CUSTOM_DATA_H_
 #define _CUSTOM_DATA_H_
-
 
 #ifdef __cplushplus
 extern "C"
 {
 #endif
 
-/*
-* @brief Custom data.
-* @note  Not more than 256 bytes.
-*/
-typedef struct CUSTOM_DATA_T
+/**
+ * @brief custom data
+ *
+ * @note  Not more than 256 bytes
+ */
+typedef struct CustomDataT
 {
-    unsigned char ip[16];              /* IP address */
-    unsigned int  port;                /* port */
-    unsigned char client_id[16];       /* client id */
-    unsigned char account[32];         /* account */
-    unsigned char password[32];        /* password */
+    unsigned char  ip[16];             /**< IP address */
+    unsigned int   port;               /**< port */
+    unsigned char  client_id[16];      /**< client ID */
+    unsigned char  account[32];        /**< login account */
+    unsigned char  password[32];       /**< login password */
 } custom_data_t;
 
+/**
+ * @brief  set server information
+ *
+ * @param  ip the IP address
+ * @param  len the length of IP
+ * @param  port the port
+ * @return 0: if successfull
+ *         !0: otherwise
+ * @note   the maximum length of IP is 16
+ */
+int custom_set_server_info(unsigned char *ip, unsigned char len, unsigned int port);
 
-/*
-* @brief   Set server information.
-* @param   ip:   IP address.
-* @param   len:  Length of ip.
-* @param   port: Port.
-* @return  0 on success, otherwise 1.
-* @note    The maximum length of ip is 16.
-*/
-int custom_set_server_info(unsigned char* ip, unsigned char len, unsigned int port);
+/**
+ * @brief  get server information
+ *
+ * @param  ip the IP address
+ * @param  len the length of IP
+ * @param  port the port
+ * @note   the maximum length of IP is 16
+ */
+void custom_get_server_info(unsigned char *ip, unsigned char *len, unsigned int *port);
 
-/*
-* @brief   Get server information.
-* @param   ip:   IP address.
-* @param   len:  Length of ip.
-* @param   port: Port.
-* @note    The maximum length of ip is 16.
-*/
-void custom_get_server_info(unsigned char* ip, unsigned char* len, unsigned int* port);
+/**
+ * @brief  set client ID
+ *
+ * @param  id the client ID
+ * @param  len the length of client ID
+ * @return 0: if successfull
+ *         !0: otherwise
+ * @note   the maximum length of client ID is 16
+ */
+int custom_set_client_id(unsigned char *id, unsigned char len);
 
-/*
-* @brief   Set client id.
-* @param   id:   Client id.
-* @param   len:  Length of client id.
-* @return  0 on success, otherwise 1.
-* @note    The maximum length of client id is 16.
-*/
-int custom_set_client_id(unsigned char* id, unsigned char len);
+/**
+ * @brief  get client ID
+ *
+ * @param  id the client ID
+ * @param  len the length of client ID
+ * @note   the maximum length of client ID is 16
+ */
+void custom_get_client_id(unsigned char *id, unsigned char *len);
 
-/*
-* @brief   Get client id.
-* @param   id:   Client id.
-* @param   len:  Length of client id.
-* @note    The maximum length of client id is 16.
-*/
-void custom_get_client_id(unsigned char* id, unsigned char* len);
+/**
+ * @brief  set login information
+ *
+ * @param  account the login account
+ * @param  acc_len the length of account
+ * @param  password the login password
+ * @param  pwd_len the length of password
+ * @return 0: if successfull
+ *         !0: otherwise
+ * @note   the maximum length of account is 32
+ *         the maximum length of password is 32
+ */
+int custom_set_login_info(unsigned char *account, unsigned char acc_len, unsigned char *password, unsigned char pwd_len);
 
-/*
-* @brief   Set login information.
-* @param   account:  Account.
-* @param   acc_len:  Length of account.
-* @param   password: Password.
-* @param   pwd_len:  Length of password.
-* @return  0 on success, otherwise 1.
-* @note    The maximum length of account is 32.
-           The maximum length of Password is 32.
-*/
-int custom_set_login_info(unsigned char* account, unsigned char acc_len, unsigned char* password, unsigned char pwd_len);
-
-/*
-* @brief   Get login information.
-* @param   account:  Account.
-* @param   acc_len:  Length of account.
-* @param   password: Password.
-* @param   pwd_len:  Length of password.
-* @note    The maximum length of account is 32.
-           The maximum length of Password is 32.
-*/
-void custom_get_login_info(unsigned char* account, unsigned char* acc_len, unsigned char* password, unsigned char* pwd_len);
+/**
+ * @brief  get login information
+ *
+ * @param  account the login account
+ * @param  acc_len the length of account
+ * @param  password the login password
+ * @param  pwd_len the length of password
+ * @note   the maximum length of account is 32
+ *         the maximum length of password is 32
+ */
+void custom_get_login_info(unsigned char *account, unsigned char *acc_len, unsigned char *password, unsigned char *pwd_len);
 
 #ifdef __cplushplus
 }
-#endif // !__cplushplus
+#endif // __cplushplus
 
-#endif // !_CUSTOM_DATA_H_
+#endif // _CUSTOM_DATA_H_

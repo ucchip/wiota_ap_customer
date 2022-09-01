@@ -8,7 +8,8 @@
 #define UC_BOOT_LEN                     (1024*28) // 28k
 #define UC_MAX_BIN_LEN                        (1024*640) 
 #define UC_FLASH_RESERVED_LEN  (1024*668) 
-#define UC_OTA_PARTITION_MAX_LEN    (1024 * 704) 
+#define UC_OTA_PARTITION_MAX_LEN    (1024 * 704)
+#define UC_FLASH_STATUS_LEN     (1024*4)
 #define UC_BOOT_STRUP_LEN                    (12*1024)
 
 #define UC_BIN_UBOOT_START_ADDR 0

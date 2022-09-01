@@ -15,6 +15,11 @@ static t_manager_list wiota_send_manager_list;
 static rt_sem_t manager_list_sem;
 unsigned int recv_msg_count = 0;
 
+
+//void *test_result_fun = RT_NULL;
+void *test_result_judge  = RT_NULL;
+
+
 int manager_create_operation_queue(void)
 {
     // create wiota app manager queue.
@@ -237,23 +242,72 @@ void uc_send_radio_callback(uc_result_e result)
     rt_kprintf("uc_send_radio_callback %d\n", result);
 }
 
+//int ota_count = 0;
 static void uc_send_radio_ota_callback(uc_result_e result)
 {
-    rt_kprintf("manager_send_result malloc error.now result %d\n", result);
+    //ota_count++;
+
+    rt_kprintf("uc_send_radio_ota_callback line %d result %d\n", __LINE__, result);
+    
+    //if (ota_count > 3)
+    //{////test 
+        //manager_set_ota_state(6);
+       // return ;
+   // }
+    
     to_operation_wiota_data(MANAGER_OPERATION_OTA_RADIO_RESULT, RT_NULL);
 }
 
-int manager_ota_remove_cb(t_manager_list *node, void *parament)
+static int manager_ota_remove_cb(t_manager_list *node, void *parament)
 {
-    t_app_operation_data *process = (t_app_operation_data *)node->data; // TODO:
+    t_app_operation_data *process = (t_app_operation_data *)node->data;  
 
-    if (MANAGER_OPERATION_OTA_RADIO == process->head.cmd)
+    if (APP_CMD_GET_SPECIFIC_DATA_SPONSE == process->head.cmd)
     {
-        to_queue_logic_data(MANAGER_OPERATION_INDENTIFICATION, MANAGER_LOGIC_SEND_RESULT, process);
         return 0;
     }
     return 1;
 }
+
+static void manager_ota_result_msg(void)
+{
+    t_manager_list *node;
+    void *data;
+
+    rt_kprintf("manager_ota_result_msg line %d\n", __LINE__);
+
+    rt_sem_take(manager_list_sem, RT_WAITING_FOREVER);
+    node = query_head_list(&wiota_send_manager_list, RT_NULL, manager_ota_remove_cb);
+    if (RT_NULL == node)
+    {
+        rt_kprintf("manager_ota_result_msg query_head_list error\n");
+        rt_sem_release(manager_list_sem);
+        return ;
+    }
+    data = node->data;
+    remove_manager_node(&wiota_send_manager_list, RT_NULL, manager_ota_remove_cb);
+    rt_sem_release(manager_list_sem);
+
+    to_queue_logic_data(MANAGER_OPERATION_INDENTIFICATION, MANAGER_LOGIC_SEND_RESULT, data);
+}
+
+
+//int check_result_function(void)
+//{
+//#if 0
+//    if (test_result_fun != RT_NULL && test_result_judge!= RT_NULL)
+//    {
+//        rt_kprintf("((t_app_operation_data *)test_result_fun)->head.result_function %x\n", ((t_app_operation_data *)test_result_fun)->head.result_function);
+//        rt_kprintf("test_result_judge = 0x%x\n", test_result_judge);
+//    }
+//#endif
+//    if (RT_NULL != test_result_fun && ((t_app_operation_data *)test_result_fun)->head.result_function != test_result_judge)
+//    {
+//        rt_kprintf("((t_app_operation_data *)test_result_fun)->head.result_function %x\n", ((t_app_operation_data *)test_result_fun)->head.result_function);
+//        return 1;
+//    }
+//    return 0;
+//}
 
 static void manager_operation(void)
 {
@@ -320,7 +374,7 @@ static void manager_operation(void)
         }
         case MANAGER_OPERATION_RADIO:
         {
-            if (UC_OP_SUCC != uc_wiota_send_broadcast_data(data->pload, data->len, NORMAL_BROADCAST, 0, uc_send_radio_callback))
+            if (UC_OP_SUCC != uc_wiota_send_broadcast_data(data->pload, data->len, NORMAL_BROADCAST, 4000, RT_NULL))
             {
                 rt_kprintf("MANAGER_OPERATION_RADIO is error\n");
             }
@@ -333,17 +387,20 @@ static void manager_operation(void)
         }
         case MANAGER_OPERATION_OTA_RADIO:
         {
+            //test_result_fun = data;
+            rt_kprintf("00 data->head.result_function = 0x%x\n", data->head.result_function);
             rt_sem_take(manager_list_sem, RT_WAITING_FOREVER);
             insert_tail_manager_list(&wiota_send_manager_list, data);
             rt_sem_release(manager_list_sem);
-            uc_wiota_send_broadcast_data(data->pload, data->len, OTA_BROADCAST, 0, uc_send_radio_ota_callback);
+            if (UC_OP_SUCC != uc_wiota_send_broadcast_data(data->pload, data->len, OTA_BROADCAST, 4000, uc_send_radio_ota_callback))
+                rt_kprintf("OTA_BROADCAST is error\n");
+            else
+                rt_kprintf("OTA_BROADCAST is succ\n");
             break;
         }
         case MANAGER_OPERATION_OTA_RADIO_RESULT:
         {
-            rt_sem_take(manager_list_sem, RT_WAITING_FOREVER);
-            remove_manager_node(&wiota_send_manager_list, RT_NULL, manager_ota_remove_cb);
-            rt_sem_release(manager_list_sem);
+            manager_ota_result_msg();
             if (RT_NULL != data)
                 rt_free(data);
             break;

@@ -136,6 +136,7 @@ void manager_recv_wiota_msg(void *page)
         }
     }
 
+    rt_kprintf("recv iote page,run cmd %d\n", ps_header.cmd_type);
     if (!ps_header.property.response_flag)
     {
         switch (ps_header.cmd_type)
@@ -144,7 +145,7 @@ void manager_recv_wiota_msg(void *page)
         case APP_CMD_IOTE_STATE_REPORT:
         case APP_CMD_IOTE_PAIR_REQUEST:
         case APP_CMD_IOTE_MUTICAST_REQUEST:
-            if (0 == manager_send_data_logic_to_net(ps_header.cmd_type, decode_data, decode_data_len, ul_data->id))
+            if (0 == manager_send_data_logic_to_net(ps_header.cmd_type, decode_data, decode_data_len, ps_header.addr.src_addr/*ul_data->id*/))
                 decode_data = RT_NULL;
             break;
         case APP_CMD_NET_CTRL_IOTE:
@@ -170,10 +171,11 @@ void manager_recv_wiota_msg(void *page)
         }
         case APP_CMD_UPDATE_VERSION_REQUEST:
         {
+            rt_kprintf("APP_CMD_UPDATE_VERSION_REQUEST state %d,decode_data = %s\n", manager_get_ota_state(), decode_data);
             if (MANAGER_UPDATE_STOP == manager_get_ota_state() || \
                 MANAGER_UPDATE_DEFAULT == manager_get_ota_state())
             {
-                if (0 == manager_send_data_logic_to_net(ps_header.cmd_type, decode_data, decode_data_len, ul_data->id))
+                if (0 == manager_send_data_logic_to_net(ps_header.cmd_type, decode_data, decode_data_len, ps_header.addr.src_addr))
                     decode_data = RT_NULL;
             }
             else
@@ -187,11 +189,20 @@ void manager_recv_wiota_msg(void *page)
             if (MANAGER_UPDATE_STOP != manager_get_ota_state() && \
                 MANAGER_UPDATE_DEFAULT != manager_get_ota_state())
             {
-                manager_ota_send_state(MANAGER_OTA_STOP);
+                manager_ota_send_state(MANAGER_OTA_GONGING);
             }
             else
             {
-                // send ota bin data
+                if (MANAGER_UPDATE_STOP == manager_get_ota_state() )
+                {
+                    // send ota bin data
+                    manager_ota_resend_data(decode_data);
+                }
+                else
+                {
+                    // send ota bin data
+                    manager_ota_send_state(MANAGER_OTA_NODATA);
+                }
             }
             break;
         }

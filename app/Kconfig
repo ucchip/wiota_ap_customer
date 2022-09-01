@@ -1,7 +1,7 @@
 menu "wiota APP DEMO"
 
 config WIOTA_APP_DEMO
-    bool "app demo mcro(WIOTA_APP_DEMO)"
-    default y
+    bool "app demo macro(WIOTA_APP_DEMO)"
+    default n
 
 endmenu

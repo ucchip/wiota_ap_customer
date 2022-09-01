@@ -90,7 +90,7 @@ static void manager_send_msg_to_wiota(t_from_network_message *page)
         else
             max_len = UC_WIOTA_MAX_SEND_BROADCAST_DATA_LEN - sizeof(app_ps_header_t);
 
-        ps_header.addr.dest_addr = manager_query_wiotaid(page->dest_address[num]);
+        ps_header.addr.dest_addr = /*manager_query_wiotaid */(page->dest_address[num]);
         ps_header.addr.src_addr = SERVER_DEFAULT_ADDRESS;
         ps_header.packet_num = page->request_number;
         ps_header.cmd_type = page->cmd;
@@ -170,8 +170,8 @@ int manager_net_data_logic(t_from_network_message *page)
     }
     case APP_CMD_UPDATE_VERSION_SPONSE:
     {
-        // manager_set_ota_state(MANAGER_UPDATE_RESPONSE_MSG);
-        // manager_update_response(page, RT_NULL, RT_NULL);
+        manager_set_ota_state(MANAGER_UPDATE_RESPONSE_MSG);
+        manager_update_response(page, RT_NULL, RT_NULL);
         break;
     }
     case APP_CMD_NET_DELIVER_IOTE_CONFIG:

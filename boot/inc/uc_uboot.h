@@ -45,19 +45,6 @@ typedef enum
     BOOT_SHARE_UART_BAUD_HAVE_SET,
     
 } BOOT_SHARE_UART_FLAG;
-
-typedef struct
-{
-    unsigned int head_flag;
-    unsigned int baud_rate;
-    unsigned int file_size;
-    unsigned char version[4];
-    unsigned char baud_flag;
-    unsigned char flag;
-    unsigned char already_reboot;
-    char reserved;
-} share_data;
-
 /*
 * parment           mean
 *     0             no input state
@@ -68,10 +55,26 @@ typedef struct
  * @brief enter download
  * @param input_flag
  */
-void boot_download(int input_flag);
+
 void boot_set_uart0_baud_rate(unsigned int  baud_rate);
 void boot_riscv_reboot(void);
+
+unsigned char boot_get_mode(void);
 void boot_set_mode(unsigned int modem);
+
 void boot_get_version(char *version);
+
+void boot_set_file_size(unsigned int len);
+unsigned int boot_get_file_size(void);
+
+void boot_set_select_flag(unsigned char flag);
+unsigned char boot_get_select_flag(void);
+
+void boot_set_log_flag(unsigned char flag);
+unsigned char boot_get_log_flag(void);
+
+void boot_set_uart_flag(unsigned char flag);
+unsigned char boot_get_uart_flag(void);
+
 
 #endif

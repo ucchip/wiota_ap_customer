@@ -8,6 +8,7 @@
  * Change Logs:
  * Date           Author       Notes
  * 2022-07-21     Lujun        the first version
+ * 2022-08-05     Lujun        flash uses Little-Endian stroage
  */
 
 #include <rtthread.h>
@@ -36,6 +37,27 @@ static t_download_file_info download_file = {0};
 static void *http_downloader_handle = RT_NULL;
 
 /**
+ * @brief  swap byte order
+ *
+ * @param  buffer the data buffer
+ * @param  length the data length
+ * @return 0
+ */
+static void byte_swap(unsigned char *buffer, int length)
+{
+    unsigned char tmp;
+    for (int i = 0; i < length; i += 4)
+    {
+        tmp = buffer[i];
+        buffer[i] = buffer[i + 3];
+        buffer[i + 3] = tmp;
+        tmp = buffer[i + 1];
+        buffer[i + 1] = buffer[i + 2];
+        buffer[i + 2] = tmp;
+    }
+}
+
+/**
  * @brief  http breakpoint resume and shard download
  *
  * @param  buffer the received data buffer
@@ -44,10 +66,13 @@ static void *http_downloader_handle = RT_NULL;
  */
 static int shard_download_handle(char *buffer, int length)
 {
-    /* erase 4K flash */
+    /* erase 4KB flash with 0xFF */
     uc_wiota_flash_erase_4K(UC_OTA_PARTITION_START_ADDRESS + download_file.recv_len);
-    /* write copy source_addr to dest_addr, without erase */
-    uc_wiota_flash_write((unsigned char *)buffer, UC_OTA_PARTITION_START_ADDRESS + download_file.recv_len, FLASH_ALIGN(length));
+    /* swap byte order */
+    byte_swap((unsigned char *)buffer, length);
+    /* write flash without erase */
+    // uc_wiota_flash_write((unsigned char *)buffer, UC_OTA_PARTITION_START_ADDRESS + download_file.recv_len, FLASH_ALIGN(length));
+    uc_wiota_flash_write((unsigned char *)buffer, UC_OTA_PARTITION_START_ADDRESS + download_file.recv_len, length);
     download_file.recv_len += length;
 
     /* print download progress */
@@ -135,6 +160,7 @@ static int md5_verification(void)
         return 1;
     /* allocate memory */
     buffer = rt_malloc(HTTP_DOWNLOADER_BLOCK_SIZE);
+    MEMORY_ASSERT(buffer);
 
     /* MD5 context setup */
     tiny_md5_starts(&ctx);
@@ -142,6 +168,8 @@ static int md5_verification(void)
     {
         /* read file from flash */
         uc_wiota_flash_read(buffer, UC_OTA_PARTITION_START_ADDRESS + i, HTTP_DOWNLOADER_BLOCK_SIZE);
+        /* swap byte order */
+        byte_swap(buffer, HTTP_DOWNLOADER_BLOCK_SIZE);
         /* update MD5 value */
         tiny_md5_update(&ctx, buffer, HTTP_DOWNLOADER_BLOCK_SIZE);
     }
@@ -149,6 +177,8 @@ static int md5_verification(void)
     {
         /* read file from flash */
         uc_wiota_flash_read(buffer, UC_OTA_PARTITION_START_ADDRESS + i, FLASH_ALIGN(download_file.file_size - i));
+        /* swap byte order */
+        byte_swap(buffer, FLASH_ALIGN(download_file.file_size - i));
         /* update MD5 value */
         tiny_md5_update(&ctx, buffer, download_file.file_size - i);
     }
@@ -161,13 +191,19 @@ static int md5_verification(void)
         md5_value[4], md5_value[5], md5_value[6], md5_value[7],
         md5_value[8], md5_value[9], md5_value[10], md5_value[11],
         md5_value[12], md5_value[13], md5_value[14], md5_value[15]);
+#ifdef HTTP_DOWNLOAD_AP_DEBUG
+    rt_kprintf("md5:%s\n", md5);
+    rc = 0;
+#elif defined HTTP_DOWNLOAD_IOTE_DEBUG
+    rt_kprintf("md5:%s\n", md5);
+    rc = 0;
+#else
     if (0 != rt_memcmp(download_file.md5, md5, 32))
     {
-        rt_kprintf("md5:%s\n", md5);
+        rt_kprintf("error md5:%s\n", md5);
         rc = 2;
     }
-
-    /* release memory */
+#endif
     if (RT_NULL != buffer)
     {
         rt_free(buffer);
@@ -196,7 +232,13 @@ static int http_ota_download_task(t_app_downloader_message *message)
     for (int i = 0; i < HTTP_DOWNLOADER_RETRY; ++i)
     {
         /* http breakpoint resume and shard download */
+    #ifdef HTTP_DOWNLOAD_AP_DEBUG
+        if (RT_EOK == webclient_downloader("http://119.84.87.182:2021/ap_demo_v1.patch", shard_download_handle))
+    #elif defined HTTP_DOWNLOAD_IOTE_DEBUG
+        if (RT_EOK == webclient_downloader("http://119.84.87.182:2021/iote_demo_v1.patch", shard_download_handle))
+    #else
         if (RT_EOK == webclient_downloader(network_info->address, shard_download_handle))
+    #endif
         {
             if (0 == md5_verification())
             {
@@ -207,10 +249,9 @@ static int http_ota_download_task(t_app_downloader_message *message)
         }
         /* try again in a moment */
         if (i < HTTP_DOWNLOADER_RETRY)
-            rt_thread_mdelay(2000);
+            rt_thread_mdelay(HTTP_DOWNLOADER_DELAY);
     }
 
-    /* print result */
     if (rc != 0)
         rt_kprintf("http ota download failed.\n");
 
@@ -281,9 +322,10 @@ void manager_downloader_task(void *params)
 
         switch (message->cmd)
         {
-        case 1:
+        case MANAGER_OTA_DOWNLOAD_REQUEST:
             http_message = rt_malloc(sizeof(t_http_message));
             http_message->state = http_ota_download_task(message);
+            http_message->down_file_size = download_file.file_size;
             /* send http ota download result */
             to_queue_logic_data(MANAGER_OPERATION_INDENTIFICATION, MANAGER_LOGIC_FROM_HTTP_MESSAGE, (void *)http_message);
             break;
@@ -303,4 +345,4 @@ void manager_downloader_task(void *params)
     }
 }
 
-#endif // !WIOTA_APP_DEMO
+#endif // WIOTA_APP_DEMO

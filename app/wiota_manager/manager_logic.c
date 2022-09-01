@@ -143,12 +143,12 @@ void manager_wiota_task(void *pPara)
     manager_input_attribute();
 
     // startup trigger version check.
-    manager_set_ota_state(MANAGER_UPDATE_REQUEST_MSG);
-    manager_check_ap_version();
+    // manager_set_ota_state(MANAGER_UPDATE_REQUEST_MSG);
+    // manager_check_ap_version();
 
     while (1)
     {
-        rt_kprintf("wait manager_recv_queue\n");
+        //rt_kprintf("wait manager_recv_queue\n");
         result = manager_recv_queue(manager_queue_handle, (void **)&page, UC_QUEUE_WAITING_FOREVER);
         if (QUEUE_EOK != result)
         {
@@ -159,7 +159,7 @@ void manager_wiota_task(void *pPara)
         //rt_kprintf("%s line %d page address 0x%x\n",__FUNCTION__, __LINE__, page);
 
         message = page->message;
-        rt_kprintf("manager_logic message->cmd 0x%x(%d)\n", message->cmd, message->cmd);
+        //rt_kprintf("manager_logic message->cmd 0x%x(%d)\n", message->cmd, message->cmd);
 
         switch (message->cmd)
         {
@@ -189,7 +189,7 @@ void manager_wiota_task(void *pPara)
         case MANAGER_LOGIC_FROM_HTTP_MESSAGE:
         {
             rt_kprintf("MANAGER_LOGIC_FROM_HTTP_MESSAGE %d\n", ((t_http_message *)message->data)->state);
-            // manager_start_update(message->data);
+            manager_start_update(message->data);
             break;
         }
         default:

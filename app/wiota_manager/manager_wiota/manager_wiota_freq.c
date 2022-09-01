@@ -261,7 +261,7 @@ static int manager_wiota_scan_freq()
     {
     case 0:
     {
-        uc_wiota_scan_freq(RT_NULL, 0, -1, RT_NULL, &result);
+        uc_wiota_scan_freq(RT_NULL, 0, 0, -1, RT_NULL, &result);
         rt_kprintf("%s line %d uc_wiota_scan_freq result %d\n", __FUNCTION__, __LINE__, result.result);
         res = manager_wiota_freq_manager(result);
         break;
@@ -274,7 +274,7 @@ static int manager_wiota_scan_freq()
     }
     default:
     {
-        uc_wiota_scan_freq(list, list_len, WIOTA_SCAN_TIMEOUT, RT_NULL, &result);
+        uc_wiota_scan_freq(list, list_len, 0, WIOTA_SCAN_TIMEOUT, RT_NULL, &result);
         rt_kprintf("%s line %d uc_wiota_scan_freq result %d\n", __FUNCTION__, __LINE__, result.result);
         res = manager_wiota_freq_manager(result);
         break;

@@ -47,7 +47,7 @@ typedef struct
 } app_ps_header_t;
 
 #define APP_MAX_CODING_DATA_LEN (1024 - sizeof(app_ps_header_t))
-#define APP_MAX_DECODING_DATA_LEN (1024 - sizeof(app_ps_header_t))
+#define APP_MAX_DECODING_DATA_LEN (310 - sizeof(app_ps_header_t))
 
 unsigned char app_packet_num(void);
 

@@ -29,15 +29,15 @@ static at_result_t at_exec(void)
 }
 AT_CMD_EXPORT("AT", RT_NULL, RT_NULL, RT_NULL, RT_NULL, at_exec);
 
-static at_result_t atz_exec(void)
-{
-    at_server_printfln("OK");
-
-    at_port_factory_reset();
-
-    return AT_RESULT_NULL;
-}
-AT_CMD_EXPORT("ATZ", RT_NULL, RT_NULL, RT_NULL, RT_NULL, atz_exec);
+//static at_result_t atz_exec(void)
+//{
+//    at_server_printfln("OK");
+//
+//    at_port_factory_reset();
+//
+//    return AT_RESULT_NULL;
+//}
+//AT_CMD_EXPORT("ATZ", RT_NULL, RT_NULL, RT_NULL, RT_NULL, atz_exec);
 
 static at_result_t at_rst_exec(void)
 {

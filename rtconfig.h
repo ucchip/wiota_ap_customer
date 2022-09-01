@@ -112,7 +112,6 @@
 
 /* wiota APP */
 
-#define UC8088_MODULE
 #define _WATCHDOG_APP_
 
 /* wiota PS */

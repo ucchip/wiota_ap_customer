@@ -1,7 +1,7 @@
 menu "wiota APP"
 
-config UC8088_MODULE
-    bool "use at cmd, default open(UC8088_MODULE)"
+config WIOTA_API_TEST
+    bool "uc wiota api test, default close(WIOTA_API_TEST)"
     default y
 
 if RT_USING_WDT

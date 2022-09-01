@@ -45,7 +45,7 @@ int recv_data_packet_isempty(void)
 /**
  * @brief  get recv_data_packet length
  *
- * @return length of list
+ * @return the length of list
  */
 unsigned int recv_data_packet_len(void)
 {
@@ -57,7 +57,8 @@ unsigned int recv_data_packet_len(void)
  *
  * @param  source_id the source id
  * @param  packet_id the packet id
- * @return data packet node if successful, otherwise RT_NULL
+ * @return the node: if successful
+ *         RT_NULL: otherwise
  */
 data_packet_t *recv_data_packet_find(rt_uint32_t source_id, rt_uint32_t packet_id)
 {
@@ -75,8 +76,8 @@ data_packet_t *recv_data_packet_find(rt_uint32_t source_id, rt_uint32_t packet_i
  *
  * @param  source_id the source id
  * @param  packet_id the packet id
- * @param  seg_total segment total
- * @return data packet node
+ * @param  seg_total the total number of segment
+ * @return the node of new element
  */
 data_packet_t *recv_data_packet_append(rt_uint32_t source_id, rt_uint32_t packet_id, rt_uint8_t seg_total)
 {
@@ -104,8 +105,8 @@ data_packet_t *recv_data_packet_append(rt_uint32_t source_id, rt_uint32_t packet
  *
  * @param  source_id the source id
  * @param  packet_id the packet id
- * @param  seg_total segment total
- * @return data packet node
+ * @param  seg_total the total number of segment
+ * @return the node of new element
  */
 data_packet_t *recv_data_packet_prepend(rt_uint32_t source_id, rt_uint32_t packet_id, rt_uint8_t seg_total)
 {
@@ -133,8 +134,8 @@ data_packet_t *recv_data_packet_prepend(rt_uint32_t source_id, rt_uint32_t packe
  *
  * @param  pos the node to write from recv_data_packet
  * @param  seg_id the segment id
- * @param  data data written to recv_data_packet
- * @param  len length of data written to recv_data_packet
+ * @param  data the data written to recv_data_packet
+ * @param  len the length of data written to recv_data_packet
  * @return 0: if successful
  *         1: otherwise
  */
@@ -163,8 +164,8 @@ int recv_data_packet_add_segment(data_packet_t *pos, unsigned char seg_id, rt_ui
 /**
  * @brief  try to read all data from recv_data_packet
  * @param  pos the node to read from recv_data_packet
- * @param  data data read from recv_data_packet
- * @param  len length of data read from recv_data_packet
+ * @param  data the data read from recv_data_packet
+ * @param  len the length of data read from recv_data_packet
  * @return 0: if successful
  *         1: otherwise
  * @note   call rt_free release the data by user
