@@ -101,3 +101,6 @@ v0.13_ap8088修改如下：
 		1、优化MQTT稳定性；
 		2、uboot支持ymodem、ota等；
 		3、wiota demo支持id管理、设备分组、组播控制等。
+v0.14_ap8088修改如下：
+	1、协议栈bug修改
+	2、demo协议优化
