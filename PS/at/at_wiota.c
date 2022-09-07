@@ -293,7 +293,7 @@ static at_result_t at_wiota_init_exec(void)
 void uc_wiota_show_access_func(u32_t user_id, u8_t group_idx, u8_t burst_idx, u8_t slot_idx)
 {
     rt_kprintf("user_id 0x%x accessed  time %d\n", user_id, g_t_test_data.time);
-    at_server_printfln("+WIOTAINFO:ACCESS,0x%x,%d,%d,%d", user_id, group_idx, burst_idx, slot_idx);
+    //at_server_printfln("+WIOTAINFO:ACCESS,0x%x,%d,%d,%d", user_id, group_idx, burst_idx, slot_idx);
 
     if (g_t_test_data.time > 0)
     {
@@ -328,7 +328,7 @@ void uc_wiota_show_access_func(u32_t user_id, u8_t group_idx, u8_t burst_idx, u8
 void uc_wiota_show_drop_func(u32_t user_id)
 {
     rt_kprintf("user_id 0x%x dropped\n", user_id);
-    at_server_printfln("+WIOTAINFO:DROP,0x%x", user_id);
+    //at_server_printfln("+WIOTAINFO:DROP,0x%x", user_id);
 }
 
 #if WIOTA_TEST_AUTO_SEND_SM
