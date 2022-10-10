@@ -27,7 +27,7 @@ This project is the base station side in wiota protocol and runing in the 8088 c
       &emsp;10 bits Voice DAC and auxiliary DAC</br>
   
   ★ Radio frequency features</br>
-      &emsp; Sensitivity is lower than 145 dbm</br>
+      &emsp; Sensitivity is lower than -145 dbm</br>
       &emsp; 17dbm PA built in</br>
       
   ★ RISCV 32bit CPU core with float operation unit FPU</br>
