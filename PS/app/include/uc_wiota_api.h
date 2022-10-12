@@ -187,7 +187,6 @@ typedef struct
     u8_t spectrum_idx;  //default value:3(470M-510M)
     u32_t system_id;
     u32_t subsystem_id;
-    u8_t na[48];
 } sub_system_config_t;
 
 typedef struct blacklist
