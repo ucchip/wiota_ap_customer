@@ -93,19 +93,19 @@ static int at_factory_test_i2c(void)
     dev = rt_device_find(AHT10_I2C_BUS_NAME);
     if (RT_NULL == dev)
     {
-        at_server_printfln("rt_device_find i2c fail\n");
+        rt_kprintf("rt_device_find i2c fail\n");
         return 1;
     }
 
     if (RT_EOK != write_reg((struct rt_i2c_bus_device *)dev, 0, set_data))
     {
-        at_server_printfln("write_reg i2c fail\n");
+        rt_kprintf("write_reg i2c fail\n");
         return 2;
     }
 
     if (RT_EOK != read_regs((struct rt_i2c_bus_device *)dev, 4, get_data))
     {
-        at_server_printfln("read_regs i2c fail\n");
+        rt_kprintf("read_regs i2c fail\n");
         return 3;
     }
 
@@ -113,7 +113,7 @@ static int at_factory_test_i2c(void)
     {
         if (set_data[num] != get_data[num])
         {
-            at_server_printfln("i2c data match fail. num=%d, %d!= %d\n", num, set_data[num], get_data[num]);
+            rt_kprintf("i2c data match fail. num=%d, %d!= %d\n", num, set_data[num], get_data[num]);
             return 4;
         }
     }
@@ -129,7 +129,7 @@ static int at_factory_test_ad(unsigned int channel)
     adc_dev = (rt_adc_device_t)rt_device_find(ADC_DEV_NAME);
     if (RT_NULL == adc_dev)
     {
-        at_server_printfln("ad find %s  fail\n", ADC_DEV_NAME);
+        rt_kprintf("ad find %s  fail\n", ADC_DEV_NAME);
         return -1;
     }
 
@@ -186,7 +186,7 @@ static int at_factory_test_uart1(int cmd)
         rt_kprintf("uart read fail\n");
         return 3;
     }
-    at_server_printfln("uart %s\n", recv_data);
+    rt_kprintf("uart %s\n", recv_data);
     rt_device_close(serial);
 
     return rt_strcmp((const char *)send_data, (const char *)recv_data);

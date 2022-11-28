@@ -43,81 +43,54 @@ static rt_err_t i2c_hw_init(void)
 static rt_size_t i2c_hw_write(struct rt_i2c_msg *msg)
 {
     unsigned int j = 0;
-    unsigned int address = msg->addr & (~0x01); //0->write
+    unsigned int address = (msg->addr << 1) & (~0x01); //0->write
 
     //write
-    i2c_send_data(hi2c1.base, address);
-    i2c_send_command(hi2c1.base, I2C_START_WRITE);
-    i2c_get_ack(hi2c1.base);
+    if (msg->flags != RT_I2C_NO_START)
+    {
+        i2c_send_data(hi2c1.base, address);
 
-    //write higth address
-    i2c_send_data(hi2c1.base, msg->buf[0]);
-    i2c_send_command(hi2c1.base, I2C_WRITE);
-    i2c_get_ack(hi2c1.base);
+        i2c_send_command(hi2c1.base, I2C_START_WRITE);
+        i2c_get_ack(hi2c1.base);
+    }
 
-    //write low address
-    i2c_send_data(hi2c1.base, msg->buf[0]);
-    i2c_send_command(hi2c1.base, I2C_WRITE);
-    i2c_get_ack(hi2c1.base);
-
-    for (j = 1; j < msg->len; j++)
+    for (j = 0; j < msg->len; j++)
     {
         i2c_send_data(hi2c1.base, msg->buf[j]);
         i2c_send_command(hi2c1.base, I2C_WRITE);
         i2c_get_ack(hi2c1.base);
     }
-    i2c_send_command(hi2c1.base, I2C_STOP_WRITE);
 
-    while (i2c_busy(hi2c1.base))
-        ;
-    //wait write data over
-    do
+    if (msg->flags != RT_I2C_NO_STOP)
     {
-        i2c_send_data(hi2c1.base, address);
-        i2c_send_command(hi2c1.base, I2C_START_WRITE);
-    } while (!i2c_get_ack(hi2c1.base));
-    i2c_send_command(hi2c1.base, I2C_STOP);
-    while (i2c_busy(hi2c1.base))
-        ;
+        i2c_send_command(hi2c1.base, I2C_STOP);
+
+        while (i2c_busy(hi2c1.base))
+            ;
+    }
 
     return 0;
 }
 
 static rt_size_t i2c_hw_read(struct rt_i2c_msg *msg)
 {
-    unsigned int address = msg->addr & (~0x01); //0->write
-    unsigned int j = 0;
+    unsigned int address = (msg->addr << 1) | (0x01); //1->read
+
     i2c_send_data(hi2c1.base, address);
     i2c_send_command(hi2c1.base, I2C_START_WRITE);
     i2c_get_ack(hi2c1.base);
 
-    //write higth address
-    i2c_send_data(hi2c1.base, msg->buf[0]);
-    i2c_send_command(hi2c1.base, I2C_WRITE);
-    i2c_get_ack(hi2c1.base);
-
-    //write low address
-    i2c_send_data(hi2c1.base, msg->buf[0]);
-    i2c_send_command(hi2c1.base, I2C_WRITE);
-    i2c_get_ack(hi2c1.base);
-
-    i2c_send_command(hi2c1.base, I2C_STOP);
-    while (i2c_busy(hi2c1.base))
-        ;
-
-    address = msg->addr | 0x01; //1->read
-    i2c_send_data(hi2c1.base, address);
-    i2c_send_command(hi2c1.base, I2C_START_WRITE);
-    i2c_get_ack(hi2c1.base);
-
-    for (j = 0; j < msg->len; j++)
+    for (int j = 0; j < msg->len; j++)
     {
-        i2c_send_command(hi2c1.base, I2C_READ);
+        if (j == msg->len - 1)
+            i2c_send_command(hi2c1.base, I2C_STOP_READ);
+        else
+            i2c_send_command(hi2c1.base, I2C_READ);
         i2c_get_ack(hi2c1.base);
+        i2c_send_command(hi2c1.base, I2C_ACK);
         msg->buf[j] = i2c_get_data(hi2c1.base);
     }
 
-    i2c_send_command(hi2c1.base, I2C_STOP_READ);
     return 0;
 }
 
@@ -138,7 +111,7 @@ static rt_size_t i2c_xfer(struct rt_i2c_bus_device *bus, struct rt_i2c_msg msgs[
         {
             i2c_hw_read(msg);
         }
-        else if (msg->flags == RT_I2C_WR)
+        else
         {
             i2c_hw_write(msg);
         }
@@ -159,6 +132,6 @@ int rt_i2c_hw_init(void)
     rt_i2c_bus_device_register(&i2c1_bus, "hw_i2c");
     return RT_EOK;
 }
-INIT_DEVICE_EXPORT(rt_i2c_hw_init);
+INIT_BOARD_EXPORT(rt_i2c_hw_init);
 #endif
 #endif

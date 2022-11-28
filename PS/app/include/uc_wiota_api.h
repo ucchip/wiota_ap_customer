@@ -179,7 +179,7 @@ typedef struct
 {
     s8_t ap_max_power;  //21, 30
     u8_t id_len;        // id len
-    u8_t pn_num;        // 0: 1, 1: 2, 2: 4, 3: not use
+    u8_t pp;            // 0: 1, 1: 2, 2: 4, 3: not use
     u8_t symbol_length; //128,256,512,1024
     u8_t dlul_ratio;    //0 1:1,  1 1:2
     u8_t bt_value;      //bt from rf 1: 0.3, 0: 1.2

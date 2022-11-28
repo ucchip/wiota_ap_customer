@@ -306,4 +306,17 @@ int rt_hw_pin_init(void)
     return rt_device_pin_register("pin", &_uc8088_pin_ops, RT_NULL);
 }
 
+static int spi_slave_pin_init(void)
+{
+    gpio_set_pin_mux(UC_GPIO_CFG, 0, GPIO_FUNC_0);
+    gpio_set_pin_mux(UC_GPIO_CFG, 1, GPIO_FUNC_0);
+    gpio_set_pin_mux(UC_GPIO_CFG, 2, GPIO_FUNC_0);
+    gpio_set_pin_direction(0, GPIO_DIR_IN);
+    gpio_set_pin_direction(1, GPIO_DIR_IN);
+    gpio_set_pin_direction(2, GPIO_DIR_IN);
+
+    return 0;
+}
+INIT_BOARD_EXPORT(spi_slave_pin_init);
+
 #endif /* RT_USING_PIN */

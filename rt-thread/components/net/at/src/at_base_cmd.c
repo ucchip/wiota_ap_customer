@@ -41,9 +41,12 @@ AT_CMD_EXPORT("AT", RT_NULL, RT_NULL, RT_NULL, RT_NULL, at_exec);
 
 static at_result_t at_rst_exec(void)
 {
+    at_server_printfln("OK");
+    rt_thread_mdelay(100);
+
     uc8088_chip_reset();
 
-    return AT_RESULT_FAILE;
+    return AT_RESULT_OK;
 }
 AT_CMD_EXPORT("AT+RST", RT_NULL, RT_NULL, RT_NULL, RT_NULL, at_rst_exec);
 
