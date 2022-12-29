@@ -296,13 +296,15 @@ void ISR_GPIO(void)
     irq_status = gpio_get_irq_status(UC_GPIO);
     pin_irq_hdr(bit2bitno(irq_status));
 
-    ICP |= 1<<25;
+    ICP |= 1 << 25;
 
     rt_interrupt_leave();
 }
 
 int rt_hw_pin_init(void)
 {
+    gpio_set_pin_mux(UC_GPIO_CFG, 25, GPIO_FUNC_0);
+    gpio_set_pin_direction(25, GPIO_DIR_IN);
     return rt_device_pin_register("pin", &_uc8088_pin_ops, RT_NULL);
 }
 
