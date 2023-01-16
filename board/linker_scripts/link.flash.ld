@@ -8,16 +8,16 @@ __DYNAMIC  =  0;
 
 MEMORY
 {
-    uc_boot      : ORIGIN = 0x00000000, LENGTH = 0x7000   /* 28K uncompressed code sys data. */
+    uc_boot     : ORIGIN = 0x00000000, LENGTH = 0x7000   /* 28K uncompressed code sys data. */
     uc_rom      : ORIGIN = 0x00007000, LENGTH = 0x3000   /* 12K uncompressed code sys data, NO RODATA!!!! */
     instrram    : ORIGIN = 0x0000A000, LENGTH = 0xFD000  /* 1M - 0x3000 */
     datarom     : ORIGIN = 0x00200000, LENGTH = 0xF7000  /* 1M - 0x2000*/
     staticdata  : ORIGIN = 0x002F7000, LENGTH = 0x2000   /* 8K */
-    dataram     : ORIGIN = 0x00300000, LENGTH = 0x3A010  /* d_sram ends at 256K 340000  0x3B490 */
-    ccetraceram : ORIGIN = 0x0033A010, LENGTH = 0x1490   /* 5k temp */
-    rvtraceram  : ORIGIN = 0x0033B4A0, LENGTH = 0x1770   /* 6000 byte */
-    stack       : ORIGIN = 0x0033CC10, LENGTH = 0x2000   /* stack and 32ec00 is reserved for trace buffer */
-    ota_flag       : ORIGIN = 0x00400000, LENGTH = 0x100    
+    dataram     : ORIGIN = 0x00300000, LENGTH = 0x3A000  /* d_sram ends at 256K 340000  0x3B490 */
+    ccetraceram : ORIGIN = 0x0033A000, LENGTH = 0x1490   /* 5k temp */
+    rvtraceram  : ORIGIN = 0x0033B490, LENGTH = 0x1770   /* 6000 byte */
+    stack       : ORIGIN = 0x0033CC00, LENGTH = 0x2000   /* stack and 32ec00 is reserved for trace buffer */
+    ota_flag    : ORIGIN = 0x00400000, LENGTH = 0x100
 }
 
 /* Stack information variables */
@@ -261,5 +261,5 @@ SECTIONS
     	LONG(28K);
     	LONG(640K);
     } > ota_flag
-    
+
 }

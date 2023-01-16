@@ -41,13 +41,20 @@ int main(void)
         watchdog_app_enable();
     }
 #endif // _WATCHDOG_APP_
- //rt_scheduler_sethook(test_hook);
+       //rt_scheduler_sethook(test_hook);
 #ifdef WIOTA_APP_DEMO
     manager_enter();
 #else
 #ifdef WIOTA_API_TEST
     wiota_api_test();
 #else
+#ifdef M8_GATEWAY_MODE_SUPPORT
+extern int uc_wiota_mac_init(void);
+    if (0 == uc_wiota_mac_init())
+    {
+        rt_kprintf("uc_wiota_mac_init suc\n");
+    }
+#endif
 #ifdef RT_USING_AT
 #ifdef AT_USING_SERVER
     at_server_init();
