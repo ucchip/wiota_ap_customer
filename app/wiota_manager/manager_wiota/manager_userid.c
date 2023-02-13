@@ -19,33 +19,33 @@ static int manager_address_query_callback(t_manager_list *node, void *target)
     return 1;
 }
 
-static void manager_access_func(unsigned int user_id, unsigned char group_idx, unsigned char burst_idx, unsigned char slot_idx)
-{
-#if 0
-    // sub_system_config_t config;
-    t_manager_address *manager_address_node = rt_malloc(sizeof(t_manager_address));
-    MEMORY_ASSERT(manager_address_node);
+// static void manager_access_func(unsigned int user_id, unsigned char group_idx, unsigned char burst_idx, unsigned char slot_idx)
+// {
+// #if 0
+//     // sub_system_config_t config;
+//     t_manager_address *manager_address_node = rt_malloc(sizeof(t_manager_address));
+//     MEMORY_ASSERT(manager_address_node);
 
-    //uc_wiota_get_system_config(&config);
+//     //uc_wiota_get_system_config(&config);
 
-    rt_kprintf("manager_access_func user_id 0x%x, subframe_idx %d group_idx %d\n", user_id, subframe_idx, group_idx);
-    if (RT_NULL == query_head_list(&manager_access_dev_hash[subframe_idx + group_idx * 8],
-                                   (void *)&user_id,
-                                   manager_address_query_callback))
-    {
-        rt_kprintf("list no id 0x%x. now add list\n", user_id);
-        manager_address_node->address = user_id;
-        insert_head_manager_list(&manager_access_dev_hash[subframe_idx + group_idx * 8], manager_address_node);
-    }
-    else
-    {
-        rt_kprintf("list include id(0x%x) info.\n", user_id);
-        rt_free(manager_address_node);
-    }
-#else
-    rt_kprintf("manager_access_func wiota_id 0x%x, group_idx %d, subframe_idx %d, slot_idx %d\n", user_id, group_idx, burst_idx, slot_idx);
-#endif
-}
+//     rt_kprintf("manager_access_func user_id 0x%x, subframe_idx %d group_idx %d\n", user_id, subframe_idx, group_idx);
+//     if (RT_NULL == query_head_list(&manager_access_dev_hash[subframe_idx + group_idx * 8],
+//                                    (void *)&user_id,
+//                                    manager_address_query_callback))
+//     {
+//         rt_kprintf("list no id 0x%x. now add list\n", user_id);
+//         manager_address_node->address = user_id;
+//         insert_head_manager_list(&manager_access_dev_hash[subframe_idx + group_idx * 8], manager_address_node);
+//     }
+//     else
+//     {
+//         rt_kprintf("list include id(0x%x) info.\n", user_id);
+//         rt_free(manager_address_node);
+//     }
+// #else
+//     rt_kprintf("manager_access_func wiota_id 0x%x, group_idx %d, subframe_idx %d, slot_idx %d\n", user_id, group_idx, burst_idx, slot_idx);
+// #endif
+// }
 
 static void manager_drop_func(unsigned int user_id)
 {
@@ -100,7 +100,6 @@ void manager_address_init(manager_start_replace_address start_replace, manager_s
         }
     }
     // wiota register access
-    uc_wiota_register_iote_access_callback(manager_access_func);
     uc_wiota_register_iote_dropped_callback(manager_drop_func);
 }
 
@@ -114,7 +113,6 @@ void manager_wiotaid_start(void)
         MEMORY_ASSERT(timer_handle);
         rt_timer_start(timer_handle);
     }
-    uc_wiota_register_iote_access_callback(manager_access_func);
     uc_wiota_register_iote_dropped_callback(manager_drop_func);
 }
 void manager_address_init(manager_start_replace_address request_reserve_address)

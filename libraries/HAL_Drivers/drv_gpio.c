@@ -39,6 +39,18 @@ static struct rt_pin_irq_hdr pin_irq_hdr_tab[] = {
     {-1, 0, RT_NULL, RT_NULL},
     {-1, 0, RT_NULL, RT_NULL},
     {-1, 0, RT_NULL, RT_NULL},
+    {-1, 0, RT_NULL, RT_NULL},
+    {-1, 0, RT_NULL, RT_NULL},
+    {-1, 0, RT_NULL, RT_NULL},
+    {-1, 0, RT_NULL, RT_NULL},
+    {-1, 0, RT_NULL, RT_NULL},
+    {-1, 0, RT_NULL, RT_NULL},
+    {-1, 0, RT_NULL, RT_NULL},
+    {-1, 0, RT_NULL, RT_NULL},
+    {-1, 0, RT_NULL, RT_NULL},
+    {-1, 0, RT_NULL, RT_NULL},
+    {-1, 0, RT_NULL, RT_NULL},
+    {-1, 0, RT_NULL, RT_NULL},
 };
 
 static uint32_t pin_irq_enable_mask = 0;

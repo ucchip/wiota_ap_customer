@@ -15,10 +15,8 @@ static t_manager_list wiota_send_manager_list;
 static rt_sem_t manager_list_sem;
 unsigned int recv_msg_count = 0;
 
-
 //void *test_result_fun = RT_NULL;
-void *test_result_judge  = RT_NULL;
-
+void *test_result_judge = RT_NULL;
 
 int manager_create_operation_queue(void)
 {
@@ -78,11 +76,15 @@ void manager_logic_send_to_operater(int msg_type, unsigned int request_number, u
  * Wiota receives data,it to the managerment module,through multiple queues.
  * Wiota data can not be usered, only copy.
  * */
-void manager_recv_data(unsigned int user_id, unsigned char *recv_data, unsigned int data_len, unsigned char type)
+void manager_recv_data(unsigned int user_id, uc_dev_pos_t dev_pos, unsigned char *recv_data, unsigned short data_len, uc_recv_data_type_e type)
 {
     t_app_recv_wiota_info *wiota_info = rt_malloc(sizeof(t_app_recv_wiota_info));
     void *wiota_data = rt_malloc(data_len);
 
+    if (type == DATA_TYPE_ACCESS)
+    {
+        rt_kprintf("manager_access_func wiota_id 0x%x, group_idx %d, subframe_idx %d, slot_idx %d\n", user_id, dev_pos.group_idx, dev_pos.burst_idx, dev_pos.slot_idx);
+    }
     rt_kprintf("manager recv data from 0x%x wiota\n", user_id);
 
     if (RT_NULL == wiota_info || RT_NULL == wiota_data)
@@ -248,19 +250,19 @@ static void uc_send_radio_ota_callback(uc_result_e result)
     //ota_count++;
 
     rt_kprintf("uc_send_radio_ota_callback line %d result %d\n", __LINE__, result);
-    
+
     //if (ota_count > 3)
-    //{////test 
-        //manager_set_ota_state(6);
-       // return ;
-   // }
-    
+    //{////test
+    //manager_set_ota_state(6);
+    // return ;
+    // }
+
     to_operation_wiota_data(MANAGER_OPERATION_OTA_RADIO_RESULT, RT_NULL);
 }
 
 static int manager_ota_remove_cb(t_manager_list *node, void *parament)
 {
-    t_app_operation_data *process = (t_app_operation_data *)node->data;  
+    t_app_operation_data *process = (t_app_operation_data *)node->data;
 
     if (APP_CMD_GET_SPECIFIC_DATA_SPONSE == process->head.cmd)
     {
@@ -282,7 +284,7 @@ static void manager_ota_result_msg(void)
     {
         rt_kprintf("manager_ota_result_msg query_head_list error\n");
         rt_sem_release(manager_list_sem);
-        return ;
+        return;
     }
     data = node->data;
     remove_manager_node(&wiota_send_manager_list, RT_NULL, manager_ota_remove_cb);
@@ -290,7 +292,6 @@ static void manager_ota_result_msg(void)
 
     to_queue_logic_data(MANAGER_OPERATION_INDENTIFICATION, MANAGER_LOGIC_SEND_RESULT, data);
 }
-
 
 //int check_result_function(void)
 //{

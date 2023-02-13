@@ -272,6 +272,12 @@ typedef enum
     WIOTA_STATE_EXIT = 3
 } uc_wiota_run_state_e;
 
+typedef enum
+{
+    DATA_TYPE_ACCESS = 0,
+    DATA_TYPE_ACTIVE = 1,
+} uc_recv_data_type_e;
+
 extern boolean uc_get_grant_mode(void);
 #ifdef UC8088_FACTORY_TEST
 extern s32_t factory_test_hanlde_rs_msg(u32_t subType, u32_t data);
@@ -286,9 +292,8 @@ typedef void (*uc_send_callback)(uc_send_recv_t *result);
 typedef void (*uc_scan_callback)(uc_scan_recv_t *result);
 typedef void (*uc_temp_callback)(uc_temp_recv_t *result);
 typedef void (*uc_query_callback)(uc_query_recv_t *result);
-typedef void (*uc_iote_access)(u32_t user_id, u8_t group_idx, u8_t burst_idx, u8_t slot_idx);
 typedef void (*uc_iote_drop)(u32_t user_id);
-typedef void (*uc_recv)(u32_t user_id, u8_t *data, u32_t data_len, u8_t type);
+typedef void (*uc_recv)(u32_t user_id, uc_dev_pos_t dev_pos, u8_t *data, u16_t data_len, uc_recv_data_type_e data_type);
 
 void uc_wiota_set_state(uc_wiota_run_state_e state);
 
@@ -298,7 +303,9 @@ u32_t uc_wiota_read_value_from_reg(u32_t type, u32_t addr);
 
 //void uc_wiota_write_value_to_reg(u32_t value, u32_t addr);
 
-u32_t uc_wiota_read_def_counter(void);
+u32_t uc_wiota_read_dfe_counter(unsigned char chip_type);
+
+u32_t uc_wiota_get_next_frame_dfe(void);
 
 #if 1//def RAMP_RF_SET_SUPPORT
 void uc_wiota_set_ramp_value(u32_t ramp_value);
@@ -699,20 +706,6 @@ uc_result_e uc_wiota_send_data(u8_t *send_data, u16_t send_data_len, u32_t user_
     uc_result_e.
 **********************************************************************************/
 uc_result_e uc_wiota_scan_freq(u8_t *freq, u8_t freq_num, u8_t scan_type, s32_t timeout, uc_scan_callback callback, uc_scan_recv_t *scan_result);
-
-/*********************************************************************************
- This function is to register iote access prompt callback.
-
- param:
-        in:
-            callback:function pointer,the parameter is the user id of the accessed
-                iote.
-        out:NULL.
-
- return:
-    void.
-**********************************************************************************/
-void uc_wiota_register_iote_access_callback(uc_iote_access callback);
 
 /*********************************************************************************
  This function is to register iote drop prompt callback.

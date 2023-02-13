@@ -8,17 +8,17 @@ __DYNAMIC  =  0;
 
 MEMORY
 {
-    uc_boot      : ORIGIN = 0x00000000, LENGTH = 0x7000   /* 28K uncompressed code sys data. */
+    uc_boot      : ORIGIN = 0x00000000, LENGTH = 0x7000  /* 28K uncompressed code sys data. */
     uc_rom      : ORIGIN = 0x00007000, LENGTH = 0x3000   /* 12K uncompressed code sys data, NO RODATA!!!! */
     instrram    : ORIGIN = 0x0000A000, LENGTH = 0xFD000  /* 1M - 0x3000 */
     datarom     : ORIGIN = 0x00200000, LENGTH = 0xF7000  /* 1M - 0x2000*/
     staticdata  : ORIGIN = 0x002F7000, LENGTH = 0x2000   /* 8K */
-    dataram     : ORIGIN = 0x00300000, LENGTH = 0x38C10  /* d_sram ends at 256K 340000  0x3B490 */
-    spiram      : ORIGIN = 0x00338C10, LENGTH = 0x1400  /* 5K */
-    ccetraceram : ORIGIN = 0x0033A010, LENGTH = 0x1490   /* 5k temp */
-    rvtraceram  : ORIGIN = 0x0033B4A0, LENGTH = 0x1770   /* 6000 byte */
-    stack       : ORIGIN = 0x0033CC10, LENGTH = 0x2000   /* stack and 32ec00 is reserved for trace buffer */
-    ota_flag       : ORIGIN = 0x00400000, LENGTH = 0x100
+    dataram     : ORIGIN = 0x00300000, LENGTH = 0x36800  /* d_sram ends at 256K 340000  0x3B490 */
+    spiram      : ORIGIN = 0x00336800, LENGTH = 0x3800   /* 14K */
+    ccetraceram : ORIGIN = 0x0033A000, LENGTH = 0x1490   /* 5k temp */
+    rvtraceram  : ORIGIN = 0x0033B490, LENGTH = 0x1770   /* 6000 byte */
+    stack       : ORIGIN = 0x0033CC00, LENGTH = 0x2000   /* stack and 32ec00 is reserved for trace buffer */
+    ota_flag    : ORIGIN = 0x00400000, LENGTH = 0x100
 }
 
 /* Stack information variables */
@@ -177,34 +177,16 @@ SECTIONS
         *(.dumpdata);
     } > staticdata
 
-    .spidlcmd :
+    .spidlbuf :
     {
         . = ALIGN(4);
-        *(.spidlcmd)
+        *(.spidlbuf)
     } > spiram
 
-    .spiulres :
+    .spiulbuf :
     {
         . = ALIGN(4);
-        *(.spiulres)
-    } > spiram
-
-    .spibcdata :
-    {
-        . = ALIGN(4);
-        *(.spibcdata)
-    } > spiram
-
-    .spidldata :
-    {
-        . = ALIGN(4);
-        *(.spidldata)
-    } > spiram
-
-    .spiuldata :
-    {
-        . = ALIGN(4);
-        *(.spiuldata)
+        *(.spiulbuf)
     } > spiram
 
     .shbss :

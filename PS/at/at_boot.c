@@ -13,22 +13,29 @@
 #include "uc_watchdog_app.h"
 #endif
 
+typedef enum
+{
+    UBOOT_SELECT_FLAG_SET = 0,
+    UBOOT_LOG_FLAG_SET = 1,
+    UBOOT_UART_FLAG_SET = 2,
+    UBOOT_FILE_SIZE_SET = 3
+} set_uboot_e;
+
 static at_result_t at_uboot_setup(const char *args)
 {
     at_result_t ret = AT_RESULT_PARSE_FAILE;
-    uint16_t usType = 0;
+    uint32_t mode = 0;
 
-    if (parse((char *)(++args), "s",1, &usType))
+    if (parse((char *)(++args), "s", 1, &mode))
     {
-            
-            if (usType >= 'a' && usType <= 'g')
-            {
-                boot_set_mode(usType);
-                ret = AT_RESULT_OK;
-            }
-            else 
-                ret = AT_RESULT_FAILE;
-                
+
+        if (mode >= 'a' && mode <= 'g')
+        {
+            boot_set_mode(mode);
+            ret = AT_RESULT_OK;
+        }
+        else
+            ret = AT_RESULT_FAILE;
     }
 
     if (AT_RESULT_OK == ret)
@@ -49,35 +56,41 @@ static at_result_t at_uboot_setup(const char *args)
 
 static at_result_t at_uboot_config_set(const char *args)
 {
-    at_result_t ret = AT_RESULT_PARSE_FAILE;
-    
-    uint8_t select_flag = 0;
-    uint8_t log_flag = 0;
-    uint8_t uart_flag = 0;
+    uint32_t type = 0;
+    uint32_t value = 0;
 
-    args = parse((char *)(++args), "d,d,d", &select_flag, &log_flag, &uart_flag);
+    args = parse((char *)(++args), "d,d", &type, &value);
     if (!args)
     {
-        ret =  AT_RESULT_PARSE_FAILE;
-    }
-    if ((0 == select_flag || 1 == select_flag) && (0 == log_flag || 1 == log_flag) && (0 == uart_flag || 1 == uart_flag))
-    {
-        boot_set_select_flag(select_flag);
-        boot_set_log_flag(log_flag);
-        boot_set_uart_flag(uart_flag);
-        
-        ret = AT_RESULT_OK;
+        return AT_RESULT_PARSE_FAILE;
     }
 
-    if (AT_RESULT_OK == ret)
+    switch (type)
     {
-        at_server_printfln("OK\n");
+    case UBOOT_SELECT_FLAG_SET:
+        boot_set_select_flag(value);
+        break;
+
+    case UBOOT_LOG_FLAG_SET:
+        boot_set_log_flag(value);
+        break;
+
+    case UBOOT_UART_FLAG_SET:
+        boot_set_uart_flag(value);
+        break;
+
+    case UBOOT_FILE_SIZE_SET:
+        boot_set_file_size(value);
+        break;
+
+    default:
+        break;
     }
 
-    return ret;
+    return AT_RESULT_OK;
 }
 
-AT_CMD_EXPORT("AT+UBOOT", "=<type>", RT_NULL, RT_NULL, at_uboot_setup, RT_NULL);
-AT_CMD_EXPORT("AT+SETUBOOT", "=<select>,<log>,<uart>", RT_NULL, RT_NULL, at_uboot_config_set, RT_NULL);
+AT_CMD_EXPORT("AT+UBOOT", "=<mode>", RT_NULL, RT_NULL, at_uboot_setup, RT_NULL);
+AT_CMD_EXPORT("AT+SETUBOOT", "=<type>,<value>", RT_NULL, RT_NULL, at_uboot_config_set, RT_NULL);
 #endif // AT_USING_SERVER
 #endif // RT_USING_AT

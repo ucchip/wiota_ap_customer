@@ -248,7 +248,7 @@ static at_result_t at_system_config_setup(const char *args)
     int temp[7] = {0};
     sub_system_config_t config;
 
-    if (uc_wiota_get_state() != WIOTA_STATE_INIT)
+    if (uc_wiota_get_state() != WIOTA_STATE_INIT && uc_wiota_get_state() != WIOTA_STATE_RUN)
     {
         rt_kprintf("please init wiota first\n");
         return AT_RESULT_REPETITIVE_FAILE;
@@ -295,42 +295,6 @@ static at_result_t at_wiota_init_exec(void)
 }
 
 #if 1
-void uc_wiota_show_access_func(u32_t user_id, u8_t group_idx, u8_t burst_idx, u8_t slot_idx)
-{
-    rt_kprintf("user_id 0x%x accessed  time %d\n", user_id, g_t_test_data.time);
-#ifdef SINGLE_GATEWAY_MODE_SUPPORT
-    at_server_printfln("+WIOTAINFO:ACCESS,0x%x,%d,%d,%d", user_id, group_idx, burst_idx, slot_idx);
-#endif
-
-    if (g_t_test_data.time > 0)
-    {
-        t_iote_info_managerlist *temp_all_list = &g_t_test_data.iote_info_list;
-        while (temp_all_list != RT_NULL)
-        {
-            if (temp_all_list->user_id == user_id)
-                return;
-
-            if (RT_NULL == temp_all_list->next)
-            {
-                t_iote_info_managerlist *node = rt_malloc(sizeof(t_iote_info_managerlist));
-                if (node == RT_NULL)
-                    return;
-                node->send_num = 1;
-                node->send_all_counter = 0;
-                node->send_manager_flag = AT_TEST_FIRST_COMMAND_WAIT_SEND;
-                node->user_id = user_id;
-                node->next = RT_NULL;
-                temp_all_list->next = node;
-                // rt_kprintf("add new node\n");
-                return;
-            }
-            else
-            {
-                temp_all_list = temp_all_list->next;
-            }
-        }
-    }
-}
 
 void uc_wiota_show_drop_func(u32_t user_id)
 {
@@ -355,7 +319,7 @@ void uc_wiota_show_result(uc_send_recv_t *result)
 }
 #endif //WIOTA_TEST_AUTO_SEND_SM
 
-static int at_fitering_test_data(u32_t user_id, u8_t *recv_data, u32_t data_len)
+static int at_fitering_test_data(u32_t user_id, u8_t *recv_data, u16_t data_len)
 {
     t_at_test_communication *communication = (t_at_test_communication *)recv_data;
     unsigned int send_data_address = 0;
@@ -425,7 +389,7 @@ static int at_fitering_test_data(u32_t user_id, u8_t *recv_data, u32_t data_len)
     return 1;
 }
 
-void uc_wiota_show_recv_data(u32_t user_id, u8_t *recv_data, u32_t data_len, u8_t type)
+void uc_wiota_show_recv_data(u32_t user_id, uc_dev_pos_t dev_pos, u8_t *recv_data, u16_t data_len, uc_recv_data_type_e type)
 {
 #if WIOTA_TEST_AUTO_SEND_SM
     if (!uc_get_grant_mode())
@@ -447,6 +411,42 @@ void uc_wiota_show_recv_data(u32_t user_id, u8_t *recv_data, u32_t data_len, u8_
 #endif //WIOTA_TEST_AUTO_SEND_SM
     // rt_kprintf("%s line %d ap recv id 0x%x\n", __FUNCTION__, __LINE__, user_id);
 
+    if (type == DATA_TYPE_ACCESS)
+    {
+        rt_kprintf("user_id 0x%x accessed  time %d\n", user_id, g_t_test_data.time);
+#ifdef SINGLE_GATEWAY_MODE_SUPPORT
+        at_server_printfln("+WIOTAINFO:ACCESS,0x%x,%d,%d,%d", user_id, dev_pos.group_idx, dev_pos.burst_idx, dev_pos.slot_idx);
+#endif
+        if (g_t_test_data.time > 0)
+        {
+            t_iote_info_managerlist *temp_all_list = &g_t_test_data.iote_info_list;
+            while (temp_all_list != RT_NULL)
+            {
+                if (temp_all_list->user_id == user_id)
+                    return;
+
+                if (RT_NULL == temp_all_list->next)
+                {
+                    t_iote_info_managerlist *node = rt_malloc(sizeof(t_iote_info_managerlist));
+                    if (node == RT_NULL)
+                        return;
+                    node->send_num = 1;
+                    node->send_all_counter = 0;
+                    node->send_manager_flag = AT_TEST_FIRST_COMMAND_WAIT_SEND;
+                    node->user_id = user_id;
+                    node->next = RT_NULL;
+                    temp_all_list->next = node;
+                    // rt_kprintf("add new node\n");
+                    return;
+                }
+                else
+                {
+                    temp_all_list = temp_all_list->next;
+                }
+            }
+        }
+    }
+
     if (g_t_test_data.time > 0 && at_fitering_test_data(user_id, recv_data, data_len))
     {
         return;
@@ -463,7 +463,6 @@ void uc_wiota_show_recv_data(u32_t user_id, u8_t *recv_data, u32_t data_len, u8_
 
 void uc_wiota_register_callback(void)
 {
-    uc_wiota_register_iote_access_callback(uc_wiota_show_access_func);
     uc_wiota_register_iote_dropped_callback(uc_wiota_show_drop_func);
     uc_wiota_register_recv_data_callback(uc_wiota_show_recv_data);
 }
@@ -761,7 +760,7 @@ void send_data_callback(uc_send_recv_t *result)
             tmp = rt_list_entry(node_p, Node_test, node);
             if (tmp->user_id == result->user_id)
             {
-                at_server_printfln("+WIOTASENQUEUE:%d,0x%x,%d\n", result->result, result->user_id, tmp->identification);
+                at_server_printfln("+WIOTASENQUEUE:%d,0x%x,%d", result->result, result->user_id, tmp->identification);
                 rt_list_remove(node_p);
                 rt_free(tmp->data);
                 rt_free(tmp);
@@ -785,7 +784,7 @@ void send_broadcast_data_callback(uc_result_e result)
             tmp = rt_list_entry(node_p, Node_test, node);
             if (tmp->user_id == -1 || tmp->user_id == -2)
             {
-                at_server_printfln("+WIOTABCQUEUE:%d,%d,%d\n", result, tmp->identification, tmp->user_id == -1 ? 0 : 1);
+                at_server_printfln("+WIOTABCQUEUE:%d,%d,%d", result, tmp->identification, tmp->user_id == -1 ? 0 : 1);
                 rt_list_remove(node_p);
                 rt_free(tmp->data);
                 rt_free(tmp);
@@ -1315,7 +1314,7 @@ static at_result_t at_freq_list_exec(void)
     freq_string = NULL;
 
     uc_wiota_set_freq_list(freq_arry, freq_num);
-    uc_wiota_flash_to_update();
+    uc_wiota_save_static_info(0);
     rt_free(freq_arry);
 
     return AT_RESULT_OK;
@@ -1571,10 +1570,10 @@ static at_result_t at_wiotacrc_setup(const char *args)
 //    {
 //        // for (int i = 0; i < 10; i++)
 //        // {
-//        u32_t tick1 = uc_wiota_read_def_counter();
+//        u32_t tick1 = uc_wiota_read_dfe_counter();
 //        if (0 == factory_test_handle_loop_msg(mcs, packet_num, is_dl))
 //        {
-//            u32_t tick2 = uc_wiota_read_def_counter();
+//            u32_t tick2 = uc_wiota_read_dfe_counter();
 //            rt_kprintf("loop test end %d\n", tick2 - tick1);
 //        }
 //        // }

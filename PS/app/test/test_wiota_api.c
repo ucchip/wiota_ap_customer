@@ -39,11 +39,6 @@ u8_t *generate_fake_data(u32_t data_len, u8_t repeat_num)
     return fake_data;
 }
 
-void test_show_access_func(u32_t user_id, u8_t group_idx, u8_t burst_idx, u8_t slot_idx)
-{
-    rt_kprintf("user_id 0x%x accessed\n", user_id);
-}
-
 void test_show_drop_func(u32_t user_id)
 {
     rt_kprintf("user_id 0x%x dropped\n", user_id);
@@ -54,8 +49,12 @@ void test_show_result(uc_send_recv_t *result)
     rt_kprintf("send data to 0x%x, result %d\n", result->user_id, result->result);
 }
 
-void test_show_recv_data(u32_t user_id, u8_t *recv_data, u32_t data_len, u8_t type)
+void test_show_recv_data(u32_t user_id, uc_dev_pos_t dev_pos, u8_t *recv_data, u16_t data_len, uc_recv_data_type_e type)
 {
+    if (type == DATA_TYPE_ACCESS)
+    {
+        rt_kprintf("user_id 0x%x accessed\n", user_id);
+    }
     rt_kprintf("user_id 0x%x, type %d, recv_data ", user_id, type);
     for (u16_t index = 0; index < data_len; index++)
     {
@@ -137,7 +136,6 @@ void test_get_connection_timeout(void)
 // test! register callback
 void test_register_callback(void)
 {
-    uc_wiota_register_iote_access_callback(test_show_access_func);
     uc_wiota_register_iote_dropped_callback(test_show_drop_func);
     uc_wiota_register_recv_data_callback(test_show_recv_data);
 }

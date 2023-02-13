@@ -174,8 +174,6 @@ unsigned int uc_wiota_flash_write(unsigned char *data_addr, unsigned int flash_a
  */
 unsigned int uc_wiota_flash_read(unsigned char *data_addr, unsigned int flash_addr, unsigned short length);
 
-void uc_wiota_flash_to_update();
-
 #ifdef __cplushplus
 }
 #endif // __cplushplus
