@@ -108,7 +108,7 @@
 #define RT_USING_AT
 #define AT_USING_SERVER
 #define AT_SERVER_DEVICE "uart0"
-#define AT_SERVER_RECV_BUFF_LEN 256
+#define AT_SERVER_RECV_BUFF_LEN 1024
 #define AT_CMD_END_MARK_CRLF
 #define AT_CMD_MAX_LEN 128
 #define AT_SW_VERSION_NUM 0x10301
@@ -132,7 +132,6 @@
 #define _RT_THREAD_
 #define _FPGA_TRACE_TEST_
 #define UC8088_FACTORY_TEST
-#define WIOTA_AP_STATE_INFO
 
 /* IoT - internet of things */
 

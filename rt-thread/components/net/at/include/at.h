@@ -103,6 +103,7 @@ struct at_server
     char recv_buffer[AT_SERVER_RECV_BUFF_LEN];
     rt_size_t cur_recv_len;
     rt_sem_t rx_notice;
+    rt_mutex_t log_lock;
     char end_mark[AT_END_MARK_LEN];
 
     rt_thread_t parser;

@@ -61,6 +61,8 @@ typedef unsigned char boolean;
 /* 0 - 200 */
 #define UC_WIOTA_FREQUENCE_POINT(frequency) ((frequency - UC_WIOTA_BASE_FREQUENCE) / UC_WIOTA_FREQUENCE_STEP)
 
+#define UC_WIOTA_MAX_MULTICAST_ID_NUM (8)
+
 #define uc_container_of(ptr, type, member) \
     (type *)((char *)(ptr) - ((unsigned long)(&((type *)NULL)->member)))
 
@@ -92,35 +94,31 @@ typedef enum
 typedef struct
 {
     void *semaphore;
-    u8_t result;
+    u32_t result;
     u32_t user_id;
-} uc_send_pdu_result_t;
-
-typedef struct
-{
-    void *semaphore;
-    u8_t result;
-} uc_send_bc_result_t;
+    u32_t data_id;
+} uc_send_result_t;
 
 typedef struct
 {
     u32_t user_id;
-    u8_t result;
+    u32_t data_id;
+    u32_t result;
 } uc_send_recv_t;
 
 typedef struct
 {
     void *semaphore;
     u16_t data_len;
+    u16_t result;
     u8_t *data;
-    u8_t result;
 } uc_scan_result_t;
 
 typedef struct
 {
     u16_t data_len;
+    u16_t result;
     u8_t *data;
-    u8_t result;
 } uc_scan_recv_t;
 
 typedef struct
@@ -178,13 +176,16 @@ typedef struct
 typedef struct
 {
     s8_t ap_max_power;  //21, 30
-    u8_t id_len;        // id len
-    u8_t pp;            // 0: 1, 1: 2, 2: 4, 3: not use
+    u8_t id_len;        //id len
+    u8_t pp;            //0: 1, 1: 2, 2: 4, 3: not use
     u8_t symbol_length; //128,256,512,1024
     u8_t dlul_ratio;    //0 1:1,  1 1:2
     u8_t bt_value;      //bt from rf 1: 0.3, 0: 1.2
     u8_t group_number;  //frame ul group number: 1,2,4,8
     u8_t spectrum_idx;  //default value:3(470M-510M)
+    u8_t old_subsys_v;  //default 0, if set 1, match old version(v2.3_ap8088) subsystem id
+    u8_t bitscb;        //bit scrambling flag bit, default 1, if set 0, match old version(v2.3_ap8288)
+    u8_t reserved[2];   //for 4bytes alain
     u32_t system_id;
     u32_t subsystem_id;
 } sub_system_config_t;
@@ -195,6 +196,7 @@ typedef struct blacklist
     u32_t user_id;
 } uc_blacklist_t;
 
+#ifdef WIOTA_IOTE_INFO
 typedef struct iote_info
 {
     slist_t node;
@@ -205,6 +207,15 @@ typedef struct iote_info
     u8_t reserved;
 } uc_iote_info_t;
 
+typedef enum
+{
+    STATUS_OFFLINE = 0,
+    STATUS_ONLINE = 1,
+    STATUS_MAX
+} uc_iote_status_e;
+#endif
+
+#ifdef WIOTA_AP_STATE_INFO
 typedef struct uc_state_info
 {
     slist_t node;
@@ -218,12 +229,6 @@ typedef struct uc_state_info
     u16_t dl_send_max;
 } uc_state_info_t;
 
-typedef enum
-{
-    STATUS_OFFLINE = 0,
-    STATUS_ONLINE = 1,
-    STATUS_MAX
-} uc_iote_status_e;
 
 typedef enum
 {
@@ -235,6 +240,18 @@ typedef enum
     TYPE_DL_SEND_FAIL = 5,
     UC_STATE_TYPE_MAX
 } uc_state_type_e;
+#endif
+
+typedef struct
+{
+    unsigned char freq;
+    unsigned char spectrum_idx;
+    unsigned char bandwidth;
+    unsigned char symbol_length;
+    unsigned short awaken_id; // indicate which id should send
+    unsigned short reserved;
+    unsigned int send_time; // ms, at least rx detect period
+} uc_lpm_tx_cfg_t, *uc_lpm_tx_cfg_p;
 
 typedef enum
 {
@@ -278,6 +295,29 @@ typedef enum
     DATA_TYPE_ACTIVE = 1,
 } uc_recv_data_type_e;
 
+typedef enum
+{
+    TIME_SERVICE_NULL = 0,
+    TIME_SERVICE_START = 1,
+    TIME_SERVICE_SUC = 2,
+    TIME_SERVICE_FAIL = 3,
+    TIME_SERVICE_INIT_END = 4,
+    TIME_SERVICE_ALIGN_END = 5,
+    TIME_SERVICE_STOP = 6,
+} time_service_state_e;
+
+typedef enum
+{
+    TIME_SERVICE_GNSS = 0,
+    TIME_SERVICE_1588_PROTOCOL = 1,
+} time_service_type_e;
+
+typedef enum
+{
+    STATE_ABNORMAL = 0,
+    STATE_NORMAL = 1,
+} ap8288_state_e;
+
 extern boolean uc_get_grant_mode(void);
 #ifdef UC8088_FACTORY_TEST
 extern s32_t factory_test_hanlde_rs_msg(u32_t subType, u32_t data);
@@ -287,11 +327,11 @@ extern u8_t factory_test_get_loop_is_rach(void);
 extern u8_t *factory_test_gen_rand_data(u16_t data_len);
 #endif
 
-typedef void (*uc_send_bc_callback)(uc_result_e result);
 typedef void (*uc_send_callback)(uc_send_recv_t *result);
 typedef void (*uc_scan_callback)(uc_scan_recv_t *result);
 typedef void (*uc_temp_callback)(uc_temp_recv_t *result);
 typedef void (*uc_query_callback)(uc_query_recv_t *result);
+typedef void (*uc_time_service_callback)(time_service_state_e state);
 typedef void (*uc_iote_drop)(u32_t user_id);
 typedef void (*uc_recv)(u32_t user_id, uc_dev_pos_t dev_pos, u8_t *data, u16_t data_len, uc_recv_data_type_e data_type);
 
@@ -299,13 +339,45 @@ void uc_wiota_set_state(uc_wiota_run_state_e state);
 
 u8_t uc_wiota_get_state(void);
 
-u32_t uc_wiota_read_value_from_reg(u32_t type, u32_t addr);
+void uc_wiota_read_value_from_mem(u32_t type, u32_t read_addr, u32_t read_len, u8_t *out_buf);
 
 //void uc_wiota_write_value_to_reg(u32_t value, u32_t addr);
 
-u32_t uc_wiota_read_dfe_counter(unsigned char chip_type);
+u32_t uc_wiota_read_dfe_counter(u8_t reg_type);
 
-u32_t uc_wiota_get_next_frame_dfe(void);
+void uc_wiota_set_default_dfe(u32_t default_dfe);
+
+u32_t uc_wiota_get_frame_head_dfe(void);
+
+// time service api
+void uc_wiota_set_frame_boundary_align_func(u8_t is_open);
+
+void uc_wiota_register_time_service_state_callback(uc_time_service_callback callback);
+
+void uc_wiota_set_time_service_func(time_service_type_e type, u8_t is_open);
+
+void uc_wiota_get_time_service_func(u8_t *func_gnss, u8_t *func_1588);
+
+time_service_state_e uc_wiota_get_time_service_state(void);
+
+void uc_wiota_time_service_start(void);
+
+void uc_wiota_time_service_stop(void);
+
+void uc_wiota_gnss_query_fix_pos(float *pos_x, float *pos_y, float *pos_z);
+
+void uc_wiota_set_gnss_relocation(u8_t is_relocation);
+
+void uc_wiota_set_1588_protocol_rtc(u32_t timestamp, u32_t msec);
+// time service api end
+
+ap8288_state_e uc_wiota_get_ap8288_state(void);
+
+void uc_wiota_set_paging_tx_cfg(uc_lpm_tx_cfg_t *config);
+
+uc_lpm_tx_cfg_t* uc_wiota_get_paging_tx_cfg(void);
+
+void uc_wiota_start_paging_tx(void);
 
 #if 1//def RAMP_RF_SET_SUPPORT
 void uc_wiota_set_ramp_value(u32_t ramp_value);
@@ -535,6 +607,7 @@ void uc_wiota_add_iote_to_blacklist(u32_t *user_id, u16_t user_id_num);
 **********************************************************************************/
 void uc_wiota_remove_iote_from_blacklist(u32_t *user_id, u16_t user_id_num);
 
+#ifdef WIOTA_IOTE_INFO
 /*********************************************************************************
  This function is to printing all iote information.
 
@@ -559,6 +632,7 @@ void uc_wiota_print_iote_info(void);
         uc_iote_info_t:pointer of iote information linked list header.
 **********************************************************************************/
 uc_iote_info_t *uc_wiota_get_iote_info(u16_t *online_num, u16_t *offline_num);
+#endif
 
 #ifdef WIOTA_AP_STATE_INFO
 /*********************************************************************************
@@ -667,7 +741,34 @@ void uc_wiota_reset_all_state_info(void);
     wait until the registered callback returns UC_OP_SUCC before sending the next
     packet.
 **********************************************************************************/
-uc_result_e uc_wiota_send_broadcast_data(u8_t *send_data, u16_t send_data_len, uc_bc_mode_e mode, s32_t timeout, uc_send_bc_callback callback);
+uc_result_e uc_wiota_send_broadcast_data(u8_t *send_data, u16_t send_data_len, uc_bc_mode_e mode, s32_t timeout, uc_send_callback callback, void *para);
+
+/*********************************************************************************
+ This function is to sending multicast data.
+
+ param:
+        in:
+            send_data:data to be sent.
+            send_data_len:the length of data to be sent.
+            multicast_id:specify the multicast id send.
+            timeout:send data timeout time,unit:ms
+            callback:send data result callback.
+                     when callback==NULL,is blocking call.
+                     Non-blocking call when callback != NULL.
+            para:data address, which will be returned after sending.
+            if no need to fill in NULL
+        out:NULL.
+
+ return:
+    uc_result_e.
+**********************************************************************************/
+uc_result_e uc_wiota_send_multicast_data(u8_t *send_data, u16_t send_data_len, u32_t multicast_id, s32_t timeout, uc_send_callback callback, void *para);
+
+// set multicast_id,befor send multicast data
+void uc_wiota_set_multicast_id(u32_t *multicast_id, u32_t id_num);
+
+// del multicast_id
+void uc_wiota_del_multicast_id(u32_t *multicast_id, u32_t id_num);
 
 /*********************************************************************************
  This function is to paging iote and sending non-broadcast data.
@@ -676,17 +777,19 @@ uc_result_e uc_wiota_send_broadcast_data(u8_t *send_data, u16_t send_data_len, u
         in:
             send_data:non-broadcast data to be sent.
             send_data_len:the length of non-broadcast data to be sent.
-            userId:specify the user id send.
+            user_id:specify the user id send.
             timeout:send data timeout time,unit:ms
             callback:send data result callback.
                      when callback==NULL,is blocking call.
                      Non-blocking call when callback != NULL.
+            para:data address, which will be returned after sending.
+            if no need to fill in NULL
         out:NULL.
 
  return:
     uc_result_e.
 **********************************************************************************/
-uc_result_e uc_wiota_send_data(u8_t *send_data, u16_t send_data_len, u32_t user_id, s32_t timeout, uc_send_callback callback);
+uc_result_e uc_wiota_send_data(u8_t *send_data, u16_t send_data_len, u32_t user_id, s32_t timeout, uc_send_callback callback, void *para);
 
 /*********************************************************************************
  This function is to scaning frequency point collection.(Not supported at the moment)

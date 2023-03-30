@@ -19,7 +19,7 @@
 #define ROM_END                ((uint32_t)(ROM_START + ROM_SIZE))
 
 #define RAM_START              (0x00300000)
-#define RAM_SIZE               (256 * 1024)
+#define RAM_SIZE               (0x3A000)
 #define RAM_END                (RAM_START + RAM_SIZE)
 
 /*-------------------------- CLOCK CONFIG BEGIN --------------------------*/

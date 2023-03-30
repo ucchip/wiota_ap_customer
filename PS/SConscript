@@ -15,9 +15,15 @@ if GetDepend(['WIOTA_API_TEST']):
     path += [cwd + '/app/test']
     src += Glob('app/test/*.c')
 
+src += [cwd + '/gnss/gnss_driver.c']
 path += [cwd + '/app/include']
+path += [cwd + '/gnss']
+
 lib = ['libwin_wiota_ap']
+lib += ['libNavProcWin']
+
 libpath = [cwd + '/lib']
+libpath +=[cwd + '/gnss']
 
 group = DefineGroup('PS', src, depend = [''], CPPPATH = path, LIBS = lib, LIBPATH = libpath)
 

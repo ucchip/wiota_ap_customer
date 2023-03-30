@@ -206,7 +206,7 @@ static void manager_operate_result(uc_send_recv_t *res)
         {
             rt_kprintf("======>> ap send data(cmd %d) to 0x%x fail. result %d.now resend.counter %d\n", process->head.cmd, process->head.id, res->result, process->head.state);
             // resend data
-            uc_wiota_send_data(process->pload, process->len, process->head.id, 10000, manager_send_result);
+            uc_wiota_send_data(process->pload, process->len, process->head.id, 10000, manager_send_result, RT_NULL);
             process->head.state++;
             rt_sem_take(manager_list_sem, RT_WAITING_FOREVER);
             remove_head_manager_node(&wiota_send_manager_list, (void *)node);
@@ -363,7 +363,7 @@ static void manager_operation(void)
             rt_sem_release(manager_list_sem);
             rt_kprintf("send data to iote(0x%x). data type %d,data len %d\n", data->head.id, data->head.cmd, data->len);
             //send data to wiota
-            uc_wiota_send_data(data->pload, data->len, data->head.id, 10000, manager_send_result);
+            uc_wiota_send_data(data->pload, data->len, data->head.id, 10000, manager_send_result, RT_NULL);
 
             break;
         }
@@ -375,7 +375,7 @@ static void manager_operation(void)
         }
         case MANAGER_OPERATION_RADIO:
         {
-            if (UC_OP_SUCC != uc_wiota_send_broadcast_data(data->pload, data->len, NORMAL_BROADCAST, 4000, RT_NULL))
+            if (UC_OP_SUCC != uc_wiota_send_broadcast_data(data->pload, data->len, NORMAL_BROADCAST, 4000, RT_NULL, RT_NULL))
             {
                 rt_kprintf("MANAGER_OPERATION_RADIO is error\n");
             }
@@ -393,7 +393,7 @@ static void manager_operation(void)
             rt_sem_take(manager_list_sem, RT_WAITING_FOREVER);
             insert_tail_manager_list(&wiota_send_manager_list, data);
             rt_sem_release(manager_list_sem);
-            if (UC_OP_SUCC != uc_wiota_send_broadcast_data(data->pload, data->len, OTA_BROADCAST, 4000, uc_send_radio_ota_callback))
+            if (UC_OP_SUCC != uc_wiota_send_broadcast_data(data->pload, data->len, OTA_BROADCAST, 4000, uc_send_radio_ota_callback, RT_NULL))
                 rt_kprintf("OTA_BROADCAST is error\n");
             else
                 rt_kprintf("OTA_BROADCAST is succ\n");

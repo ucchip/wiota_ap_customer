@@ -23,9 +23,6 @@
 #ifdef WIOTA_APP_DEMO
 #include "manager_app.h"
 #endif
-//static void test_hook(struct rt_thread *from, struct rt_thread *to)
-//{
-//}
 
 void ExtISR()
 {
@@ -35,13 +32,13 @@ void ExtISR()
 int main(void)
 {
     uc_wiota_static_data_init();
+
 #ifdef _WATCHDOG_APP_
     if (RT_EOK == watchdog_app_init())
     {
         watchdog_app_enable();
     }
 #endif // _WATCHDOG_APP_
-       //rt_scheduler_sethook(test_hook);
 #ifdef WIOTA_APP_DEMO
     manager_enter();
 #else
@@ -49,7 +46,7 @@ int main(void)
     wiota_api_test();
 #else
 #ifdef M8_GATEWAY_MODE_SUPPORT
-extern int uc_wiota_mac_init(void);
+    extern int uc_wiota_mac_init(void);
     if (0 == uc_wiota_mac_init())
     {
         rt_kprintf("uc_wiota_mac_init suc\n");
@@ -62,4 +59,7 @@ extern int uc_wiota_mac_init(void);
 #endif // RT_USING_AT
 #endif // WIOTA_API_TEST
 #endif // WIOTA_APP_DEMO
+
+    // extern void uc_wiota_time_service_demo(void);
+    // uc_wiota_time_service_demo();
 }

@@ -16,10 +16,10 @@
 extern void use_default_clocks(void);
 extern void use_pll(int refsel, int bypass, int r, int f, int q);
 
-#define TICK_COUNT  (2 * RTC_FREQ / RT_TICK_PER_SECOND)
+#define TICK_COUNT (2 * RTC_FREQ / RT_TICK_PER_SECOND)
 
-#define MTIME       (*((volatile uint64_t *)(CLINT_CTRL_ADDR + CLINT_MTIME)))
-#define MTIMECMP    (*((volatile uint64_t *)(CLINT_CTRL_ADDR + CLINT_MTIMECMP)))
+#define MTIME (*((volatile uint64_t *)(CLINT_CTRL_ADDR + CLINT_MTIME)))
+#define MTIMECMP (*((volatile uint64_t *)(CLINT_CTRL_ADDR + CLINT_MTIMECMP)))
 
 /* system tick interrupt */
 void handle_m_time_interrupt()
@@ -57,14 +57,14 @@ void *__wrap_memset(void *s, int c, size_t n)
 
 void sys_tick_handler(void)
 {
-//	uint32_t mcause;
-//    csrr(mcause, mcause);
-//    ICP = (1 << mcause);
-//	ECP = 0x20000000;
-	ICP = 0x20000000;
+    //	uint32_t mcause;
+    //    csrr(mcause, mcause);
+    //    ICP = (1 << mcause);
+    //	ECP = 0x20000000;
+    ICP = 0x20000000;
     ECP = 0x20000000;
 
-	/* enter interrupt */
+    /* enter interrupt */
     //rt_interrupt_enter();
 
     rt_tick_increase();
@@ -76,9 +76,8 @@ void sys_tick_handler(void)
 
 //#define configCPU_CLOCK_HZ			( ( unsigned long ) 4860000)
 //#define configTICK_RATE_DIV			( 500 )   //Div=Tick*PreScalar 2500?
-#define configCPU_CLOCK_HZ			( ( unsigned long ) BSP_CLOCK_SYSTEM_FREQ_HZ) //131072000
-#define configTICK_RATE_DIV			( RT_TICK_PER_SECOND )
-
+#define configCPU_CLOCK_HZ ((unsigned long)BSP_CLOCK_SYSTEM_FREQ_HZ) //131072000
+#define configTICK_RATE_DIV (RT_TICK_PER_SECOND)
 
 static void rt_hw_systick_init(void)
 {
@@ -96,7 +95,7 @@ static void rt_hw_systick_init(void)
     TIMERX_InitStructure.Prescaler = 4;
 
     /* Timer0 start timer */
-    TIMER_Init(UC_TIMER0,&TIMERX_InitStructure);
+    TIMER_Init(UC_TIMER0, &TIMERX_InitStructure);
 
     /* Enable TA IRQ */
     IER |= 0x20000000;
@@ -105,7 +104,7 @@ static void rt_hw_systick_init(void)
 
 //#define TI_OVF_TIMER_TEST
 #ifdef TI_OVF_TIMER_TEST
-static void rt_hw_systick_init_timerB(void)//OVF  timerB
+static void rt_hw_systick_init_timerB(void) //OVF  timerB
 {
     /* Setup Timer B */
     TIMER_CFG_Type TIMERX_InitStructure;
@@ -120,15 +119,34 @@ static void rt_hw_systick_init_timerB(void)//OVF  timerB
     TIMERX_InitStructure.Prescaler = 0;
 
     /* Timer1 start timer */
-    TIMER_Init(UC_TIMER1,&TIMERX_InitStructure);
-
+    TIMER_Init(UC_TIMER1, &TIMERX_InitStructure);
 
     /* Enable TA IRQ */
-    IER |= (1<<30);
-
-
+    IER |= (1 << 30);
 }
 #endif
+
+static void timer1_init(void)
+{
+    uint8_t precfg = 4;
+
+    /* Setup Timer A */
+    TIMER_CFG_Type TIMERX_InitStructure;
+
+    /* set time count*/
+    TIMERX_InitStructure.Count = 0;
+
+    /* set compare value*/
+    TIMERX_InitStructure.Compare_Value = 0; //configCPU_CLOCK_HZ / ((precfg+1) * configTICK_RATE_DIV);
+
+    /* set prescaler value*/
+    TIMERX_InitStructure.Prescaler = precfg;
+
+    /* Timer0 start timer */
+    TIMER_Init(UC_TIMER1, &TIMERX_InitStructure);
+
+    //    timer_int_enable(UC_TIMER1,TIMER_IT_OVF);
+}
 
 void rt_hw_board_init(void)
 {
@@ -144,6 +162,7 @@ void rt_hw_board_init(void)
 
     /* initialize timer0 */
     rt_hw_systick_init();
+    timer1_init();
 
     /* initialize timer1 */
     // rt_hw_systick_init_timerB();
@@ -156,7 +175,7 @@ void rt_hw_board_init(void)
 
 #ifdef RT_USING_SERIAL
     extern int rt_hw_usart_init(void);
-	rt_hw_usart_init();
+    rt_hw_usart_init();
     // extern int virtual_usart_init(void);
     // virtual_usart_init();
 #endif
@@ -188,13 +207,12 @@ static void reboot(uint8_t argc, char **argv)
 FINSH_FUNCTION_EXPORT_ALIAS(reboot, __cmd_reboot, Reboot System);
 #endif /* RT_USING_FINSH */
 
-
 void uc_8088_tick_handler(void)
 {
-	// ICP = 0x20000000;
+    // ICP = 0x20000000;
     // ECP = 0x20000000;
 
-	/* enter interrupt */
+    /* enter interrupt */
     //rt_interrupt_enter();
 
     // rt_tick_increase();
@@ -206,14 +224,13 @@ void uc_8088_tick_handler(void)
 
     /* leave interrupt */
     //rt_interrupt_leave();
-
 }
 
 #include "gpio.h"
-void ISR_TB_OVF(void )
+void ISR_TB_OVF(void)
 {
-	ICP = (1<<30);
-    ECP = (1<<30);
+    ICP = (1 << 30);
+    ECP = (1 << 30);
 
     TIMER_Set_Count(UC_TIMER1, 0);
 

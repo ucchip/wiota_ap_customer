@@ -4,10 +4,6 @@ config WIOTA_API_TEST
     bool "uc wiota api test, default close(WIOTA_API_TEST)"
     default y
 
-config SINGLE_GATEWAY_MODE_SUPPORT
-    bool "release version must close, single gateway used(SINGLE_GATEWAY_MODE_SUPPORT)"
-    default y
-
 config M8_GATEWAY_MODE_SUPPORT
     bool "release version must close, m8 gateway used(M8_GATEWAY_MODE_SUPPORT)"
     default y

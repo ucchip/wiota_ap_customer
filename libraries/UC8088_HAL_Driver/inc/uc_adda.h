@@ -73,7 +73,7 @@ extern void dac_int_disable(ADDA_TypeDef *ADDA);
 extern void dac_int_clear_pending(void);
 extern void auxdac_init(ADDA_TypeDef *ADDA);
 extern void auxdac_level_set(ADDA_TypeDef *ADDA, uint16_t ele_level);
-void internal_temp_measure(ADDA_TypeDef *ADDA);
+// void internal_temp_measure(ADDA_TypeDef *ADDA);
 void avdd_cap_adj(void);
 void temp_in_pt1000(ADDA_TypeDef *ADDA);
 void temp_in_a(ADDA_TypeDef *ADDA);

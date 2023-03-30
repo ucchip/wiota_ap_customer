@@ -215,6 +215,11 @@ void soc_hw_ldo_on(void)
 
     gpio_set_pin_value(GPIO_PIN_26, 1);
     gpio_set_pin_value(GPIO_PIN_6, 0);
+    int num = 1500;
+    while(num--)
+    {
+        asm("nop");
+    }
     gpio_set_pin_value(GPIO_PIN_6, 1);
 }
 

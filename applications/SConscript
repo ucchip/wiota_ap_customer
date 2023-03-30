@@ -3,6 +3,7 @@ from building import *
 cwd = GetCurrentDir()
 src = Split('''
 main.c
+time_service_demo.c
 ''')
 
 path = []

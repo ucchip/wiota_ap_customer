@@ -194,6 +194,64 @@ __critical void FlashEnableWr(void)
         ;
 }
 
+__critical void FlashEraseSec(uint32_t nBaseAddr)
+{
+    WAIT_XIP_FREE;
+    FlashEnableWr();
+    REG_SPI_CMD = FLASH_CMD_ERASE_SEC << 24;
+    REG_SPI_ADDR = nBaseAddr;
+    REG_SPI_LEN = 0x1808;
+    WAIT_XIP_FREE;
+    SPI_START(SPI_CMD_RD);
+    WAIT_SPI_IDLE;
+    WAIT_FOR_WR_DONE;
+}
+
+__critical void FlashWriteSec(uint32_t nAddr, const uint8_t *pData, uint16_t usLen)
+{
+    FlashEnableWr();
+    spi_write_fifo(NULL, 0);
+    WAIT_XIP_FREE;
+    REG_SPI_CMD = FLASH_CMD_PROGRAM_SEC << 24; // set cmd
+    REG_SPI_ADDR = nAddr;
+    /* spi len reg format *
+     * bit16: bit15:8  bit7:0
+     * DLEN   ADDRLEN  CMDLEN
+     */
+    REG_SPI_LEN = 0x1808 | (usLen << 19); // set cmd,addr and data len
+    WAIT_XIP_FREE;
+    SPI_START(SPI_CMD_WR);
+    WAIT_XIP_FREE;
+    spi_write_fifo((int *)pData, usLen << 3);
+    WAIT_SPI_IDLE;
+    WAIT_FOR_WR_DONE;
+}
+
+__critical void FlashReadSec(uint32_t nAddr, uint8_t *pData, uint16_t usLen)
+{
+    //WAIT_FOR_WR_DONE;
+    spi_read_fifo(NULL, 0);
+    WAIT_XIP_FREE;
+    REG_SPI_CMD = FLASH_CMD_READ_SEC << 24; // set cmd
+    REG_SPI_ADDR = nAddr;
+    REG_SPI_LEN = 0x1808 | (usLen << 19); // set cmd,addr and data len
+    WAIT_XIP_FREE;
+    SPI_START(SPI_CMD_RD);
+    spi_read_fifo((int *)pData, (usLen << 3));
+}
+
+__critical void FlashQRead(uint32_t nAddr, uint8_t *pData, uint16_t usLen)
+{
+    spi_read_fifo(NULL, 0);
+    WAIT_XIP_FREE;
+    REG_SPI_CMD = FLASH_CMD_READ << 24; // set cmd
+    REG_SPI_ADDR = (nAddr << 8);
+    REG_SPI_LEN = 0x1808 | (usLen << 19); // set cmd,addr and data len
+    WAIT_XIP_FREE;
+    SPI_START(SPI_CMD_RD);
+    spi_read_fifo((int *)pData, (usLen << 3));
+}
+
 __critical void FlashPrefetchEnd(void)
 {
     asm("nop");

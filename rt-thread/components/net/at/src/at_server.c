@@ -48,6 +48,7 @@ extern void at_vprintfln(rt_device_t device, const char *format, va_list args);
  */
 void at_server_printf(const char *format, ...)
 {
+    rt_mutex_take(at_server_local->log_lock, RT_WAITING_FOREVER);
     va_list args;
 
     va_start(args, format);
@@ -55,6 +56,7 @@ void at_server_printf(const char *format, ...)
     at_vprintf(at_server_local->device, format, args);
 
     va_end(args);
+    rt_mutex_release(at_server_local->log_lock);
 }
 
 /**
@@ -64,6 +66,7 @@ void at_server_printf(const char *format, ...)
  */
 void at_server_printfln(const char *format, ...)
 {
+    rt_mutex_take(at_server_local->log_lock, RT_WAITING_FOREVER);
     va_list args;
 
     va_start(args, format);
@@ -71,11 +74,14 @@ void at_server_printfln(const char *format, ...)
     at_vprintfln(at_server_local->device, format, args);
 
     va_end(args);
+    rt_mutex_release(at_server_local->log_lock);
 }
 
-void at_send_data(const void* buffer, unsigned int len)
+void at_send_data(const void *buffer, unsigned int len)
 {
+    rt_mutex_take(at_server_local->log_lock, RT_WAITING_FOREVER);
     rt_device_write(at_server_local->device, 0, buffer, len);
+    rt_mutex_release(at_server_local->log_lock);
 }
 /**
  * AT server request arguments parse arguments
@@ -499,6 +505,16 @@ static void server_parser(at_server_t server)
             continue;
         }
 
+        if (server->recv_buffer[0] == '$')
+        {
+            extern uint8_t gnss_send_cmd(uint8_t * data, uint16_t len);
+            if (!gnss_send_cmd((uint8_t *)server->recv_buffer, strlen(server->recv_buffer)))
+            {
+                at_server_print_result(AT_RESULT_OK);
+                goto __retry;
+            }
+        }
+
         if (at_cmd_get_name(server->recv_buffer, cur_cmd_name) < 0)
         {
             at_server_print_result(AT_RESULT_CMD_ERR);
@@ -578,6 +594,14 @@ int at_server_init(void)
     memset(at_server_local->recv_buffer, 0x00, AT_SERVER_RECV_BUFF_LEN);
     at_server_local->cur_recv_len = 0;
 
+    at_server_local->log_lock = rt_mutex_create("log_lock", RT_IPC_FLAG_FIFO);
+    if (!at_server_local->log_lock)
+    {
+        LOG_E("AT server session initialize failed! log_lock create failed!");
+        result = -RT_ENOMEM;
+        goto __exit;
+    }
+
     at_server_local->rx_notice = rt_sem_create("at_svr", 0, RT_IPC_FLAG_FIFO);
     if (!at_server_local->rx_notice)
     {
@@ -647,6 +671,16 @@ __exit:
     }
     else
     {
+        if (at_server_local->rx_notice)
+        {
+            rt_sem_delete(at_server_local->rx_notice);
+        }
+
+        if (at_server_local->log_lock)
+        {
+            rt_mutex_delete(at_server_local->log_lock);
+        }
+
         if (at_server_local)
         {
             rt_free(at_server_local);

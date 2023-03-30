@@ -140,6 +140,7 @@ void test_register_callback(void)
     uc_wiota_register_recv_data_callback(test_show_recv_data);
 }
 
+#ifdef WIOTA_IOTE_INFO
 // test! send normal data to iote
 void test_send_normal_data(void)
 {
@@ -153,7 +154,7 @@ void test_send_normal_data(void)
     {
         u32_t user_id = curr_node->user_id;
 
-        if (UC_OP_SUCC == uc_wiota_send_data(fake_data, rt_strlen((const char *)fake_data), user_id, 10000, RT_NULL))
+        if (UC_OP_SUCC == uc_wiota_send_data(fake_data, rt_strlen((const char *)fake_data), user_id, 10000, RT_NULL, RT_NULL))
         {
             rt_kprintf("send data to 0x%x suc!\n", user_id);
         }
@@ -163,6 +164,7 @@ void test_send_normal_data(void)
         }
     }
 }
+#endif
 
 // test! send normal/ota broadcast data
 void test_send_broadcast_data(uc_bc_mode_e mode)
@@ -175,7 +177,7 @@ void test_send_broadcast_data(uc_bc_mode_e mode)
     if (NORMAL_BROADCAST == mode)
     {
         u8_t bc_data[] = {"AP ready!"};
-        uc_wiota_send_broadcast_data(bc_data, rt_strlen((const char *)bc_data), mode, timeout, NULL);
+        uc_wiota_send_broadcast_data(bc_data, rt_strlen((const char *)bc_data), mode, timeout, NULL, NULL);
     }
     else if (OTA_BROADCAST == mode)
     {
@@ -183,7 +185,7 @@ void test_send_broadcast_data(uc_bc_mode_e mode)
 
         for (u8_t i = 0; i < 30; i++)
         {
-            result = uc_wiota_send_broadcast_data(test_data + offset, 512, mode, timeout, NULL);
+            result = uc_wiota_send_broadcast_data(test_data + offset, 512, mode, timeout, NULL, NULL);
 
             if (result == UC_OP_SUCC)
             {
@@ -356,10 +358,10 @@ void wiota_api_test_task(void *pPara)
         test_send_broadcast_data(OTA_BROADCAST);
 
         rt_thread_mdelay(4000);
-
+#ifdef WIOTA_IOTE_INFO
         // test! send normal data to iote
         test_send_normal_data();
-
+#endif
         // test! query iote information after wiota start
         test_query_iote_info();
 

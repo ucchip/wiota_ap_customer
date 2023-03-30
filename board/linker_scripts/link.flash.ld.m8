@@ -8,9 +8,11 @@ __DYNAMIC  =  0;
 
 MEMORY
 {
-    uc_boot      : ORIGIN = 0x00000000, LENGTH = 0x7000  /* 28K uncompressed code sys data. */
+    uc_boot     : ORIGIN = 0x00000000, LENGTH = 0x7000   /* 28K uncompressed code sys data. */
     uc_rom      : ORIGIN = 0x00007000, LENGTH = 0x3000   /* 12K uncompressed code sys data, NO RODATA!!!! */
-    instrram    : ORIGIN = 0x0000A000, LENGTH = 0xFD000  /* 1M - 0x3000 */
+    psram       : ORIGIN = 0x0000A000, LENGTH = 0x19000  /* 100k */
+    gpsram      : ORIGIN = 0x00023000, LENGTH = 0x2D000  /* 180k */
+    instrram    : ORIGIN = 0x00050000, LENGTH = 0xB7000  /* 732k */
     datarom     : ORIGIN = 0x00200000, LENGTH = 0xF7000  /* 1M - 0x2000*/
     staticdata  : ORIGIN = 0x002F7000, LENGTH = 0x2000   /* 8K */
     dataram     : ORIGIN = 0x00300000, LENGTH = 0x36800  /* d_sram ends at 256K 340000  0x3B490 */
@@ -35,8 +37,8 @@ SECTIONS
 {
    .uc_boot :
    {
-   	. = LENGTH(uc_boot)  - 4 ;
-   	LONG(0x00000000)
+        . = LENGTH(uc_boot)  - 4 ;
+        LONG(0x00000000)
    } > uc_boot = 0x00000000
 
     .vectors :
@@ -52,7 +54,7 @@ SECTIONS
     .fastfunc :
     {
         . = ALIGN(4);
-	*(.crt0);
+        *(.crt0);
         *(.reset)
         *(.download);
         . += 80;
@@ -67,12 +69,98 @@ SECTIONS
         *(.init)
     } > instrram
 
+    .pstext :
+    {
+        *cce_log_dump*(.text*);
+        *factory_test*(.text*);
+        *context*(.text*);
+        *download_buffer*(.text*);
+        *iote_context_mng*(.text*);
+        *scheduler_*(.text*);
+        *ap_pgw_module_task*(.text*);
+        *ap_pgw_msg*(.text*);
+        *link_buffer*(.text*);
+        *uc_common*(.text*);
+        *wiota_crc*(.text*);
+        *base_station_config*(.text*);
+        *global_station_config*(.text*);
+        *uc_task*(.text*);
+        *adp_*(.text*);
+        *uc_queue*(.text*);
+        *ctrl_cmd*(.text*);
+        *trace*(.text*);
+        *trcKernelPort*(.text*);
+        *trcStreamingPort*(.text*);
+        *trcStreamingRecorder*(.text*);
+        *vsi_trc*(.text*);
+        *trace*(.text*);
+        *spi_buf_*(.text*);
+        *riscv_cce_communication*(.text*);
+        *easy_ptp*(.text*);
+        *gnss_main*(.text*);
+        *gnss_driver*(.text*);
+        *time_service*(.text*);
+        . = LENGTH(psram)  - 4 ;
+        LONG(0x00000000)
+    } > psram
 
+    .gpstext :
+    {
+        *TimeMonitor*(.text*);
+        *qaTest*(.text*);
+        *acqStat*(.text*);
+        *cdTestStat*(.text*);
+        *chlStat*(.text*);
+        *dcxoStat*(.text*);
+        *navStat*(.text*);
+        *pntStat*(.text*);
+        *psm*(.text*);
+        *svStat*(.text*);
+        *UsrPvt*(.text*);
+        *Acquire*(.text*);
+        *Bch*(.text*);
+        *ChannelGps*(.text*);
+        *chlFilter*(.text*);
+        *ConstDef*(.text*);
+        *ExtF32*(.text*);
+        *flashProc*(.text*);
+        *Interrup*(.text*);
+        *KalmanFilter*(.text*);
+        *Matrix*(.text*);
+        *navFilter*(.text*);
+        *NavGps*(.text*);
+        *NavLib*(.text*);
+        *NavProc*(.text*);
+        *NavQueue*(.text*);
+        *NavTime*(.text*);
+        *NbLdpc*(.text*);
+        *Nmea0183*(.text*);
+        *parseAtCmd*(.text*);
+        *Rtc*(.text*);
+        *SatProc*(.text*);
+        *scene*(.text*);
+        *StartMode*(.text*);
+        *svFilter*(.text*);
+        *timeAssist*(.text*);
+        *TraceBySpi*(.text*);
+        *usrDynMdl*(.text*);
+        *postSolChk*(.text*);
+        *priorSolChk*(.text*);
+        *solOut*(.text*);
+        *cce_firmware_gps*(.text*);
+        *agnss*(.text*);
+        *navAssist*(.text*);
+        *chlFilter*(.text*);
+        *gps_nav_filter*(.text*);
+        . = LENGTH(gpsram)  - 4 ;
+        LONG(0x00000000)
+    } > gpsram
 
-    .text : {
+    .text :
+    {
         . = ALIGN(512);
         _stext = .;
-		*src_main.c.o(.text)
+        *src_main.c.o(.text)
          *(.text)
         _etext  =  .;
         __CTOR_LIST__ = .;
@@ -87,14 +175,14 @@ SECTIONS
         __DTOR_END__ = .;
         *(.lit)
         *(.shdata)
-		_endtext = .;
+        _endtext = .;
     }  > instrram
 
     /*--------------------------------------------------------------------*/
     /* Global constructor/destructor segement                             */
     /*--------------------------------------------------------------------*/
 
-	/*
+    /*
     .preinit_array :
     {
         PROVIDE_HIDDEN (__preinit_array_start = .);
@@ -103,7 +191,7 @@ SECTIONS
     } > datarom
     */
 
-	/*
+    /*
     .init_array :
     {
         PROVIDE_HIDDEN (__init_array_start = .);
@@ -113,7 +201,7 @@ SECTIONS
     } > datarom
     */
 
-	/*
+    /*
     .fini_array :
     {
         PROVIDE_HIDDEN (__fini_array_start = .);
@@ -124,38 +212,37 @@ SECTIONS
     */
 
     .rodata :
-	{
+    {
         . = ALIGN(4);
-		KEEP (*(.dsp_data));
+        KEEP (*(.dsp_data));
         *(.rodata);
         *(.rodata.*);
-		*(.srodata.*);
-		*(.srodata*);
+        *(.srodata.*);
+        *(.srodata*);
 
 
-		/* section information for finsh shell */
-		. = ALIGN(4);
-		__fsymtab_start = .;
-		KEEP(*(SORT(FSymTab)))
-		__fsymtab_end = .;
-		. = ALIGN(4);
-		__vsymtab_start = .;
-		KEEP(*(SORT(VSymTab)))
-		__vsymtab_end = .;
-		. = ALIGN(4);
+        /* section information for finsh shell */
+        . = ALIGN(4);
+        __fsymtab_start = .;
+        KEEP(*(SORT(FSymTab)))
+        __fsymtab_end = .;
+        . = ALIGN(4);
+        __vsymtab_start = .;
+        KEEP(*(SORT(VSymTab)))
+        __vsymtab_end = .;
+        . = ALIGN(4);
 
-		. = ALIGN(4);
-		__rt_init_start = .;
-		KEEP(*(SORT(.rti_fn*)))
-		__rt_init_end = .;
-		. = ALIGN(4);
+        . = ALIGN(4);
+        __rt_init_start = .;
+        KEEP(*(SORT(.rti_fn*)))
+        __rt_init_end = .;
+        . = ALIGN(4);
 
-		/* section information for modules */
-		. = ALIGN(4);
-		__rtmsymtab_start = .;
-		KEEP(*(SORT(RTMSymTab)))
-		__rtmsymtab_end = .;
-
+        /* section information for modules */
+        . = ALIGN(4);
+        __rtmsymtab_start = .;
+        KEEP(*(SORT(RTMSymTab)))
+        __rtmsymtab_end = .;
    } > datarom
 
     .at_array     :
@@ -166,6 +253,11 @@ SECTIONS
         KEEP(*(RtAtCmdTab))
         __rtatcmdtab_end = .;
         . = ALIGN(4);
+    } > datarom
+
+    .eh_frame :
+    {
+        *(.eh_frame);
     } > datarom
 
    .staticinfo : {
@@ -183,10 +275,22 @@ SECTIONS
         *(.spidlbuf)
     } > spiram
 
+    .spidlbufstat :
+    {
+        . = ALIGN(4);
+        *(.spidlbufstat)
+    } > spiram
+
     .spiulbuf :
     {
         . = ALIGN(4);
         *(.spiulbuf)
+    } > spiram
+
+    .spiulbufstat :
+    {
+        . = ALIGN(4);
+        *(.spiulbufstat)
     } > spiram
 
     .shbss :
@@ -196,7 +300,7 @@ SECTIONS
     } > dataram
 
     .data :
-	{
+    {
         . = ALIGN(4);
         sdata  =  .;
         _sdata  =  .;
@@ -221,18 +325,18 @@ SECTIONS
     } > dataram
 
     .heap :
-	{
+    {
         . = ALIGN(4);
     } > dataram
     .guard :
-	{
+    {
         . = ALIGN(4);
         . = . + 16;
     } > dataram
 
     /* ensure there is enough room for stack */
     .stack (NOLOAD):
-	{
+    {
         . = ALIGN(4);
         . = . + _min_stack ;
         . = ALIGN(4);
@@ -270,9 +374,13 @@ SECTIONS
 
     .ota_flag :
     {
-    	LONG(0x46024355);
-    	LONG(28K);
-    	LONG(640K);
+        LONG(0x46024355);
+        LONG(LENGTH(uc_boot));
+        LONG(LENGTH(uc_rom));
+        LONG(LENGTH(psram));
+        LONG(LENGTH(gpsram));
+        LONG(LENGTH(instrram));
+        LONG(LENGTH(datarom));
     } > ota_flag
 
 }

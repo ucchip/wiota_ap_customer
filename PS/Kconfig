@@ -20,4 +20,8 @@ config WIOTA_AP_STATE_INFO
     bool "query ap state info, default open(WIOTA_AP_STATE_INFO)"
     default n
 
+config WIOTA_IOTE_INFO
+    bool "query iote info, default open(WIOTA_IOTE_INFO)"
+    default n
+
 endmenu

@@ -178,11 +178,11 @@ void adc_temp_sensor_enable(ADDA_TypeDef *ADDA, bool enable)
                                                                           //REG(0x1A104230) = (REG(0x1A104230) & (~(0x0f<<20))) | (12<<20);//calibrate voltage
 }
 
-void internal_temp_measure(ADDA_TypeDef *ADDA)
-{
-    ADDA->ADC_CTRL0 = 0x89F71080;
-    ADDA->ADC_CTRL1 = 0x0C740280;
-}
+// void internal_temp_measure(ADDA_TypeDef *ADDA)
+// {
+//     ADDA->ADC_CTRL0 = 0x89F71080;
+//     ADDA->ADC_CTRL1 = 0x0C740280;
+// }
 
 void avdd_cap_adj(void)
 {
