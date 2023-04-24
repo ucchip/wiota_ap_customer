@@ -213,18 +213,25 @@ void soc_hw_ldo_on(void)
 
     *pad_mux &= (~(0x1));
 
-    gpio_set_pin_value(GPIO_PIN_26, 1);
-    gpio_set_pin_value(GPIO_PIN_6, 0);
+    // spi cs
+#ifdef WIZ_USING_W5500
+    gpio_set_pin_value(GPIO_PIN_3, GPIO_VALUE_HIGH);
+    gpio_set_pin_value(GPIO_PIN_28, GPIO_VALUE_HIGH);
+#endif
+    gpio_set_pin_value(GPIO_PIN_13, GPIO_VALUE_HIGH);
+
+    gpio_set_pin_value(GPIO_PIN_26, GPIO_VALUE_HIGH);
+    gpio_set_pin_value(GPIO_PIN_6, GPIO_VALUE_LOW);
     int num = 1500;
-    while(num--)
+    while (num--)
     {
         asm("nop");
     }
-    gpio_set_pin_value(GPIO_PIN_6, 1);
+    gpio_set_pin_value(GPIO_PIN_6, GPIO_VALUE_HIGH);
 }
 
 void gpio_8088_to_8288_change_value()
 {
-    gpio_set_pin_value(GPIO_PIN_12, 1);
-    gpio_set_pin_value(GPIO_PIN_12, 0);
+    gpio_set_pin_value(GPIO_PIN_12, GPIO_VALUE_HIGH);
+    gpio_set_pin_value(GPIO_PIN_12, GPIO_VALUE_LOW);
 }

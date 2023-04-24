@@ -99,6 +99,8 @@ SECTIONS
         *gnss_main*(.text*);
         *gnss_driver*(.text*);
         *time_service*(.text*);
+        *ptpv2_*(.text*);
+        *slave_uc8x88*(.text*);
         . = LENGTH(psram)  - 4 ;
         LONG(0x00000000)
     } > psram

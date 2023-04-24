@@ -16,12 +16,24 @@ config UC8088_FACTORY_TEST
     bool "factory mode, recv and send test, default open(UC8088_FACTORY_TEST)"
     default y
 
+config SLAVER_UC8x88_SUPPORT
+    bool "use slaver uc8x88 spi w/r api, default open(SLAVER_UC8x88_SUPPORT)"
+    default y
+
 config WIOTA_AP_STATE_INFO
-    bool "query ap state info, default open(WIOTA_AP_STATE_INFO)"
+    bool "query ap state info, default close(WIOTA_AP_STATE_INFO)"
     default n
 
 config WIOTA_IOTE_INFO
-    bool "query iote info, default open(WIOTA_IOTE_INFO)"
+    bool "query iote info, default close(WIOTA_IOTE_INFO)"
+    default n
+
+config PTPVT2_SUPPORT
+    bool "1588 protocol support, default close(PTPVT2_SUPPORT)"
+    default n
+
+config ZCRD_CUSTOMER
+    bool "default close(ZCRD_CUSTOMER)"
     default n
 
 endmenu

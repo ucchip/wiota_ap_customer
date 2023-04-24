@@ -74,6 +74,13 @@
 
 #define FUNC_SPIM  0
 
+typedef struct
+{
+    uint32_t Clk_rate;
+    uint32_t cs;      /* parity bit enable */
+}SPIM_CFG_Type;
+
+void spim_init(SPI_TypeDef *SPIx,SPIM_CFG_Type *SPI_ConfigStruc);
 void spim_setup_slave();
 
 void spim_setup_master(int numcs);

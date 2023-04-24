@@ -77,7 +77,7 @@ void uc_wiota_time_service_demo(void)
     // 2.if GPS/1588 is supprted, enable the GPS/1588 time service function. if not enable, will be calculated using the default dfe counter method.
     // note:if GPS/1588 is not supported, not setting is required.
     uc_wiota_set_time_service_func(TIME_SERVICE_GNSS, 1);
-    // uc_wiota_set_time_service_func(TIME_SERVICE_1588_PROTOCOL, 1);
+    // uc_wiota_set_time_service_func(TIME_SERVICE_1588_PS, 1);
 
     // 3.register the time service state callback function.
     uc_wiota_register_time_service_state_callback(uc_wiota_time_service_state_cb);

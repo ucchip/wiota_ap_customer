@@ -220,7 +220,7 @@ void uc_8088_tick_handler(void)
     // TIMER_Set_Count(UC_TIMER1, 0);
 
     // rt_kprintf("<<<uc_8088_tick_handler \n");
-    timer1_compare_handler();
+    // timer1_compare_handler();
 
     /* leave interrupt */
     //rt_interrupt_leave();

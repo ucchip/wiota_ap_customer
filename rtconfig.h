@@ -83,6 +83,7 @@
 #define RT_USING_ADC
 #define RT_USING_DAC
 #define RT_USING_PWM
+#define RT_USING_SPI
 #define RT_USING_WDT
 
 /* Using USB */
@@ -132,6 +133,7 @@
 #define _RT_THREAD_
 #define _FPGA_TRACE_TEST_
 #define UC8088_FACTORY_TEST
+#define SLAVER_UC8x88_SUPPORT
 
 /* IoT - internet of things */
 

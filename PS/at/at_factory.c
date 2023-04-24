@@ -33,6 +33,7 @@ enum factory_command_type
 #define PWM_DEV_NAME "pwm2"
 #define AT24C02_ADDR 0xA0
 
+#ifdef RT_USING_I2C
 static rt_err_t write_reg(struct rt_i2c_bus_device *bus, rt_uint8_t reg, rt_uint8_t *data)
 {
     rt_uint8_t buf[8];
@@ -120,6 +121,7 @@ static int at_factory_test_i2c(void)
 
     return 0;
 }
+#endif
 
 static int at_factory_test_ad(unsigned int channel)
 {
@@ -192,6 +194,7 @@ static int at_factory_test_uart1(int cmd)
     return rt_strcmp((const char *)send_data, (const char *)recv_data);
 }
 
+#ifdef RT_USING_PWM
 static int at_factory_test_pwm(unsigned int period, unsigned int pulse)
 {
     struct rt_device_pwm *pwm_dev;
@@ -209,6 +212,7 @@ static int at_factory_test_pwm(unsigned int period, unsigned int pulse)
 
     return 0;
 }
+#endif
 #endif
 
 #ifdef AT_USING_SERVER
@@ -252,6 +256,7 @@ static at_result_t at_factory_setup(const char *args)
         rt_pin_write(pin, value);
         break;
     }
+#ifdef RT_USING_I2C
     case FACTORY_I2C:
     {
         if (at_factory_test_i2c())
@@ -260,6 +265,7 @@ static at_result_t at_factory_setup(const char *args)
         }
         break;
     }
+#endif
     case FACTORY_AD:
     {
         unsigned int ch = data;
@@ -292,6 +298,7 @@ static at_result_t at_factory_setup(const char *args)
         }
         break;
     }
+#ifdef RT_USING_PWM
     case FACTORY_PWM:
     {
         unsigned int period = data;
@@ -303,6 +310,7 @@ static at_result_t at_factory_setup(const char *args)
         }
         break;
     }
+#endif
     default:
         return AT_RESULT_CMD_ERR;
     }

@@ -186,7 +186,6 @@ typedef struct
     u8_t old_subsys_v;  //default 0, if set 1, match old version(v2.3_ap8088) subsystem id
     u8_t bitscb;        //bit scrambling flag bit, default 1, if set 0, match old version(v2.3_ap8288)
     u8_t reserved[2];   //for 4bytes alain
-    u32_t system_id;
     u32_t subsystem_id;
 } sub_system_config_t;
 
@@ -309,7 +308,7 @@ typedef enum
 typedef enum
 {
     TIME_SERVICE_GNSS = 0,
-    TIME_SERVICE_1588_PROTOCOL = 1,
+    TIME_SERVICE_1588_PS = 1,
 } time_service_type_e;
 
 typedef enum
@@ -356,7 +355,7 @@ void uc_wiota_register_time_service_state_callback(uc_time_service_callback call
 
 void uc_wiota_set_time_service_func(time_service_type_e type, u8_t is_open);
 
-void uc_wiota_get_time_service_func(u8_t *func_gnss, u8_t *func_1588);
+u8_t uc_wiota_get_time_service_func(time_service_type_e type);
 
 time_service_state_e uc_wiota_get_time_service_state(void);
 

@@ -29,6 +29,32 @@ void ExtISR()
     return;
 }
 
+#ifdef WIZ_USING_W5500
+#include "drv_spi.h"
+#include "gpio.h"
+int uc_wiota_w5500_spi_init(void)
+{
+    rt_hw_spi_device_attach("spim", WIZ_SPI_DEVICE, RT_NULL, GPIO_PIN_3);
+
+    return 0;
+}
+#endif
+
+#ifdef PKG_USING_WIZNET
+#include "wiz.h"
+int uc_wiota_wiz_init(void)
+{
+    rt_thread_mdelay(100);
+
+    char mac[6] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
+
+    wiz_config(mac, 0, RT_NULL, RT_NULL, RT_NULL);
+    wiz_init();
+
+    return 0;
+}
+#endif
+
 int main(void)
 {
     uc_wiota_static_data_init();
@@ -60,6 +86,13 @@ int main(void)
 #endif // WIOTA_API_TEST
 #endif // WIOTA_APP_DEMO
 
+#ifdef WIZ_USING_W5500
+    uc_wiota_w5500_spi_init();
+#endif // WIZ_USING_W5500
+
+#ifdef PKG_USING_WIZNET
+    uc_wiota_wiz_init();
+#endif // PKG_USING_WIZNET
     // extern void uc_wiota_time_service_demo(void);
     // uc_wiota_time_service_demo();
 }
