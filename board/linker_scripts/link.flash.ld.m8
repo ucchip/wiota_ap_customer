@@ -11,8 +11,8 @@ MEMORY
     uc_boot     : ORIGIN = 0x00000000, LENGTH = 0x7000   /* 28K uncompressed code sys data. */
     uc_rom      : ORIGIN = 0x00007000, LENGTH = 0x3000   /* 12K uncompressed code sys data, NO RODATA!!!! */
     psram       : ORIGIN = 0x0000A000, LENGTH = 0x19000  /* 100k */
-    gpsram      : ORIGIN = 0x00023000, LENGTH = 0x2D000  /* 180k */
-    instrram    : ORIGIN = 0x00050000, LENGTH = 0xB7000  /* 732k */
+    gpsram      : ORIGIN = 0x00023000, LENGTH = 0x2E000  /* 184k */
+    instrram    : ORIGIN = 0x00051000, LENGTH = 0x98000  /* 608k */
     datarom     : ORIGIN = 0x00200000, LENGTH = 0xF7000  /* 1M - 0x2000*/
     staticdata  : ORIGIN = 0x002F7000, LENGTH = 0x2000   /* 8K */
     dataram     : ORIGIN = 0x00300000, LENGTH = 0x36800  /* d_sram ends at 256K 340000  0x3B490 */
