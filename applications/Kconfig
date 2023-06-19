@@ -4,10 +4,6 @@ config WIOTA_API_TEST
     bool "uc wiota api test, default close(WIOTA_API_TEST)"
     default y
 
-config M8_GATEWAY_MODE_SUPPORT
-    bool "release version must close, m8 gateway used(M8_GATEWAY_MODE_SUPPORT)"
-    default y
-
 if RT_USING_WDT
     config _WATCHDOG_APP_
         bool "open wdt, default close(_WATCHDOG_APP_)"

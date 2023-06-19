@@ -1568,10 +1568,7 @@ static at_result_t at_wiota_rate_setup(const char *args)
 
 static at_result_t at_wiota_pos_query_setup(const char *args)
 {
-    u32_t query_result = 0;
-    uc_query_recv_t query_info = {0};
     uc_dev_pos_t *dev_pos = RT_NULL;
-
     u32_t start_addr = 0;
     u32_t addr_cnt = 0;
     u32_t *id_array = RT_NULL;
@@ -1593,20 +1590,17 @@ static at_result_t at_wiota_pos_query_setup(const char *args)
     {
         id_array[i] = start_addr + i;
     }
-    query_result = uc_wiota_query_scrambleid_by_userid(id_array, addr_cnt, NULL, &query_info);
 
-    if (UC_OP_SUCC == query_result)
+    dev_pos = uc_wiota_query_dev_pos_by_userid(id_array, addr_cnt);
+    if (dev_pos)
     {
-        dev_pos = uc_wiota_get_dev_pos_by_scrambleid(query_info.scramble_id, query_info.scramble_id_num);
-        for (int i = 0; i < query_info.scramble_id_num; i++)
+        for (int i = 0; i < addr_cnt; i++)
         {
             at_server_printfln("+POS:%d,%d,%d", dev_pos[i].group_idx, dev_pos[i].burst_idx, dev_pos[i].slot_idx);
         }
 
         rt_free(id_array);
         id_array = RT_NULL;
-        rt_free(query_info.scramble_id);
-        query_info.scramble_id = RT_NULL;
         rt_free(dev_pos);
         dev_pos = RT_NULL;
     }
@@ -2510,7 +2504,7 @@ static at_result_t at_wiota_gnss_pos_query(void)
     float pos_x = 0, pos_y = 0, pos_z = 0;
 
     uc_wiota_gnss_query_fix_pos(&pos_x, &pos_y, &pos_z);
-    at_server_printfln("+GNSSPOSQUERY:%f,%f,%f", pos_x, pos_y, pos_z);
+    at_server_printfln("+GNSSPOSQUERY:%d,%d,%d", pos_x, pos_y, pos_z);
     return AT_RESULT_OK;
 }
 

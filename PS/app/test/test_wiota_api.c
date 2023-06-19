@@ -203,11 +203,13 @@ void test_send_broadcast_data(uc_bc_mode_e mode)
     }
 }
 
+#ifdef WIOTA_IOTE_INFO
 // test! query iote infomation
 void test_query_iote_info(void)
 {
     uc_wiota_print_iote_info();
 }
+#endif
 
 // test! read temperature of ap8288
 void test_read_temp(void)
@@ -361,10 +363,10 @@ void wiota_api_test_task(void *pPara)
 #ifdef WIOTA_IOTE_INFO
         // test! send normal data to iote
         test_send_normal_data();
-#endif
+
         // test! query iote information after wiota start
         test_query_iote_info();
-
+#endif
         // test! read temperature of ap8288
         // test_read_temp();
 

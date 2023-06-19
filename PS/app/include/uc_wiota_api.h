@@ -152,21 +152,6 @@ typedef struct
 
 typedef struct
 {
-    void *semaphore;
-    u32_t result;
-    u32_t scramble_id_num;
-    u32_t *scramble_id;
-} uc_query_result_t;
-
-typedef struct
-{
-    u32_t result;
-    u32_t scramble_id_num;
-    u32_t *scramble_id;
-} uc_query_recv_t;
-
-typedef struct
-{
     u32_t user_id;
     u16_t data_len;
     u8_t type;
@@ -329,7 +314,6 @@ extern u8_t *factory_test_gen_rand_data(u16_t data_len);
 typedef void (*uc_send_callback)(uc_send_recv_t *result);
 typedef void (*uc_scan_callback)(uc_scan_recv_t *result);
 typedef void (*uc_temp_callback)(uc_temp_recv_t *result);
-typedef void (*uc_query_callback)(uc_query_recv_t *result);
 typedef void (*uc_time_service_callback)(time_service_state_e state);
 typedef void (*uc_iote_drop)(u32_t user_id);
 typedef void (*uc_recv)(u32_t user_id, uc_dev_pos_t dev_pos, u8_t *data, u16_t data_len, uc_recv_data_type_e data_type);
@@ -927,23 +911,19 @@ uc_result_e uc_wiota_read_temperature(uc_temp_callback callback, uc_temp_recv_t 
 void uc_wiota_log_switch(uc_log_type_e log_type, u8_t is_open);
 
 /*********************************************************************************
- This function is to query scramble id by user id.
+ This function is to query dev pos on frame structure by user id.
 
  param:
         in:
             user_id:the first address of the id array to be queried.
             user_id_num:number of the id to be queried.
-            callback:
-                     when callback==NULL,is blocking call.
-                     Non-blocking call when callback != NULL.
         out:
-            query_result, when callback==NULL effieient.
+            NULL.
 
- return:NULL.
+ return:uc_dev_pos_t.
 **********************************************************************************/
-uc_result_e uc_wiota_query_scrambleid_by_userid(u32_t *user_id, u32_t user_id_num, uc_query_callback callback, uc_query_recv_t *query_result);
+uc_dev_pos_t *uc_wiota_query_dev_pos_by_userid(u32_t *user_id, u32_t user_id_num);
 
-uc_dev_pos_t *uc_wiota_get_dev_pos_by_scrambleid(u32_t *scramble_id, u32_t scramble_id_num);
 #ifdef __cplusplus
 }
 #endif

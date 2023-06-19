@@ -158,7 +158,6 @@ void manager_get_reserved_address(unsigned int reserved_start_address, unsigned 
 {
     int i = 0;
     uc_dev_pos_t *dev_pos_array;
-    uc_query_recv_t query_result = {0};
     int count = (reserved_end_address - reserved_start_address + 1);
 
     unsigned int *id_array = rt_malloc(count * 4);
@@ -173,14 +172,13 @@ void manager_get_reserved_address(unsigned int reserved_start_address, unsigned 
     rt_kprintf("%s line %d\n", __FUNCTION__, __LINE__);
 #if 1
     // get position
-    if (UC_OP_SUCC != uc_wiota_query_scrambleid_by_userid(id_array, count, RT_NULL, &query_result))
+    dev_pos_array = uc_wiota_query_dev_pos_by_userid(id_array, count);
+    if (dev_pos_array == RT_NULL)
     {
-        rt_kprintf("uc_wiota_query_scrambleid_by_userid fail, count %d,id_num %d\n", count, query_result.scramble_id_num);
+        rt_kprintf("uc_wiota_query_dev_pos_by_userid fail, count %d,id_num %d\n", count, query_result.scramble_id_num);
         rt_free(id_array);
         return;
     }
-
-    dev_pos_array = uc_wiota_get_dev_pos_by_scrambleid(query_result.scramble_id, query_result.scramble_id_num);
 #else
     query_result.scramble_id = rt_malloc(count * 4); //test
     query_result.scramble_id_num = count;            //test

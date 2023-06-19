@@ -221,8 +221,9 @@ void soc_hw_ldo_on(void)
     gpio_set_pin_value(GPIO_PIN_13, GPIO_VALUE_HIGH);
 
     gpio_set_pin_value(GPIO_PIN_26, GPIO_VALUE_HIGH);
+     // reset ap8288
     gpio_set_pin_value(GPIO_PIN_6, GPIO_VALUE_LOW);
-    int num = 1500;
+    int num = 5000;
     while (num--)
     {
         asm("nop");

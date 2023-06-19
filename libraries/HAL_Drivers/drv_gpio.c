@@ -303,31 +303,38 @@ void ISR_GPIO(void)
 {
     uint32_t irq_status = 0;
 
-    rt_interrupt_enter();
+    // rt_interrupt_enter();
 
     irq_status = gpio_get_irq_status(UC_GPIO);
-    pin_irq_hdr(bit2bitno(irq_status));
+    // pin_irq_hdr(bit2bitno(irq_status));
+    for (int index = 0; index < ITEM_NUM(pin_irq_hdr_tab); index++)
+    {
+        if (irq_status & (1 << index))
+        {
+            pin_irq_hdr(index);
+        }
+    }
 
     ICP |= 1 << 25;
 
-    rt_interrupt_leave();
+    // rt_interrupt_leave();
 }
 
 int rt_hw_pin_init(void)
 {
-    gpio_set_pin_mux(UC_GPIO_CFG, 25, GPIO_FUNC_0);
-    gpio_set_pin_direction(25, GPIO_DIR_IN);
+    gpio_set_pin_mux(UC_GPIO_CFG, GPIO_PIN_25, GPIO_FUNC_0);
+    gpio_set_pin_direction(GPIO_PIN_25, GPIO_DIR_IN);
     return rt_device_pin_register("pin", &_uc8088_pin_ops, RT_NULL);
 }
 
 static int spi_slave_pin_init(void)
 {
-    gpio_set_pin_mux(UC_GPIO_CFG, 0, GPIO_FUNC_0);
-    gpio_set_pin_mux(UC_GPIO_CFG, 1, GPIO_FUNC_0);
-    gpio_set_pin_mux(UC_GPIO_CFG, 2, GPIO_FUNC_0);
-    gpio_set_pin_direction(0, GPIO_DIR_IN);
-    gpio_set_pin_direction(1, GPIO_DIR_IN);
-    gpio_set_pin_direction(2, GPIO_DIR_IN);
+    gpio_set_pin_mux(UC_GPIO_CFG, GPIO_PIN_0, GPIO_FUNC_0);
+    gpio_set_pin_mux(UC_GPIO_CFG, GPIO_PIN_1, GPIO_FUNC_0);
+    gpio_set_pin_mux(UC_GPIO_CFG, GPIO_PIN_2, GPIO_FUNC_0);
+    gpio_set_pin_direction(GPIO_PIN_0, GPIO_DIR_IN);
+    gpio_set_pin_direction(GPIO_PIN_1, GPIO_DIR_IN);
+    gpio_set_pin_direction(GPIO_PIN_2, GPIO_DIR_IN);
 
     return 0;
 }
