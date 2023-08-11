@@ -40,6 +40,7 @@
 
 void boot_uart1_set_cfg(int parity, uint16_t clk_counter);
 void boot_uart1_sendchar(const char c);
+void boot_uart1_sendstr(const char* str, unsigned int len);
 void boot_uart1_wait_tx_done(void);
 
 void boot_uart_set_cfg(int parity, uint16_t clk_counter);

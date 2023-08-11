@@ -23,6 +23,33 @@
 #ifdef WIOTA_APP_DEMO
 #include "manager_app.h"
 #endif
+#ifdef _ADC_APP_
+#include "uc_adc_app.h"
+#endif
+#ifdef _DAC_APP_
+#include "uc_dac_app.h"
+#endif
+#ifdef _IIC_APP_
+#include "uc_iic_app.h"
+#endif
+#ifdef _PIN_APP_
+#include "uc_pin_app.h"
+#endif
+#ifdef _PWM_APP_
+#include "uc_pwm_app.h"
+#endif
+#ifdef _RTC_APP_
+#include "uc_rtc_app.h"
+#endif
+#ifdef _SPI_FLASH_APP_
+#include "uc_spi_flash_app.h"
+#endif
+#ifdef _SPIM_FLASH_APP_
+#include "uc_spim_flash_app.h"
+#endif
+#ifdef _UART_APP_
+#include "uc_uart_app.h"
+#endif
 
 void ExtISR()
 {
@@ -54,6 +81,46 @@ int uc_wiota_wiz_init(void)
     return 0;
 }
 #endif
+
+void app_device_demo(void)
+{
+#ifdef _ADC_APP_
+    adc_app_sample();
+#endif
+
+#ifdef _DAC_APP_
+    dac_app_sample();
+#endif
+
+#ifdef _IIC_APP_
+    iic_app_sample();
+#endif
+
+#ifdef _PIN_APP_
+    pin_app_sample();
+#endif
+
+#ifdef _PWM_APP_
+    pwm_app_sample();
+#endif
+
+#ifdef _RTC_APP_
+    rtc_app_sample();
+//    alarm_app_sample();
+#endif
+
+#ifdef _SPI_FLASH_APP_
+    spi_flash_app_sample();
+#endif
+
+#ifdef _SPIM_FLASH_APP_
+    spim_flash_app_sample();
+#endif
+
+#ifdef _UART_APP_
+    uart_app_sample();
+#endif
+}
 
 int main(void)
 {
@@ -88,4 +155,5 @@ int main(void)
 #endif // PKG_USING_WIZNET
     // extern void uc_wiota_time_service_demo(void);
     // uc_wiota_time_service_demo();
+    app_device_demo();
 }

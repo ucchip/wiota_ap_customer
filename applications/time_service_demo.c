@@ -6,7 +6,7 @@ rt_sem_t location_sem = RT_NULL;
 
 void send_test(void)
 {
-#ifdef  WIOTA_IOTE_INFO
+#ifdef WIOTA_IOTE_INFO
     u16_t online_num, offline_num;
     u8_t fake_data[] = {"Hello WIoTa IoTe"};
 

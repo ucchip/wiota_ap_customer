@@ -27,21 +27,21 @@
 #include <wizchip_socket.h>
 
 #define DBG_ENABLE
-#define DBG_SECTION_NAME "wiz.socket"
+#define DBG_SECTION_NAME               "wiz.socket"
 #ifdef WIZ_DEBUG
-#define DBG_LEVEL DBG_LOG
+#define DBG_LEVEL                      DBG_LOG
 #else
-#define DBG_LEVEL DBG_INFO
+#define DBG_LEVEL                      DBG_INFO
 #endif /* WIZ_DEBUG */
 #define DBG_COLOR
 #include <rtdbg.h>
 
 #ifndef WIZ_SOCKETS_NUM
-#define WIZ_SOCKETS_NUM 8
+#define WIZ_SOCKETS_NUM                8
 #endif
 
 #ifndef WIZ_DEF_LOCAL_PORT
-#define WIZ_DEF_LOCAL_PORT 6000
+#define WIZ_DEF_LOCAL_PORT             6000
 #endif
 
 #ifndef RT_USING_TIMER_SOFT
@@ -54,13 +54,13 @@ extern rt_bool_t wiz_init_ok;
         (getPHYCFGR() & PHYCFGR_LNK_ON) != PHYCFGR_LNK_ON) \
     {                                                      \
         return -1;                                         \
-    }
+    }                                                      \
 
-#define HTONS_PORT(x) ((((x)&0x00ffUL) << 8) | (((x)&0xff00UL) >> 8))
-#define NIPQUAD(addr, index) ((unsigned char *)&addr)[index]
+#define HTONS_PORT(x)                  ((((x) & 0x00ffUL) << 8) | (((x) & 0xff00UL) >> 8))
+#define NIPQUAD(addr, index)           ((unsigned char *)&addr)[index]
 
-#define WIZ_MAX(x, y) (((x) > (y)) ? (x) : (y))
-#define WIZ_MIN(x, y) (((x) < (y)) ? (x) : (y))
+#define WIZ_MAX(x , y)                 (((x) > (y)) ? (x) : (y))
+#define WIZ_MIN(x , y)                 (((x) < (y)) ? (x) : (y))
 
 typedef enum
 {
@@ -204,7 +204,12 @@ int wiz_closed_notice_cb(int socket)
         return -1;
     }
 
-    if (wizchip_close(socket) != SOCK_OK)
+    int8_t res;
+    // if(sock->type == Sn_MR_TCP)
+    //     res = wizchip_disconnect(socket);
+    // else 
+        res = wizchip_close(socket);
+    if (res != SOCK_OK)
     {
         LOG_E("WIZnet socket(%d) close failed.", socket);
         return -1;
@@ -212,7 +217,8 @@ int wiz_closed_notice_cb(int socket)
     sock->state = SOCK_CLOSED;
 
     wiz_do_event_changes(sock, WIZ_EVENT_RECV, RT_TRUE);
-    wiz_do_event_changes(sock, WIZ_EVENT_ERROR, RT_TRUE);
+    // wiz_do_event_changes(sock, WIZ_EVENT_ERROR, RT_TRUE);
+    wiz_do_event_changes(sock, WIZ_EVENT_SEND, RT_FALSE);
 
     rt_sem_release(sock->recv_notice);
 
@@ -240,8 +246,7 @@ static struct wiz_socket *alloc_socket(void)
     rt_mutex_take(wiz_slock, RT_WAITING_FOREVER);
 
     /* find an empty WIZnet socket entry */
-    for (idx = 0; idx < WIZ_SOCKETS_NUM && sockets[idx].magic; idx++)
-        ;
+    for (idx = 0; idx < WIZ_SOCKETS_NUM && sockets[idx].magic; idx++);
 
     /* can't find an empty protocol family entry */
     if (idx == WIZ_SOCKETS_NUM)
@@ -498,7 +503,11 @@ int wiz_closesocket(int socket)
     uint8_t socket_state = 0;
 
     /* check WIZnet initialize status */
-    WIZ_INIT_STATUS_CHECK;
+    // WIZ_INIT_STATUS_CHECK;
+    if (wiz_init_ok == RT_FALSE)
+    {
+        return -1;
+    }
 
     sock = wiz_get_socket(socket);
     if (sock == RT_NULL)
@@ -513,7 +522,14 @@ int wiz_closesocket(int socket)
         return -1;
     }
 
-    if (wizchip_close(socket) != SOCK_OK)
+    int8_t res;
+    if ((sock->type == Sn_MR_TCP)
+        && ((getPHYCFGR() & PHYCFGR_LNK_ON) == PHYCFGR_LNK_ON))
+        res = wizchip_disconnect(socket);
+    else 
+        res = wizchip_close(socket);
+        
+    if ( res != SOCK_OK)
     {
         LOG_E("WIZnet socket(%d) close failed.", socket);
         free_socket(sock);
@@ -529,7 +545,11 @@ int wiz_shutdown(int socket, int how)
     uint8_t socket_state = 0;
 
     /* check WIZnet initialize status */
-    WIZ_INIT_STATUS_CHECK;
+    // WIZ_INIT_STATUS_CHECK;
+    if (wiz_init_ok == RT_FALSE)
+    {
+        return -1;
+    }
 
     sock = wiz_get_socket(socket);
     if (sock == RT_NULL)
@@ -554,7 +574,7 @@ int wiz_shutdown(int socket, int how)
     return free_socket(sock);
 }
 
-static struct wiz_clnt_info *wiz_conn_clnt_info_get(struct wiz_socket *svr_sock)
+static  struct wiz_clnt_info *wiz_conn_clnt_info_get(struct wiz_socket *svr_sock)
 {
     rt_base_t level;
     rt_slist_t *node = RT_NULL;
@@ -671,13 +691,16 @@ static void wiz_timer_entry(void *parameter)
     case SOCK_CLOSE_WAIT:
     case SOCK_CLOSED:
     default:
+        free_socket(clnt_sock);
+        svr_sock->svr_info->backlog--;
         goto __error;
     }
     return;
 
 __error:
-    rt_mb_send(svr_sock->svr_info->conn_mbox, (rt_uint32_t)clnt_sock);
-    wiz_do_event_changes(svr_sock, WIZ_EVENT_ERROR, RT_TRUE);
+    // rt_mb_send(svr_sock->svr_info->conn_mbox, (rt_uint32_t)clnt_sock);
+    // wiz_do_event_changes(svr_sock, WIZ_EVENT_ERROR, RT_TRUE);
+    return;
 }
 
 int wiz_listen(int socket, int backlog)
@@ -893,7 +916,7 @@ int wiz_connect(int socket, const struct sockaddr *name, socklen_t namelen)
 __exit:
     if (result < 0)
     {
-        wiz_do_event_changes(sock, WIZ_EVENT_ERROR, RT_TRUE);
+        // wiz_do_event_changes(sock, WIZ_EVENT_ERROR, RT_TRUE);
     }
     else
     {
@@ -969,6 +992,8 @@ int wiz_accept(int socket, struct sockaddr *addr, socklen_t *addrlen)
             /* clean server socket receive event and status */
             wiz_do_event_clean(svr_sock, WIZ_EVENT_RECV);
 
+            wiz_do_event_changes(svr_sock, WIZ_EVENT_SEND, RT_TRUE);
+
             return clnt_socket;
         }
     }
@@ -1002,6 +1027,7 @@ int wiz_sendto(int socket, const void *data, size_t size, int flags, const struc
     {
         if (socket_state == SOCK_CLOSED)
         {
+            LOG_E("WIZnet socket(%d) send data failed.(socket_state == SOCK_CLOSED).", socket);
             return 0;
         }
         else if (socket_state != SOCK_ESTABLISHED)
@@ -1054,6 +1080,7 @@ int wiz_sendto(int socket, const void *data, size_t size, int flags, const struc
         LOG_E("WIZnet socket (%d) type %d is not support.", socket, sock->type);
         return -1;
     }
+    wiz_do_event_changes(sock, WIZ_EVENT_SEND, RT_TRUE);
 
     return send_len;
 }
@@ -1082,7 +1109,6 @@ int wiz_recvfrom(int socket, void *mem, size_t len, int flags, struct sockaddr *
     sock = wiz_get_socket(socket);
     if (sock == RT_NULL)
     {
-        LOG_E("WIZnet get socket error!");
         return -1;
     }
 
@@ -1118,7 +1144,6 @@ int wiz_recvfrom(int socket, void *mem, size_t len, int flags, struct sockaddr *
 
         if (socket_state == SOCK_CLOSED)
         {
-            LOG_E("WIZnet socket state is closed!");
             return 0;
         }
         else if (socket_state != SOCK_ESTABLISHED)
@@ -1160,7 +1185,6 @@ int wiz_recvfrom(int socket, void *mem, size_t len, int flags, struct sockaddr *
                 }
                 else if (sock->state == SOCK_CLOSED)
                 {
-                    LOG_E("WIZnet socket state is closed!");
                     result = 0;
                     goto __exit;
                 }
@@ -1183,7 +1207,7 @@ int wiz_recvfrom(int socket, void *mem, size_t len, int flags, struct sockaddr *
             return -1;
         }
 
-    __continue:
+__continue:
         if (rt_sem_take(sock->recv_notice, timeout) < 0)
         {
             result = -1;
@@ -1225,7 +1249,6 @@ int wiz_recvfrom(int socket, void *mem, size_t len, int flags, struct sockaddr *
                 }
                 else if (sock->state == SOCK_CLOSED)
                 {
-                    LOG_E("WIZnet socket state is closed!");
                     result = 0;
                     goto __exit;
                 }
@@ -1258,7 +1281,7 @@ __exit:
     }
     else
     {
-        wiz_do_event_changes(sock, WIZ_EVENT_ERROR, RT_TRUE);
+        // wiz_do_event_changes(sock, WIZ_EVENT_ERROR, RT_TRUE);
     }
 
     return result;
@@ -1434,8 +1457,7 @@ static uint32_t ipstr_to_u32(char *ipstr)
         }
     }
     rt_memcpy(&ip, ipBytes, 4);
-
-    return ip; // *(uint32_t *)ipBytes;
+    return ip;// *(uint32_t *)ipBytes;
 }
 
 struct hostent *wiz_gethostbyname(const char *name)
@@ -1464,8 +1486,7 @@ struct hostent *wiz_gethostbyname(const char *name)
     }
 
     /* check domain name or IP address */
-    for (idx = 0; idx < rt_strlen(name) && !isalpha(name[idx]); idx++)
-        ;
+    for (idx = 0; idx < rt_strlen(name) && !isalpha(name[idx]); idx++);
 
     if (idx < rt_strlen(name))
     {
@@ -1474,8 +1495,7 @@ struct hostent *wiz_gethostbyname(const char *name)
         uint8_t data_buffer[512];
 
         /* allocate and initialize a new WIZnet socket */
-        for (idx = 0; idx < WIZ_SOCKETS_NUM && sockets[idx].magic; idx++)
-            ;
+        for (idx = 0; idx < WIZ_SOCKETS_NUM && sockets[idx].magic; idx++);
         if (idx >= WIZ_SOCKETS_NUM)
         {
             LOG_E("WIZnet DNS failed, socket number is full.");
@@ -1606,8 +1626,7 @@ int wiz_getaddrinfo(const char *nodename, const char *servname, const struct add
             size_t idx = 0;
 
             /* check domain name or IP address */
-            for (idx = 0; idx < rt_strlen(nodename) && !isalpha(nodename[idx]); idx++)
-                ;
+            for (idx = 0; idx < rt_strlen(nodename) && !isalpha(nodename[idx]); idx++);
 
             if (idx < rt_strlen(nodename))
             {
@@ -1615,8 +1634,7 @@ int wiz_getaddrinfo(const char *nodename, const char *servname, const struct add
                 uint8_t remote_ip[4] = {0};
                 uint8_t data_buffer[512];
 
-                for (idx = 0; idx < WIZ_SOCKETS_NUM && sockets[idx].magic; idx++)
-                    ;
+                for (idx = 0; idx < WIZ_SOCKETS_NUM && sockets[idx].magic; idx++);
                 if (idx >= WIZ_SOCKETS_NUM)
                 {
                     LOG_E("wizenet getaddrinfo failed, socket number is full.");

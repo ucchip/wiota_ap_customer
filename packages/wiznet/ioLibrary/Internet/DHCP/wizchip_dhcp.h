@@ -69,7 +69,7 @@ extern "C" {
 
 #define MAGIC_COOKIE             0x63825363  ///< You should not modify it number.
 
-#define DCHP_HOST_NAME           "WIZnet\0"
+#define DCHP_HOST_NAME           "UC-SGW\0"
 
 /* 
  * @brief return value of @ref DHCP_run()
@@ -87,9 +87,10 @@ enum
 /*
  * @brief DHCP client initialization (outside of the main loop)
  * @param s   - socket number
+ * @param mac - mac address
  * @param buf - buffer for processing DHCP message
  */
-void DHCP_init(uint8_t s, uint8_t * buf);
+void DHCP_init(uint8_t s, uint8_t * mac, uint8_t * buf);
 
 /*
  * @brief DHCP 1s Tick Timer handler

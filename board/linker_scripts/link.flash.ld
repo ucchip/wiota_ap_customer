@@ -8,13 +8,13 @@ __DYNAMIC  =  0;
 
 MEMORY
 {
-    uc_boot     : ORIGIN = 0x00000000, LENGTH = 0x7000   /* 28K uncompressed code sys data. */
-    uc_rom      : ORIGIN = 0x00007000, LENGTH = 0x3000   /* 12K uncompressed code sys data, NO RODATA!!!! */
-    psram       : ORIGIN = 0x0000A000, LENGTH = 0x19000  /* 100k */
-    gpsram      : ORIGIN = 0x00023000, LENGTH = 0x2E000  /* 184k */
-    instrram    : ORIGIN = 0x00051000, LENGTH = 0x98000  /* 608k */
-    datarom     : ORIGIN = 0x00200000, LENGTH = 0xF7000  /* 1M - 0x2000*/
-    staticdata  : ORIGIN = 0x002F7000, LENGTH = 0x2000   /* 8K */
+    uc_boot     : ORIGIN = 0x00000000, LENGTH = 0x7000   /*  28K uncompressed code sys data. */
+    uc_rom      : ORIGIN = 0x00007000, LENGTH = 0x3000   /*  12K uncompressed code sys data, NO RODATA!!!! */
+    psram       : ORIGIN = 0x0000A000, LENGTH = 0x19000  /* 100K */
+    gpsram      : ORIGIN = 0x00023000, LENGTH = 0x2E000  /* 184K */
+    instrram    : ORIGIN = 0x00051000, LENGTH = 0x42000  /* 264K */
+    datarom     : ORIGIN = 0x00200000, LENGTH = 0x62000  /* 392K */
+    staticdata  : ORIGIN = 0x00262000, LENGTH = 0x2000   /*   8K */
     dataram     : ORIGIN = 0x00300000, LENGTH = 0x3A000  /* d_sram ends at 256K 340000  0x3B490 */
     ccetraceram : ORIGIN = 0x0033A000, LENGTH = 0x1490   /* 5k temp */
     rvtraceram  : ORIGIN = 0x0033B490, LENGTH = 0x1770   /* 6000 byte */
@@ -99,7 +99,6 @@ SECTIONS
         *gnss_main*(.text*);
         *gnss_driver*(.text*);
         *time_service*(.text*);
-        *ptpv2_*(.text*);
         . = LENGTH(psram)  - 4 ;
         LONG(0x00000000)
     } > psram
@@ -161,7 +160,7 @@ SECTIONS
         . = ALIGN(512);
         _stext = .;
         *src_main.c.o(.text)
-         *(.text)
+         *(.text*)
         _etext  =  .;
         __CTOR_LIST__ = .;
         LONG((__CTOR_END__ - __CTOR_LIST__) / 4 - 2)
@@ -176,6 +175,8 @@ SECTIONS
         *(.lit)
         *(.shdata)
         _endtext = .;
+        . = LENGTH(instrram) - 4 ;
+        LONG(0x00000000);
     }  > instrram
 
     /*--------------------------------------------------------------------*/
@@ -351,7 +352,7 @@ SECTIONS
 
     .ota_flag :
     {
-        LONG(0x46024355);
+        LONG(0x46064355);
         LONG(LENGTH(uc_boot));
         LONG(LENGTH(uc_rom));
         LONG(LENGTH(psram));

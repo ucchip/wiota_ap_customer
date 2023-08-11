@@ -12,6 +12,38 @@ if GetDepend(['_WATCHDOG_APP_', 'RT_USING_WDT']):
     path += [cwd]
     src += ['uc_watchdog_app.c']
 
+if GetDepend(['_ADC_APP_', 'RT_USING_ADC']):
+    path += [cwd]
+    src += ['uc_adc_app.c']
+
+if GetDepend(['_DAC_APP_', 'RT_USING_DAC']):
+    path += [cwd]
+    src += ['uc_dac_app.c']
+
+if GetDepend(['_IIC_APP_', 'RT_USING_I2C']):
+    path += [cwd]
+    src += ['uc_iic_app.c']
+
+if GetDepend(['_PIN_APP_', 'RT_USING_PIN']):
+    path += [cwd]
+    src += ['uc_pin_app.c']
+
+if GetDepend(['_PWM_APP_', 'RT_USING_PWM']):
+    path += [cwd]
+    src += ['uc_pwm_app.c']
+
+if GetDepend(['_SPI_FLASH_APP_']):
+    path += [cwd]
+    src += ['uc_spi_flash_app.c']
+
+if GetDepend(['_SPIM_FLASH_APP_', 'RT_USING_SPI']):
+    path += [cwd]
+    src += ['uc_spim_flash_app.c', 'spim_api.c']
+
+if GetDepend(['_UART_APP_']):
+    path += [cwd]
+    src += ['uc_uart_app.c']
+
 # if GetDepend(['WIOTA_APP_DEMO']):
 #     src += ['wolfmqtt_example2.c']
 

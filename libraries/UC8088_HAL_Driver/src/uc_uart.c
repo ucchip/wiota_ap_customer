@@ -126,6 +126,9 @@ void uc_uart_init(UART_TYPE *uartx, uint32_t baud_rate, uint8_t data_bits, uint8
         line_reg |= 1 << 3;
     }
 
+    *(volatile unsigned int*)((uint32_t)uartx - UART_BASE_ADDR + UART_REG_FCR) = 0x0;
+    *(volatile unsigned int*)((uint32_t)uartx - UART_BASE_ADDR + UART_REG_FCR) |= 0x6;
+
     *(volatile unsigned int*)((uint32_t)uartx - UART_BASE_ADDR + UART_REG_LCR) = line_reg | 0x80; //sets 8N1 and set DLAB to 1
     *(volatile unsigned int*)((uint32_t)uartx - UART_BASE_ADDR + UART_REG_DLM) = (integerdivider >> 8) & 0xFF;
     *(volatile unsigned int*)((uint32_t)uartx - UART_BASE_ADDR + UART_REG_DLL) =  integerdivider       & 0xFF;
@@ -183,4 +186,9 @@ void uc_uart_enable_intrx(UART_TYPE *uartx, uint8_t ctrl)
     {
         *(volatile unsigned int*)((uint32_t)uartx - UART_BASE_ADDR + UART_REG_IER) = 0x00;
     }
+}
+
+void uc_uartx_wait_tx_done(UART_TYPE *uartx)
+{
+    while ((uartx->LSR & 0x40) == 0);    
 }

@@ -48,28 +48,29 @@ if PKG_USING_WIZNET
     endif
 
     config WIZ_USING_DHCP
-        bool "Enable alloc IP address through DHCP"
+    #     bool "Enable alloc IP address through DHCP"
+        bool
         default y
 
-    if !WIZ_USING_DHCP
-
-        menu "WIZnet network configure"
-
-            config WIZ_IPADDR
-                string "IPv4: IP address"
-                default 192.168.1.10
-
-            config WIZ_GWADDR
-                string "IPv4: Gateway address"
-                default 192.168.1.1
-
-            config WIZ_MSKADDR
-                string "IPv4: Mask address"
-                default 255.255.255.0
-
-        endmenu
-
-    endif
+    # if !WIZ_USING_DHCP
+    #
+    #     menu "WIZnet network configure"
+    #
+    #         config WIZ_IPADDR
+    #             string "IPv4: IP address"
+    #             default 192.168.1.10
+    #
+    #         config WIZ_GWADDR
+    #             string "IPv4: Gateway address"
+    #             default 192.168.1.1
+    #
+    #         config WIZ_MSKADDR
+    #             string "IPv4: Mask address"
+    #             default 255.255.255.0
+    #
+    #     endmenu
+    #
+    # endif
 
     config WIZ_USING_PING
         bool "Enable Ping utility"

@@ -979,37 +979,47 @@ int8_t check_DHCP_leasedIP(void)
     }
 }
 
-void DHCP_init(uint8_t s, uint8_t *buf)
+void DHCP_init(uint8_t s, uint8_t * mac, uint8_t * buf)
 {
-    uint8_t zeroip[4] = {0, 0, 0, 0};
-    getSHAR(DHCP_CHADDR);
-    if ((DHCP_CHADDR[0] | DHCP_CHADDR[1] | DHCP_CHADDR[2] | DHCP_CHADDR[3] | DHCP_CHADDR[4] | DHCP_CHADDR[5]) == 0x00)
-    {
-        // assigning temporary mac address, you should be set SHAR before call this function.
-        DHCP_CHADDR[0] = 0x00;
-        DHCP_CHADDR[1] = 0x08;
-        DHCP_CHADDR[2] = 0xdc;
-        DHCP_CHADDR[3] = 0x00;
-        DHCP_CHADDR[4] = 0x00;
-        DHCP_CHADDR[5] = 0x00;
-        setSHAR(DHCP_CHADDR);
-    }
+	uint8_t zeroip[4] = {0,0,0,0};
+	getSHAR(DHCP_CHADDR);
+	if(0 == mac || (mac[0] | mac[1]  | mac[2] | mac[3] | mac[4] | mac[5]) == 0x00)
+	{
+		// assigning temporary mac address.
+		DHCP_CHADDR[0] = 0x00;
+		DHCP_CHADDR[1] = 0x08;
+		DHCP_CHADDR[2] = 0xdc;
+		DHCP_CHADDR[3] = 0x00;
+		DHCP_CHADDR[4] = 0x00;
+		DHCP_CHADDR[5] = 0x00;
+		setSHAR(DHCP_CHADDR);
+	}
+	else
+	{
+		DHCP_CHADDR[0] = mac[0];
+		DHCP_CHADDR[1] = mac[1];
+		DHCP_CHADDR[2] = mac[2];
+		DHCP_CHADDR[3] = mac[3];
+		DHCP_CHADDR[4] = mac[4];
+		DHCP_CHADDR[5] = mac[5];
+		setSHAR(DHCP_CHADDR);
+	}
 
-    DHCP_SOCKET = s; // SOCK_DHCP
-    pDHCPMSG = (RIP_MSG *)buf;
-    DHCP_XID = 0x12345678;
-    {
-        DHCP_XID += DHCP_CHADDR[3];
-        DHCP_XID += DHCP_CHADDR[4];
-        DHCP_XID += DHCP_CHADDR[5];
-        DHCP_XID += (DHCP_CHADDR[3] ^ DHCP_CHADDR[4] ^ DHCP_CHADDR[5]);
-    }
-    // WIZchip Netinfo Clear
-    setSIPR(zeroip);
-    setGAR(zeroip);
+	DHCP_SOCKET = s; // SOCK_DHCP
+	pDHCPMSG = (RIP_MSG*)buf;
+	DHCP_XID = 0x12345678;
+	{
+		DHCP_XID += DHCP_CHADDR[3];
+		DHCP_XID += DHCP_CHADDR[4];
+		DHCP_XID += DHCP_CHADDR[5];
+		DHCP_XID += (DHCP_CHADDR[3] ^ DHCP_CHADDR[4] ^ DHCP_CHADDR[5]);
+	}
+	// WIZchip Netinfo Clear
+	setSIPR(zeroip);
+	setGAR(zeroip);
 
-    reset_DHCP_timeout();
-    dhcp_state = STATE_DHCP_INIT;
+	reset_DHCP_timeout();
+	dhcp_state = STATE_DHCP_INIT;
 }
 
 /* Reset the DHCP timeout count and retry count. */

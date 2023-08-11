@@ -144,6 +144,19 @@ typedef struct
 
 typedef struct
 {
+    void *semaphore;
+    u32_t user_id;
+    u32_t result;
+} uc_paging_result_t;
+
+typedef struct
+{
+    u32_t user_id;
+    u32_t result;
+} uc_paging_recv_t;
+
+typedef struct
+{
     u8_t group_idx;
     u8_t burst_idx;
     u8_t slot_idx;
@@ -170,7 +183,8 @@ typedef struct
     u8_t spectrum_idx;  //default value:3(470M-510M)
     u8_t old_subsys_v;  //default 0, if set 1, match old version(v2.3_ap8088) subsystem id
     u8_t bitscb;        //bit scrambling flag bit, default 1, if set 0, match old version(v2.3_ap8288)
-    u8_t reserved[2];   //for 4bytes alain
+    u8_t freq_idx;      // freq idx
+    u8_t reserved;      //for 4bytes alain
     u32_t subsystem_id;
 } sub_system_config_t;
 
@@ -314,6 +328,7 @@ extern u8_t *factory_test_gen_rand_data(u16_t data_len);
 typedef void (*uc_send_callback)(uc_send_recv_t *result);
 typedef void (*uc_scan_callback)(uc_scan_recv_t *result);
 typedef void (*uc_temp_callback)(uc_temp_recv_t *result);
+typedef void (*uc_paging_callback)(uc_paging_recv_t *result);
 typedef void (*uc_time_service_callback)(time_service_state_e state);
 typedef void (*uc_iote_drop)(u32_t user_id);
 typedef void (*uc_recv)(u32_t user_id, uc_dev_pos_t dev_pos, u8_t *data, u16_t data_len, uc_recv_data_type_e data_type);
@@ -351,7 +366,7 @@ void uc_wiota_gnss_query_fix_pos(float *pos_x, float *pos_y, float *pos_z);
 
 void uc_wiota_set_gnss_relocation(u8_t is_relocation);
 
-void uc_wiota_set_1588_protocol_rtc(u32_t timestamp, u32_t msec);
+void uc_wiota_set_1588_protocol_rtc(u32_t timestamp, u32_t usec);
 // time service api end
 
 ap8288_state_e uc_wiota_get_ap8288_state(void);
@@ -361,6 +376,10 @@ void uc_wiota_set_paging_tx_cfg(uc_lpm_tx_cfg_t *config);
 uc_lpm_tx_cfg_t* uc_wiota_get_paging_tx_cfg(void);
 
 void uc_wiota_start_paging_tx(void);
+
+uc_result_e uc_wiota_sync_paging(u32_t *user_id, u32_t user_id_num, u32_t frame_num, uc_paging_callback callback);
+
+u8_t uc_wiota_get_sync_paging_num(u8_t group_idx, u8_t subframe_idx);
 
 #if 1//def RAMP_RF_SET_SUPPORT
 void uc_wiota_set_ramp_value(u32_t ramp_value);
@@ -502,6 +521,7 @@ void uc_wiota_set_max_active_iote_num_in_the_same_subframe(u8_t max_iote_num);
     uc_result_e.
 **********************************************************************************/
 uc_result_e uc_wiota_set_data_rate(uc_data_rate_mode_e rate_mode, u32_t rate_value);
+u32_t uc_wiota_get_data_rate_value(uc_data_rate_mode_e rate_mode);
 
 /**********************************************************************************
  This function is to set mcs of broadcast.
@@ -514,6 +534,7 @@ uc_result_e uc_wiota_set_data_rate(uc_data_rate_mode_e rate_mode, u32_t rate_val
     NULL.
 **********************************************************************************/
 void uc_wiota_set_broadcast_mcs(uc_mcs_level_e bc_mcs);
+uc_mcs_level_e uc_wiota_get_broadcast_mcs(void);
 
 /**********************************************************************************
  This function is to set whether to open crc16 verification and length of verification.

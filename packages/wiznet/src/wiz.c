@@ -98,7 +98,8 @@ static void wiz_data_thread_entry(void *parameter)
 
     while (1)
     {
-        if (rt_mb_recv(wiz_rx_mb, (rt_ubase_t*) &dev, RT_WAITING_FOREVER) == RT_EOK)
+        // if (rt_mb_recv(wiz_rx_mb, (rt_ubase_t*) &dev, RT_WAITING_FOREVER) == RT_EOK)
+        rt_mb_recv(wiz_rx_mb, (rt_ubase_t*) &dev, 5000 / RT_TICK_PER_SECOND);
         {
             uint8_t ir, sir, sn_ir;
             int8_t socket = -1;
@@ -138,7 +139,7 @@ static void wiz_data_thread_entry(void *parameter)
                         wiz_closed_notice_cb(socket);
                         setSn_IR(socket, Sn_IR_DISCON);
                     }
-                    if (sn_ir & Sn_IR_RECV)
+                    if ((sn_ir & Sn_IR_RECV) && (getSn_RX_RSR(socket)))
                     {
                         wiz_recv_notice_cb(socket);
                         setSn_IR(socket, Sn_IR_RECV);
@@ -511,7 +512,7 @@ static void wiz_ip_conflict(void)
 {
     /* deal with conflict IP for WIZnet DHCP  */
     LOG_D("conflict IP from DHCP.");
-    RT_ASSERT(0);
+    // RT_ASSERT(0);
 }
 
 static void wiz_dhcp_timer_entry(void *parameter)
@@ -536,7 +537,7 @@ static void wiz_dhcp_work(struct rt_work *dhcp_work, void *dhcp_work_data)
 
     if(dhcp_status == DHCP_FAILED)
     {
-        DHCP_init(WIZ_DHCP_SOCKET, data_buffer);
+        DHCP_init(WIZ_DHCP_SOCKET, wiz_net_info.mac, data_buffer);
         rt_timer_start(dhcp_timer);
     }
 
@@ -999,7 +1000,7 @@ static int wiz_interrupt_init(rt_base_t isr_pin)
     }
 
     /* create WIZnet SPI RX thread  */
-    tid = rt_thread_create("wiz", wiz_data_thread_entry, RT_NULL, 1024, RT_THREAD_PRIORITY_MAX / 6 + 2, 20);
+    tid = rt_thread_create("wiz", wiz_data_thread_entry, RT_NULL, 1024, RT_THREAD_PRIORITY_MAX / 6, 20);
     if (tid != RT_NULL)
     {
         rt_thread_startup(tid);
