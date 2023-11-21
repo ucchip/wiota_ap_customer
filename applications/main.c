@@ -10,6 +10,7 @@
 
 #include <rtthread.h>
 #include "uc_wiota_static.h"
+#include "resource_manager.h"
 
 #ifdef RT_USING_AT
 #include "at.h"
@@ -49,6 +50,10 @@
 #endif
 #ifdef _UART_APP_
 #include "uc_uart_app.h"
+#endif
+
+#ifdef WIOTA_AP_SEND_DATA_DEMO
+#include "test_wiota_send_data.h"
 #endif
 
 void ExtISR()
@@ -122,9 +127,17 @@ void app_device_demo(void)
 #endif
 }
 
+static void task_hook_func(struct rt_thread *from, struct rt_thread *to)
+{
+    from->task_run_all_time += rt_tick_get() - from->task_current_start_time;
+    to->task_current_start_time = rt_tick_get();
+}
+
 int main(void)
 {
     uc_wiota_static_data_init();
+
+    rt_scheduler_sethook(task_hook_func);
 
 #ifdef _WATCHDOG_APP_
     if (RT_EOK == watchdog_app_init())
@@ -138,6 +151,13 @@ int main(void)
 #ifdef WIOTA_API_TEST
     wiota_api_test();
 #else
+#ifdef M8_GATEWAY_MODE_SUPPORT
+    extern int uc_wiota_mac_init(void);
+    if (0 == uc_wiota_mac_init())
+    {
+        rt_kprintf("uc_wiota_mac_init suc\n");
+    }
+#endif
 #ifdef RT_USING_AT
 #ifdef AT_USING_SERVER
     at_server_init();
@@ -156,4 +176,14 @@ int main(void)
     // extern void uc_wiota_time_service_demo(void);
     // uc_wiota_time_service_demo();
     app_device_demo();
+
+#ifdef WIOTA_AP_SEND_DATA_DEMO
+    wiota_ap_data_recv_and_send_demo();
+#endif
+
+    // while (1)
+    // {
+    //     resource_manager(RESOURCE_DETAIL_MODE);
+    //     rt_thread_mdelay(10000);
+    // }
 }

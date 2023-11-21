@@ -8,7 +8,7 @@ void send_test(void)
 {
 #ifdef WIOTA_IOTE_INFO
     u16_t online_num, offline_num;
-    u8_t fake_data[] = {"Hello WIoTa IoTe"};
+    uint8_t fake_data[] = {"Hello WIoTa IoTe"};
 
     uc_iote_info_t *head_node = uc_wiota_get_iote_info(&online_num, &offline_num);
     uc_iote_info_t *curr_node = NULL;
@@ -28,7 +28,7 @@ void send_test(void)
     }
 #endif
 
-    u8_t bc_data[] = {"AP ready!"};
+    uint8_t bc_data[] = {"AP ready!"};
     if (UC_OP_SUCC == uc_wiota_send_broadcast_data(bc_data, rt_strlen((const char *)bc_data), 1, 10000, NULL, bc_data))
     {
         rt_kprintf("send bc suc!\n");

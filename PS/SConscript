@@ -15,6 +15,10 @@ if GetDepend(['WIOTA_API_TEST']):
     path += [cwd + '/app/test']
     src += Glob('app/test/*.c')
 
+if GetDepend(['WIOTA_AP_SEND_DATA_DEMO']):
+    src += ['test/test_wiota_send_data.c']
+    path += [cwd + '/test']
+
 src += [cwd + '/gnss/gnss_driver.c']
 path += [cwd + '/app/include']
 path += [cwd + '/gnss']

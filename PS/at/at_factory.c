@@ -87,8 +87,8 @@ static rt_err_t read_regs(struct rt_i2c_bus_device *bus, rt_uint8_t len, rt_uint
 static int at_factory_test_i2c(void)
 {
     rt_device_t dev;
-    unsigned char set_data[4] = {1, 2, 3, 4};
-    unsigned char get_data[4] = {0};
+    uint8_t set_data[4] = {1, 2, 3, 4};
+    uint8_t get_data[4] = {0};
     int num = 0;
 
     dev = rt_device_find(AHT10_I2C_BUS_NAME);
@@ -123,7 +123,7 @@ static int at_factory_test_i2c(void)
 }
 #endif
 
-static int at_factory_test_ad(unsigned int channel)
+static int at_factory_test_ad(uint32_t channel)
 {
     rt_adc_device_t adc_dev;
     rt_uint32_t value;
@@ -142,7 +142,7 @@ static int at_factory_test_ad(unsigned int channel)
     return value;
 }
 
-static int at_factory_test_da(unsigned int channel, unsigned int value)
+static int at_factory_test_da(uint32_t channel, uint32_t value)
 {
     rt_dac_device_t dac_dev;
 
@@ -165,8 +165,8 @@ static int at_factory_test_da(unsigned int channel, unsigned int value)
 static int at_factory_test_uart1(int cmd)
 {
     static rt_device_t serial;
-    unsigned char send_data[4] = {"1234"};
-    unsigned char recv_data[4] = {0};
+    uint8_t send_data[4] = {"1234"};
+    uint8_t recv_data[4] = {0};
 
     serial = rt_device_find(UART1_DEV_NMAE);
     if (!serial)
@@ -181,9 +181,9 @@ static int at_factory_test_uart1(int cmd)
         return 2;
     }
 
-    rt_device_write(serial, 0, send_data, sizeof(send_data) / sizeof(unsigned char));
+    rt_device_write(serial, 0, send_data, sizeof(send_data) / sizeof(uint8_t));
 
-    if (rt_device_read(serial, 0, recv_data, sizeof(recv_data) / sizeof(unsigned char)) < 1)
+    if (rt_device_read(serial, 0, recv_data, sizeof(recv_data) / sizeof(uint8_t)) < 1)
     {
         rt_kprintf("uart read fail\n");
         return 3;
@@ -195,7 +195,7 @@ static int at_factory_test_uart1(int cmd)
 }
 
 #ifdef RT_USING_PWM
-static int at_factory_test_pwm(unsigned int period, unsigned int pulse)
+static int at_factory_test_pwm(uint32_t period, uint32_t pulse)
 {
     struct rt_device_pwm *pwm_dev;
 
@@ -268,7 +268,7 @@ static at_result_t at_factory_setup(const char *args)
 #endif
     case FACTORY_AD:
     {
-        unsigned int ch = data;
+        uint32_t ch = data;
 
         int result = at_factory_test_ad(ch);
         if (result < 0)
@@ -280,8 +280,8 @@ static at_result_t at_factory_setup(const char *args)
     }
     case FACTORY_DA:
     {
-        unsigned int ch = data;
-        unsigned int val = data1;
+        uint32_t ch = data;
+        uint32_t val = data1;
 
         if (at_factory_test_da(ch, val) < 0)
         {
@@ -301,8 +301,8 @@ static at_result_t at_factory_setup(const char *args)
 #ifdef RT_USING_PWM
     case FACTORY_PWM:
     {
-        unsigned int period = data;
-        unsigned int pulse = data1;
+        uint32_t period = data;
+        uint32_t pulse = data1;
 
         if (at_factory_test_pwm(period, pulse))
         {
