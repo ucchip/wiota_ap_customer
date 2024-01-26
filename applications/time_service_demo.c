@@ -114,3 +114,33 @@ void uc_wiota_time_service_demo(void)
         rt_thread_mdelay(1000);
     }
 }
+
+void uc_wiota_sync_assistant_demo(void)
+{
+    // 1.enable the frame boundary alignment function.
+    uc_wiota_set_frame_boundary_align_func(1);
+
+    // 2.if want to sync time throught the sync assistant, set the sync time method to the sync assistant method
+    uc_wiota_set_time_service_func(TIME_SERVICE_SYNC_ASSISTANT, 1);
+
+    // 3.if you want to test he time sync accuracy throught instruments such as oscilloscopes, you can activate the PPS of sync asstistant, by measuring
+    // the PPS of GPS and AP8288, calculate the sync accuracy
+    // it is best to turn it off after the measurement is completed. uc_wiota_set_sync_assistant_pps(0);
+    uc_wiota_set_sync_assistant_pps(1);
+
+    // 4.init wiota.
+    uc_wiota_init();
+
+    // 5.set frequency point.
+    uc_wiota_set_freq_info(145);
+
+    // 6.run wiota
+    uc_wiota_run();
+
+    // other operation...
+    while (1)
+    {
+        send_test();
+        rt_thread_mdelay(1000);
+    }
+}

@@ -10,7 +10,7 @@ void dc_off_control(int control);
 
 void dac_output_voltage(float vol)
 {
-    uint16_t val;
+    unsigned short val;
 
     val = vol / 1.6 * 1024; //formula
     dac_power_set(UC_ADDA);
@@ -32,7 +32,7 @@ void dac_output_voltage(float vol)
 
 void auxdac_output_voltage(float vol)
 {
-    uint16_t val;
+    unsigned short val;
 
     val = vol / 1.6 * 1024; //formula
 
@@ -56,7 +56,7 @@ void internal_temp_measure(ADDA_TypeDef *ADDA)
 
 void dc_off_control(int control)
 {
-    uint32_t *ptr = (uint32_t *)(0x1a109004);
+    unsigned int *ptr = (unsigned int *)(0x1a109004);
     if (control)
         *ptr |= 1 << 28;
     if (!control)
@@ -64,7 +64,7 @@ void dc_off_control(int control)
 }
 //GNSS update from th <===20221102====================
 
-void UartSend(const uint8_t *pData, uint16_t usLen)
+void UartSend(const unsigned char *pData, unsigned short usLen)
 {
     // uart_send(pData, usLen);
     rt_kprintf("%s", pData);

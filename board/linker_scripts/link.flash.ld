@@ -76,7 +76,6 @@ SECTIONS
         *download_buffer*(.text*);
         *iote_context_mng*(.text*);
         *scheduler_*(.text*);
-        *ap_pgw_module_task*(.text*);
         *ap_pgw_msg*(.text*);
         *link_buffer*(.text*);
         *uc_common*(.text*);
@@ -85,8 +84,6 @@ SECTIONS
         *global_station_config*(.text*);
         *uc_task*(.text*);
         *adp_*(.text*);
-        *uc_queue*(.text*);
-        *ctrl_cmd*(.text*);
         *trace*(.text*);
         *trcKernelPort*(.text*);
         *trcStreamingPort*(.text*);

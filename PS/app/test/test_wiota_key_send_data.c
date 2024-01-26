@@ -1,12 +1,16 @@
-/*
- * test_wiota_send_data.c
- *
- *  Created on: 2023.11.02
- *  Author: ypzhang
- */
+/******************************************************************************
+* @file      test_wiota_key_send_data.c
+* @brief     Sending information through key control
+* @author    ypzhang
+* @version   1.0
+* @date      2023.11.28
+*
+* @copyright Copyright (c) 2018 UCchip Technology Co.,Ltd. All rights reserved.
+*
+******************************************************************************/
 #include <rtthread.h>
 
-#ifdef WIOTA_AP_SEND_DATA_DEMO
+#ifdef WIOTA_AP_KEY_SEND_DATA_DEMO
 #include "uc_wiota_api.h"
 #include "test_wiota_api.h"
 #include "rtdevice.h"
@@ -15,15 +19,15 @@ static rt_mq_t recv_mq = NULL;
 
 typedef struct
 {
-    unsigned int user_id;
-    unsigned int data_len;
-    unsigned char *data;
+    uint32_t user_id;
+    uint32_t data_len;
+    uint8_t *data;
 } recv_mq_t;
 
-static void uc_wiota_recv_callback(unsigned int user_id, uc_dev_pos_t dev_pos, unsigned char *recv_data, unsigned short data_len, uc_recv_data_type_e type)
+static void uc_wiota_recv_callback(uint32_t user_id, uc_dev_pos_t dev_pos, uint8_t *recv_data, uint16_t data_len, uc_recv_data_type_e type)
 {
     recv_mq_t msg = {0};
-    unsigned char *data = NULL;
+    uint8_t *data = NULL;
 
     if (type == DATA_TYPE_ACCESS)
     {
@@ -60,13 +64,13 @@ static void wiota_ap_send_data_task(void *pPara)
         }
 
         rt_kprintf("0x%x, recv_data data_len %d\n", msg.user_id, msg.data_len);
-        for (unsigned short index = 0; index < msg.data_len; index++)
+        for (uint16_t index = 0; index < msg.data_len; index++)
         {
             if (index != 0 && index % 16 == 0)
             {
                 rt_kprintf("\n");
             }
-            rt_kprintf("%x ", msg.data[index]);
+            rt_kprintf("%c", msg.data[index]);
         }
         rt_kprintf("\n");
 
@@ -78,13 +82,13 @@ static void wiota_ap_send_data_task(void *pPara)
     }
 }
 
-void wiota_ap_data_recv_and_send_demo(void)
+void wiota_ap_data_key_recv_and_send_demo(void)
 {
     // wiota init
     uc_wiota_init();
 
     // set the frequency point. IOTE and AP need to set the same frequency point to synchronize
-    uc_wiota_set_freq_info(50);
+    uc_wiota_set_freq_info(25);
 
     // wiota start
     uc_wiota_run();
@@ -101,5 +105,4 @@ void wiota_ap_data_recv_and_send_demo(void)
     RT_ASSERT(demo_task_handler);
     rt_thread_startup(demo_task_handler);
 }
-
-#endif // WIOTA_AP_SEND_DATA_DEMO
+#endif // WIOTA_IOTE_KEY_SEND_DATA_DEMO

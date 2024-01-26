@@ -29,13 +29,13 @@ extern "C"
  */
 typedef struct DtuInfoT
 {
-    uint8_t  reserved[2];        /**< reserved */
-    uint8_t  dtu_status;         /**< status: 0 or 1 */
-    uint8_t  dtu_at_show;        /**< show AT format: 0 or 1 */
-    uint16_t dtu_timeout;        /**< send timeout */
-    uint16_t dtu_wait;           /**< wait time */
-    uint8_t  dtu_exit[8];        /**< exit string */
-    uint8_t  na[24];             /**< undefined */
+    unsigned char  reserved[2];        /**< reserved */
+    unsigned char  dtu_status;         /**< status: 0 or 1 */
+    unsigned char  dtu_at_show;        /**< show AT format: 0 or 1 */
+    unsigned short dtu_timeout;        /**< send timeout */
+    unsigned short dtu_wait;           /**< wait time */
+    unsigned char  dtu_exit[8];        /**< exit string */
+    unsigned char  na[24];             /**< undefined */
 } dtu_info_t;
 
 
@@ -53,7 +53,7 @@ void uc_wiota_static_data_init(void);
  * @param  len the length of user ID
  * @note   the length may be 0-8 bytes
  */
-void uc_wiota_get_userid(uint8_t *id, uint8_t *len);
+void uc_wiota_get_userid(unsigned char *id, unsigned char *len);
 
 /**
  * @brief  get device name
@@ -61,7 +61,7 @@ void uc_wiota_get_userid(uint8_t *id, uint8_t *len);
  * @param  name the vevice name
  * @note   the maximum length is 16 bytes
  */
-void uc_wiota_get_dev_name(uint8_t *name);
+void uc_wiota_get_dev_name(unsigned char *name);
 
 /**
  * @brief  get device serial
@@ -69,7 +69,7 @@ void uc_wiota_get_dev_name(uint8_t *name);
  * @param  serial the device serial
  * @note   the maximum length is 16 bytes
  */
-void uc_wiota_get_dev_serial(uint8_t *serial);
+void uc_wiota_get_dev_serial(unsigned char *serial);
 
 /**
  * @brief  get software version
@@ -77,7 +77,7 @@ void uc_wiota_get_dev_serial(uint8_t *serial);
  * @param  software_ver the software version
  * @note   the maximum length is 16 bytes
  */
-// void uc_wiota_get_software_ver(uint8_t *software_ver);
+// void uc_wiota_get_software_ver(unsigned char *software_ver);
 
 /**
  * @brief  get manufacture name
@@ -85,7 +85,7 @@ void uc_wiota_get_dev_serial(uint8_t *serial);
  * @param  name the manufacture name
  * @note   the maximum length is 16 bytes
  */
-void uc_wiota_get_manufacture_name(uint8_t *name);
+void uc_wiota_get_manufacture_name(unsigned char *name);
 
 /**
  * @brief  get hardware version
@@ -93,14 +93,14 @@ void uc_wiota_get_manufacture_name(uint8_t *name);
  * @param  hardware_ver the hardware version
  * @note   the maximum length is 16 bytes
  */
-void uc_wiota_get_hardware_ver(uint8_t *hardware_ver);
+void uc_wiota_get_hardware_ver(unsigned char *hardware_ver);
 
 /**
  * @brief  get auto run flag
  *
  * @return the auto run flag (0 or 1)
  */
-uint8_t uc_wiota_get_auto_run_flag(void);
+unsigned char uc_wiota_get_auto_run_flag(void);
 
 /**
  * @brief  get DTU config
@@ -118,14 +118,14 @@ void uc_wiota_get_dtu_config(dtu_info_t *cfg);
  *         !0: otherwise
  * @note   the maximum number of frequency point is 16
  */
-int uc_wiota_set_freq_list(uint8_t *freq_list, uint8_t num);
+int uc_wiota_set_freq_list(unsigned char *freq_list, unsigned char num);
 
 /**
  * @brief  get frequency point list
  *
  * @param  freq_list the frequency point list
  */
-void uc_wiota_get_freq_list(uint8_t *freq_list);
+void uc_wiota_get_freq_list(unsigned char *freq_list);
 
 /**
  * @brief  get the first address of user defined data
@@ -133,7 +133,7 @@ void uc_wiota_get_freq_list(uint8_t *freq_list);
  * @return the first address of user defined data
  * @note   the maximum length is 256 bytes
  */
-uint8_t* uc_wiota_get_user_info(void);
+unsigned char* uc_wiota_get_user_info(void);
 
 /**
  * @brief  save static data to flash
@@ -141,7 +141,7 @@ uint8_t* uc_wiota_get_user_info(void);
  * @param  is_direct whether to save data directly
  * @note   parameter is_direct is ignored in AP
  */
-void uc_wiota_save_static_info(uint8_t is_direct);
+void uc_wiota_save_static_info(unsigned char is_direct);
 
 /**
  * @brief  erase 4KB flash with 0xFF
@@ -150,7 +150,7 @@ void uc_wiota_save_static_info(uint8_t is_direct);
  * @return 0: if successfull
  *         !0: otherwise
  */
-uint32_t uc_wiota_flash_erase_4K(uint32_t flash_addr);
+unsigned int uc_wiota_flash_erase_4K(unsigned int flash_addr);
 
 /**
  * @brief  write flash without erase
@@ -161,7 +161,7 @@ uint32_t uc_wiota_flash_erase_4K(uint32_t flash_addr);
  * @return 0: if successfull
  *         !0: otherwise
  */
-uint32_t uc_wiota_flash_write(uint8_t *data_addr, uint32_t flash_addr, uint16_t length);
+unsigned int uc_wiota_flash_write(unsigned char *data_addr, unsigned int flash_addr, unsigned short length);
 
 /**
  * @brief  read flash
@@ -172,7 +172,7 @@ uint32_t uc_wiota_flash_write(uint8_t *data_addr, uint32_t flash_addr, uint16_t 
  * @return 0: if successfull
  *         !0: otherwise
  */
-uint32_t uc_wiota_flash_read(uint8_t *data_addr, uint32_t flash_addr, uint16_t length);
+unsigned int uc_wiota_flash_read(unsigned char *data_addr, unsigned int flash_addr, unsigned short length);
 
 #ifdef __cplushplus
 }

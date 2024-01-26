@@ -57,7 +57,7 @@ typedef enum
     FLASH_CMD_WRITE_STATUS2 = 0x31,
     FLASH_CMD_WRITE_STATUS3 = 0x11,
     FLASH_CMD_GLOBAL_BLOCK_LOCK = 0x7E,   //WPS=1(FLASH_CMD_READ_STATUS3 bit3=1)
-    FLASH_CMD_GLOBAL_BLOCK_UNLOCK = 0x98,  //WPS=1
+    FLASH_CMD_GLOBAL_BLOCK_UNLOCK = 0x98, //WPS=1
 
     FLASH_CMD_PROGRAM_SEC = 0x42,
     FLASH_CMD_ERASE_SEC = 0x44,
@@ -76,6 +76,11 @@ EXT_FLASH void FlashRead(uint32_t nAddr, uint8_t *pData, uint16_t usLen);
 #else
 EXT_FLASH void FlashQRead(uint32_t nAddr, uint8_t *pData, uint16_t usLen);
 #endif
+
+EXT_FLASH void FlashReadSec(uint32_t nAddr, uint8_t *pData, uint16_t usLen);
+EXT_FLASH void FlashWriteSec(uint32_t nAddr, const uint8_t *pData, uint16_t usLen);
+EXT_FLASH void FlashEraseSec(uint32_t nBaseAddr);
+
 EXT_FLASH uint8_t FlashCrc(const uint8_t *pData, uint16_t usLen);
 EXT_FLASH void FlashWrite(uint32_t nAddr, const uint8_t *pData, uint16_t usLen);
 EXT_FLASH void Flash_Write_SR(uint8_t cmd, uint8_t value);

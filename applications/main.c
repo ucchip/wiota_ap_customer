@@ -148,9 +148,7 @@ int main(void)
 #ifdef WIOTA_APP_DEMO
     manager_enter();
 #else
-#ifdef WIOTA_API_TEST
-    wiota_api_test();
-#else
+
 #ifdef M8_GATEWAY_MODE_SUPPORT
     extern int uc_wiota_mac_init(void);
     if (0 == uc_wiota_mac_init())
@@ -163,7 +161,6 @@ int main(void)
     at_server_init();
 #endif // AT_USING_SERVER
 #endif // RT_USING_AT
-#endif // WIOTA_API_TEST
 #endif // WIOTA_APP_DEMO
 
 #ifdef WIZ_USING_W5500
@@ -173,8 +170,12 @@ int main(void)
 #ifdef PKG_USING_WIZNET
     uc_wiota_wiz_init();
 #endif // PKG_USING_WIZNET
+
     // extern void uc_wiota_time_service_demo(void);
+    // extern void uc_wiota_sync_assistant_demo(void);
     // uc_wiota_time_service_demo();
+    // uc_wiota_sync_assistant_demo();
+
     app_device_demo();
 
 #ifdef WIOTA_AP_SEND_DATA_DEMO

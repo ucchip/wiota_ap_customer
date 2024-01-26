@@ -24,7 +24,7 @@ typedef enum
 static at_result_t at_uboot_setup(const char *args)
 {
     at_result_t ret = AT_RESULT_PARSE_FAILE;
-    uint32_t mode = 0;
+    unsigned int mode = 0;
 
     if (parse((char *)(++args), "s", 1, &mode))
     {
@@ -56,8 +56,8 @@ static at_result_t at_uboot_setup(const char *args)
 
 static at_result_t at_uboot_config_set(const char *args)
 {
-    uint32_t type = 0;
-    uint32_t value = 0;
+    unsigned int type = 0;
+    unsigned int value = 0;
 
     args = parse((char *)(++args), "d,d", &type, &value);
     if (!args)

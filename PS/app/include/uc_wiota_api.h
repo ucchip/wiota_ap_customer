@@ -69,115 +69,124 @@ typedef enum
 typedef struct
 {
     void *semaphore;
-    uint32_t result;
-    uint32_t user_id;
-    uint32_t data_id;
+    unsigned int result;
+    unsigned int user_id;
+    unsigned int data_id;
 } uc_send_result_t;
 
 typedef struct
 {
-    uint32_t user_id;
-    uint32_t data_id;
-    uint32_t result;
+    unsigned int user_id;
+    unsigned int data_id;
+    unsigned int result;
 } uc_send_recv_t;
 
 typedef struct
 {
     void *semaphore;
-    uint16_t data_len;
-    uint16_t result;
-    uint8_t *data;
+    unsigned short data_len;
+    unsigned short result;
+    unsigned char *data;
 } uc_scan_result_t;
 
 typedef struct
 {
-    uint16_t data_len;
-    uint16_t result;
-    uint8_t *data;
+    unsigned short data_len;
+    unsigned short result;
+    unsigned char *data;
 } uc_scan_recv_t;
 
 typedef struct
 {
-    uint8_t freq_idx;
-    int8_t snr;
-    int8_t rssi;
-    uint8_t is_synced;
+    unsigned char freq_idx;
+    signed char snr;
+    signed char rssi;
+    unsigned char is_synced;
 } uc_scan_freq_t;
 
 typedef struct
 {
     void *semaphore;
-    int8_t temp;
-    uint8_t result;
+    signed char temp;
+    unsigned char result;
 } uc_temp_result_t;
 
 typedef struct
 {
-    int8_t temp;
-    uint8_t result;
+    signed char temp;
+    unsigned char result;
 } uc_temp_recv_t;
 
 typedef struct
 {
     void *semaphore;
-    uint32_t user_id;
-    uint32_t result;
+    unsigned int user_id;
+    unsigned int result;
 } uc_paging_result_t;
 
 typedef struct
 {
-    uint32_t user_id;
-    uint32_t result;
+    unsigned int user_id;
+    unsigned int result;
 } uc_paging_recv_t;
 
 typedef struct
 {
-    uint8_t group_idx;
-    uint8_t burst_idx;
-    uint8_t slot_idx;
-    uint8_t reserved;
+    unsigned int user_id;                // iote user id
+    unsigned int fn_index;               // the frame number of iote's first sleep
+    unsigned int detection_period;       // iote detection period
+    unsigned short send_round;           // number of rounds to send sync paging
+    unsigned short continue_fn;          // the number of frames sent in one round
+} uc_paging_info_t;
+
+typedef struct
+{
+    unsigned char group_idx;
+    unsigned char burst_idx;
+    unsigned char slot_idx;
+    unsigned char reserved;
 } uc_dev_pos_t;
 
 typedef struct
 {
-    uint32_t user_id;
-    uint16_t data_len;
-    uint8_t type;
-    uint8_t *data;
+    unsigned int user_id;
+    unsigned short data_len;
+    unsigned char type;
+    unsigned char *data;
 } uc_recv_ul_data_t;
 
 typedef struct
 {
-    int8_t ap_tx_power;  //21, 30
-    uint8_t id_len;        //id len
-    uint8_t pp;            //0: 1, 1: 2, 2: 4, 3: not use
-    uint8_t symbol_length; //128,256,512,1024
-    uint8_t dlul_ratio;    //0 1:1,  1 1:2
-    uint8_t bt_value;      //bt from rf 1: 0.3, 0: 1.2
-    uint8_t group_number;  //frame ul group number: 1,2,4,8
-    uint8_t spectrum_idx;  //default value:3(470M-510M)
-    uint8_t old_subsys_v;  //default 0, if set 1, match old version(v2.3_ap8088) subsystem id
-    uint8_t bitscb;        //bit scrambling flag bit, default 1, if set 0, match old version(v2.3_ap8288)
-    uint8_t freq_idx;      // freq idx
-    uint8_t reserved;      //for 4bytes alain
-    uint32_t subsystem_id;
+    signed char ap_tx_power;     //21, 30
+    unsigned char id_len;        //id len
+    unsigned char pp;            //0: 1, 1: 2, 2: 4, 3: not use
+    unsigned char symbol_length; //128,256,512,1024
+    unsigned char dlul_ratio;    //0 1:1,  1 1:2
+    unsigned char bt_value;      //bt from rf 1: 0.3, 0: 1.2
+    unsigned char group_number;  //frame ul group number: 1,2,4,8
+    unsigned char spectrum_idx;  //default value:3(470M-510M)
+    unsigned char old_subsys_v;  //default 0, if set 1, match old version(v2.3_ap8088) subsystem id
+    unsigned char bitscb;        //bit scrambling flag bit, default 1, if set 0, match old version(v2.3_ap8288)
+    unsigned char freq_idx;      // freq idx
+    unsigned char reserved;      //for 4bytes alain
+    unsigned int subsystem_id;
 } sub_system_config_t;
 
 typedef struct blacklist
 {
     slist_t node;
-    uint32_t user_id;
+    unsigned int user_id;
 } uc_blacklist_t;
 
 #ifdef WIOTA_IOTE_INFO
 typedef struct iote_info
 {
     slist_t node;
-    uint32_t user_id;
-    uint8_t iote_status;
-    uint8_t group_idx;
-    uint8_t subframe_idx;
-    uint8_t reserved;
+    unsigned int user_id;
+    unsigned char iote_status;
+    unsigned char group_idx;
+    unsigned char subf_idx;
+    unsigned char reserved;
 } uc_iote_info_t;
 
 typedef enum
@@ -192,14 +201,14 @@ typedef enum
 typedef struct uc_state_info
 {
     slist_t node;
-    uint32_t user_id;
-    uint32_t ul_recv_len;
-    uint32_t dl_send_len;
-    uint32_t ul_recv_suc;
-    uint32_t dl_send_suc;
-    uint32_t dl_send_fail;
-    uint16_t ul_recv_max;
-    uint16_t dl_send_max;
+    unsigned int user_id;
+    unsigned int ul_recv_len;
+    unsigned int dl_send_len;
+    unsigned int ul_recv_suc;
+    unsigned int dl_send_suc;
+    unsigned int dl_send_fail;
+    unsigned short ul_recv_max;
+    unsigned short dl_send_max;
 } uc_state_info_t;
 
 
@@ -217,13 +226,13 @@ typedef enum
 
 typedef struct
 {
-    uint8_t freq;
-    uint8_t spectrum_idx;
-    uint8_t bandwidth;
-    uint8_t symbol_length;
-    uint16_t awaken_id; // indicate which id should send
-    uint16_t reserved;
-    uint32_t send_time; // ms, at least rx detect period
+    unsigned char freq;
+    unsigned char spectrum_idx;
+    unsigned char bandwidth;
+    unsigned char symbol_length;
+    unsigned short awaken_id; // indicate which id should send
+    unsigned short reserved;
+    unsigned int send_time;   // ms, at least rx detect period
 } uc_lpm_tx_cfg_t, *uc_lpm_tx_cfg_p;
 
 typedef enum
@@ -292,45 +301,41 @@ typedef enum
     STATE_NORMAL = 1,
 } ap8288_state_e;
 
-extern uint8_t uc_get_grant_mode(void);
-#ifdef UC8088_FACTORY_TEST
-extern int32_t factory_test_hanlde_rs_msg(uint32_t subType, uint32_t data);
-extern int32_t factory_test_handle_loop_msg(uint8_t mcs, uint32_t packetNum, uint8_t dlMode);
-extern void factory_test_set_save_loop_id_flag(uint8_t isSave);
-extern uint8_t factory_test_get_loop_is_rach(void);
-extern uint8_t *factory_test_gen_rand_data(uint16_t data_len);
-#endif
-
 typedef void (*uc_send_callback)(uc_send_recv_t *result);
 typedef void (*uc_scan_callback)(uc_scan_recv_t *result);
 typedef void (*uc_temp_callback)(uc_temp_recv_t *result);
 typedef void (*uc_paging_callback)(uc_paging_recv_t *result);
+typedef void (*uc_paging_ctrl_callback)(unsigned int user_id, unsigned char burst_idx, unsigned int fn_index);
 typedef void (*uc_time_service_callback)(time_service_state_e state);
-typedef void (*uc_iote_drop)(uint32_t user_id);
-typedef void (*uc_recv)(uint32_t user_id, uc_dev_pos_t dev_pos, uint8_t *data, uint16_t data_len, uc_recv_data_type_e data_type);
+typedef void (*uc_drop_callback)(unsigned int user_id);
+typedef void (*uc_recv_callback)(unsigned int user_id, uc_dev_pos_t dev_pos, unsigned char *data, unsigned short data_len, uc_recv_data_type_e data_type);
 
 void uc_wiota_set_state(uc_wiota_run_state_e state);
 
-uint8_t uc_wiota_get_state(void);
+unsigned char uc_wiota_get_state(void);
 
-void uc_wiota_read_value_from_mem(uint32_t type, uint32_t read_addr, uint32_t read_len, uint8_t *out_buf);
+void uc_wiota_read_value_from_mem(unsigned int type, unsigned int read_addr, unsigned int read_len, unsigned char *out_buf);
 
-//void uc_wiota_write_value_to_reg(uint32_t value, uint32_t addr);
+//void uc_wiota_write_value_to_reg(unsigned int value, unsigned int addr);
 
-uint32_t uc_wiota_read_dfe_counter(uint8_t reg_type);
+unsigned int uc_wiota_read_dfe_counter(unsigned char reg_type);
 
-void uc_wiota_set_default_dfe(uint32_t default_dfe);
+void uc_wiota_set_default_dfe(unsigned int default_dfe);
 
-uint32_t uc_wiota_get_frame_head_dfe(void);
+unsigned int uc_wiota_get_frame_head_dfe(void);
 
 // time service api
-void uc_wiota_set_frame_boundary_align_func(uint8_t is_open);
+void uc_wiota_set_frame_boundary_align_func(unsigned char is_open);
 
 void uc_wiota_register_time_service_state_callback(uc_time_service_callback callback);
 
-void uc_wiota_set_time_service_func(time_service_type_e type, uint8_t is_open);
+void uc_wiota_set_time_service_func(time_service_type_e type, unsigned char is_open);
 
-uint8_t uc_wiota_get_time_service_func(time_service_type_e type);
+unsigned char uc_wiota_get_time_service_func(time_service_type_e type);
+
+void uc_wiota_set_sync_assistant_pps(unsigned char is_pps);
+
+unsigned char uc_wiota_get_sync_assistant_pps(void);
 
 time_service_state_e uc_wiota_get_time_service_state(void);
 
@@ -340,9 +345,9 @@ void uc_wiota_time_service_stop(void);
 
 void uc_wiota_gnss_query_fix_pos(float *pos_x, float *pos_y, float *pos_z);
 
-void uc_wiota_set_gnss_relocation(uint8_t is_relocation);
+void uc_wiota_set_gnss_relocation(unsigned char is_relocation);
 
-void uc_wiota_set_1588_protocol_rtc(uint32_t timestamp, uint32_t usec);
+void uc_wiota_set_1588_protocol_rtc(unsigned int timestamp, unsigned int usec);
 // time service api end
 
 ap8288_state_e uc_wiota_get_ap8288_state(void);
@@ -353,26 +358,34 @@ uc_lpm_tx_cfg_t* uc_wiota_get_paging_tx_cfg(void);
 
 void uc_wiota_start_paging_tx(void);
 
-uc_result_e uc_wiota_sync_paging(uint32_t *user_id, uint32_t user_id_num, uint32_t frame_num, uc_paging_callback callback);
+void uc_wiota_register_sync_paging_callback(uc_paging_ctrl_callback callback);
 
-uint8_t uc_wiota_get_sync_paging_num(uint8_t group_idx, uint8_t subframe_idx);
+uc_result_e uc_wiota_sync_paging(uc_paging_info_t *paging_info, uc_paging_callback callback);
 
-void uc_wiota_set_single_tone(uint32_t is_open);
+unsigned char uc_wiota_get_sync_paging_num(unsigned char group_idx, unsigned char subf_idx);
 
-void uc_wiota_set_broadcast_fn_cycle(uint8_t bc_fn_cycle);
+void uc_wiota_set_single_tone(unsigned int is_open);
 
-uint8_t uc_wiota_get_broadcast_fn_cycle(void);
+void uc_wiota_set_broadcast_fn_cycle(unsigned char bc_fn_cycle);
 
-uint32_t uc_wiota_get_frame_len(void);
+unsigned char uc_wiota_get_broadcast_fn_cycle(void);
+
+unsigned int uc_wiota_get_frame_len(void);
+
+unsigned int uc_wiota_get_frame_num(void);
+
+void uc_wiota_iote_leaving_active_state(unsigned int *user_id, unsigned int id_num);
+
+void uc_wiota_get_module_id(unsigned char *module_id);
 
 #ifdef RAMP_RF_SET_SUPPORT
-void uc_wiota_set_ramp_value(uint32_t ramp_value);
+void uc_wiota_set_ramp_value(unsigned int ramp_value);
 
-void uc_wiota_set_rf_ctrl_idx(uint32_t rf_ctrl_idx);
+void uc_wiota_set_rf_ctrl_idx(unsigned int rf_ctrl_idx);
 #endif
 
 // This function definition has been moved to uc_wiota_static.h
-//void uc_wiota_get_freq_list(uint8_t *list);
+//void uc_wiota_get_freq_list(unsigned char *list);
 
 /*********************************************************************************
  This function is get version of sw
@@ -390,8 +403,8 @@ void uc_wiota_set_rf_ctrl_idx(uint32_t rf_ctrl_idx);
 
  return:NULL.
 **********************************************************************************/
-void uc_wiota_get_version(uint8_t *wiota_version_8088, uint8_t *git_info_8088, uint8_t *make_time_8088,
-                          uint8_t *wiota_version_8288, uint8_t *git_info_8288, uint8_t *make_time_8288, uint32_t *cce_version);
+void uc_wiota_get_version(unsigned char *wiota_version_8088, unsigned char *git_info_8088, unsigned char *make_time_8088,
+                          unsigned char *wiota_version_8288, unsigned char *git_info_8288, unsigned char *make_time_8288, unsigned int *cce_version);
 
 /*********************************************************************************
  This function is to set system config
@@ -429,7 +442,7 @@ void uc_wiota_get_system_config(sub_system_config_t *config);
  return:
     uc_result_e.
 **********************************************************************************/
-uc_result_e uc_wiota_set_ap_tx_power(int8_t rf_power);
+uc_result_e uc_wiota_set_ap_tx_power(signed char rf_power);
 
 /*********************************************************************************
  This function is to set single frequency point.
@@ -442,7 +455,7 @@ uc_result_e uc_wiota_set_ap_tx_power(int8_t rf_power);
  return:
     NULL.
 **********************************************************************************/
-void uc_wiota_set_freq_info(uint8_t freq_idx);
+void uc_wiota_set_freq_info(unsigned char freq_idx);
 
 /*********************************************************************************
  This function is to get frequency point.
@@ -452,7 +465,7 @@ void uc_wiota_set_freq_info(uint8_t freq_idx);
  return:
     freq_idx.
 **********************************************************************************/
-uint8_t uc_wiota_get_freq_info(void);
+unsigned char uc_wiota_get_freq_info(void);
 
 /*********************************************************************************
  This function is to set frequency point of hopping.
@@ -465,7 +478,7 @@ uint8_t uc_wiota_get_freq_info(void);
  return:
     NULL.
 **********************************************************************************/
-void uc_wiota_set_hopping_freq(uint8_t hopping_freq);
+void uc_wiota_set_hopping_freq(unsigned char hopping_freq);
 
 /*********************************************************************************
  This function is to set mode of hopping frequency.
@@ -479,7 +492,7 @@ void uc_wiota_set_hopping_freq(uint8_t hopping_freq);
  return:
     NULL.
 **********************************************************************************/
-void uc_wiota_set_hopping_mode(uint8_t ori_freq_frame, uint8_t hopping_freq_frame);
+void uc_wiota_set_hopping_mode(unsigned char ori_freq_frame, unsigned char hopping_freq_frame);
 
 /**********************************************************************************
  This function is to set max iote num of active state.
@@ -491,9 +504,9 @@ void uc_wiota_set_hopping_mode(uint8_t ori_freq_frame, uint8_t hopping_freq_fram
  return:
     NULL.
 **********************************************************************************/
-void uc_wiota_set_max_num_of_active_iote(uint16_t max_iote_num);
+void uc_wiota_set_max_num_of_active_iote(unsigned short max_iote_num);
 
-uint16_t uc_wiota_get_max_num_of_active_iote(void);
+unsigned short uc_wiota_get_max_num_of_active_iote(void);
 
 /**********************************************************************************
  This function is to set data rate by mode.
@@ -506,8 +519,8 @@ uint16_t uc_wiota_get_max_num_of_active_iote(void);
  return:
     uc_result_e.
 **********************************************************************************/
-uc_result_e uc_wiota_set_data_rate(uc_data_rate_mode_e rate_mode, uint32_t rate_value);
-uint32_t uc_wiota_get_data_rate_value(uc_data_rate_mode_e rate_mode);
+uc_result_e uc_wiota_set_data_rate(uc_data_rate_mode_e rate_mode, unsigned int rate_value);
+unsigned int uc_wiota_get_data_rate_value(uc_data_rate_mode_e rate_mode);
 
 /**********************************************************************************
  This function is to set mcs of broadcast.
@@ -523,9 +536,9 @@ void uc_wiota_set_broadcast_mcs(uc_mcs_level_e bc_mcs);
 
 uc_mcs_level_e uc_wiota_get_broadcast_mcs(void);
 
-void uc_wiota_set_broadcast_send_round(uint8_t round);
+void uc_wiota_set_broadcast_send_round(unsigned char round);
 
-uint8_t uc_wiota_get_broadcast_send_round(void);
+unsigned char uc_wiota_get_broadcast_send_round(void);
 
 /**********************************************************************************
  This function is to set whether to open crc16 verification and length of verification.
@@ -537,7 +550,7 @@ uint8_t uc_wiota_get_broadcast_send_round(void);
  return:
     NULL.
 **********************************************************************************/
-void uc_wiota_set_crc(uint16_t crc_limit);
+void uc_wiota_set_crc(unsigned short crc_limit);
 
 /**********************************************************************************
  This function is to get crcLimit value.
@@ -548,7 +561,7 @@ void uc_wiota_set_crc(uint16_t crc_limit);
  return:
     crc_limit.
 **********************************************************************************/
-uint16_t uc_wiota_get_crc(void);
+unsigned short uc_wiota_get_crc(void);
 
 /*********************************************************************************
  This function is to get the header of the blacklist linked list.
@@ -561,7 +574,7 @@ uint16_t uc_wiota_get_crc(void);
  return:
         uc_blacklist_t:pointer of blacklist linked list header.
 **********************************************************************************/
-uc_blacklist_t *uc_wiota_get_blacklist(uint16_t *blacklist_num);
+uc_blacklist_t *uc_wiota_get_blacklist(unsigned short *blacklist_num);
 
 /*********************************************************************************
  This function is to print all the information in the blacklist.
@@ -586,7 +599,7 @@ void uc_wiota_print_blacklist(void);
  return:
     NULL.
 **********************************************************************************/
-void uc_wiota_add_iote_to_blacklist(uint32_t *user_id, uint16_t user_id_num);
+void uc_wiota_add_iote_to_blacklist(unsigned int *user_id, unsigned short user_id_num);
 
 /*********************************************************************************
  This function is to removed one or more iotes from the blacklist linked list.
@@ -600,7 +613,7 @@ void uc_wiota_add_iote_to_blacklist(uint32_t *user_id, uint16_t user_id_num);
  return:
     NULL.
 **********************************************************************************/
-void uc_wiota_remove_iote_from_blacklist(uint32_t *user_id, uint16_t user_id_num);
+void uc_wiota_remove_iote_from_blacklist(unsigned int *user_id, unsigned short user_id_num);
 
 #ifdef WIOTA_IOTE_INFO
 /*********************************************************************************
@@ -626,7 +639,7 @@ void uc_wiota_print_iote_info(void);
  return:
         uc_iote_info_t:pointer of iote information linked list header.
 **********************************************************************************/
-uc_iote_info_t *uc_wiota_get_iote_info(uint16_t *online_num, uint16_t *offline_num);
+uc_iote_info_t *uc_wiota_get_iote_info(unsigned short *online_num, unsigned short *offline_num);
 #endif
 
 #ifdef WIOTA_AP_STATE_INFO
@@ -642,7 +655,7 @@ uc_iote_info_t *uc_wiota_get_iote_info(uint16_t *online_num, uint16_t *offline_n
  return:
         single state value.
 **********************************************************************************/
-uint32_t uc_wiota_get_single_state_info_of_iote(uint32_t user_id, uc_state_type_e state_type);
+unsigned int uc_wiota_get_single_state_info_of_iote(unsigned int user_id, uc_state_type_e state_type);
 
 /*********************************************************************************
  This function is to query all state of single iote.
@@ -655,7 +668,7 @@ uint32_t uc_wiota_get_single_state_info_of_iote(uint32_t user_id, uc_state_type_
  return:
         uc_state_info_t.
 **********************************************************************************/
-uc_state_info_t *uc_wiota_get_all_state_info_of_iote(uint32_t user_id);
+uc_state_info_t *uc_wiota_get_all_state_info_of_iote(unsigned int user_id);
 
 /*********************************************************************************
  This function is to query all state of all iote.
@@ -681,7 +694,7 @@ uc_state_info_t *uc_wiota_get_all_state_info(void);
  return:
         NULL.
 **********************************************************************************/
-void uc_wiota_reset_single_state_info_of_iote(uint32_t user_id, uc_state_type_e state_type);
+void uc_wiota_reset_single_state_info_of_iote(unsigned int user_id, uc_state_type_e state_type);
 
 /*********************************************************************************
  This function is to reset all state of single iote.
@@ -694,7 +707,7 @@ void uc_wiota_reset_single_state_info_of_iote(uint32_t user_id, uc_state_type_e 
  return:
         NULL.
 **********************************************************************************/
-void uc_wiota_reset_all_state_info_of_iote(uint32_t user_id);
+void uc_wiota_reset_all_state_info_of_iote(unsigned int user_id);
 
 /*********************************************************************************
  This function is to reset all state of all iote.
@@ -736,7 +749,7 @@ void uc_wiota_reset_all_state_info(void);
     wait until the registered callback returns UC_OP_SUCC before sending the next
     packet.
 **********************************************************************************/
-uc_result_e uc_wiota_send_broadcast_data(uint8_t *send_data, uint16_t send_data_len, uc_bc_mode_e mode, int32_t timeout, uc_send_callback callback, void *para);
+uc_result_e uc_wiota_send_broadcast_data(unsigned char *send_data, unsigned short send_data_len, uc_bc_mode_e mode, signed int timeout, uc_send_callback callback, void *para);
 
 /*********************************************************************************
  This function is to sending multicast data.
@@ -757,13 +770,13 @@ uc_result_e uc_wiota_send_broadcast_data(uint8_t *send_data, uint16_t send_data_
  return:
     uc_result_e.
 **********************************************************************************/
-uc_result_e uc_wiota_send_multicast_data(uint8_t *send_data, uint16_t send_data_len, uint32_t multicast_id, int32_t timeout, uc_send_callback callback, void *para);
+uc_result_e uc_wiota_send_multicast_data(unsigned char *send_data, unsigned short send_data_len, unsigned int multicast_id, signed int timeout, uc_send_callback callback, void *para);
 
 // set multicast_id,befor send multicast data
-void uc_wiota_set_multicast_id(uint32_t *multicast_id, uint32_t id_num);
+void uc_wiota_set_multicast_id(unsigned int *multicast_id, unsigned int id_num);
 
 // del multicast_id
-void uc_wiota_del_multicast_id(uint32_t *multicast_id, uint32_t id_num);
+void uc_wiota_del_multicast_id(unsigned int *multicast_id, unsigned int id_num);
 
 /*********************************************************************************
  This function is to paging iote and sending non-broadcast data.
@@ -784,7 +797,7 @@ void uc_wiota_del_multicast_id(uint32_t *multicast_id, uint32_t id_num);
  return:
     uc_result_e.
 **********************************************************************************/
-uc_result_e uc_wiota_send_data(uint8_t *send_data, uint16_t send_data_len, uint32_t user_id, int32_t timeout, uc_send_callback callback, void *para);
+uc_result_e uc_wiota_send_data(unsigned char *send_data, unsigned short send_data_len, unsigned int user_id, signed int timeout, uc_send_callback callback, void *para);
 
 /*********************************************************************************
  This function is to scaning frequency point collection.(Not supported at the moment)
@@ -803,7 +816,7 @@ uc_result_e uc_wiota_send_data(uint8_t *send_data, uint16_t send_data_len, uint3
  return:
     uc_result_e.
 **********************************************************************************/
-uc_result_e uc_wiota_scan_freq(uint8_t *freq, uint8_t freq_num, uint8_t scan_type, int32_t timeout, uc_scan_callback callback, uc_scan_recv_t *scan_result);
+uc_result_e uc_wiota_scan_freq(unsigned char *freq, unsigned char freq_num, unsigned char scan_type, signed int timeout, uc_scan_callback callback, uc_scan_recv_t *scan_result);
 
 /*********************************************************************************
  This function is to register iote drop prompt callback.
@@ -817,7 +830,7 @@ uc_result_e uc_wiota_scan_freq(uint8_t *freq, uint8_t freq_num, uint8_t scan_typ
  return:
     NULL.
 **********************************************************************************/
-void uc_wiota_register_iote_dropped_callback(uc_iote_drop callback);
+void uc_wiota_register_iote_dropped_callback(uc_drop_callback callback);
 
 /*********************************************************************************
  This function is to register uplink data prompt callback.
@@ -833,7 +846,7 @@ void uc_wiota_register_iote_dropped_callback(uc_iote_drop callback);
  return:
     NULL.
 **********************************************************************************/
-void uc_wiota_register_recv_data_callback(uc_recv callback);
+void uc_wiota_register_recv_data_callback(uc_recv_callback callback);
 
 /*********************************************************************************
  This function is to wiota to init.
@@ -879,7 +892,7 @@ void uc_wiota_exit(void);
  return:
     NULL.
 **********************************************************************************/
-void uc_wiota_set_active_time(uint32_t active_s);
+void uc_wiota_set_active_time(unsigned int active_s);
 
 /*********************************************************************************
  This function is to get the connection timeout of iote in idle state.
@@ -890,7 +903,7 @@ void uc_wiota_set_active_time(uint32_t active_s);
 
  return:connection timeout.
 **********************************************************************************/
-uint32_t uc_wiota_get_active_time(void);
+unsigned int uc_wiota_get_active_time(void);
 
 /*********************************************************************************
  This function is to get the ap8288 temperature.
@@ -905,7 +918,7 @@ uint32_t uc_wiota_get_active_time(void);
 
  return:uc_result_e.
 **********************************************************************************/
-uc_result_e uc_wiota_read_temperature(uc_temp_callback callback, uc_temp_recv_t *read_temp, int32_t timeout);
+uc_result_e uc_wiota_read_temperature(uc_temp_callback callback, uc_temp_recv_t *read_temp, signed int timeout);
 
 /*********************************************************************************
  This function is to set log type.
@@ -920,7 +933,7 @@ uc_result_e uc_wiota_read_temperature(uc_temp_callback callback, uc_temp_recv_t 
 
  return:uc_result_e.
 **********************************************************************************/
-void uc_wiota_log_switch(uc_log_type_e log_type, uint8_t is_open);
+void uc_wiota_log_switch(uc_log_type_e log_type, unsigned char is_open);
 
 /*********************************************************************************
  This function is to query dev pos on frame structure by user id.
@@ -934,7 +947,7 @@ void uc_wiota_log_switch(uc_log_type_e log_type, uint8_t is_open);
 
  return:uc_dev_pos_t.
 **********************************************************************************/
-uc_dev_pos_t *uc_wiota_query_dev_pos_by_userid(uint32_t *user_id, uint32_t user_id_num);
+uc_dev_pos_t *uc_wiota_query_dev_pos_by_userid(unsigned int *user_id, unsigned int user_id_num);
 
 #ifdef __cplusplus
 }
