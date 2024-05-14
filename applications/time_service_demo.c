@@ -2,8 +2,6 @@
 #include <rtdevice.h>
 #include "uc_wiota_api.h"
 
-rt_sem_t location_sem = RT_NULL;
-
 void send_test(void)
 {
 #ifdef WIOTA_IOTE_INFO
@@ -39,103 +37,34 @@ void send_test(void)
     }
 }
 
-static void uc_wiota_time_service_state_cb(time_service_state_e state)
-{
-    const char *str[7] = {"TS NULL",
-                          "TS START",
-                          "TS SUC",
-                          "TS FAIL",
-                          "TS INIT END",
-                          "TS ALIGN END",
-                          "TS STOP"};
-
-    rt_kprintf("%s\n", str[state]);
-
-    switch (state)
-    {
-    case TIME_SERVICE_INIT_END:
-    {
-        if (location_sem)
-        {
-            // location completed, release sem.
-            rt_sem_release(location_sem);
-        }
-        break;
-    }
-
-    default:
-        break;
-    }
-}
-
 void uc_wiota_time_service_demo(void)
 {
     // 1.enable the frame boundary alignment function.
-    // note:if GPS/1588 is not supported, the frame boundary will be calculated using the default dfe counter method.
+    // note:if GPS/1588/sync assiatant is not supported, the frame boundary will be calculated using the default dfe counter method.
     uc_wiota_set_frame_boundary_align_func(1);
 
-    // 2.if GPS/1588 is supprted, enable the GPS/1588 time service function. if not enable, will be calculated using the default dfe counter method.
-    // note:if GPS/1588 is not supported, not setting is required.
-    uc_wiota_set_time_service_func(TIME_SERVICE_GNSS, 1);
-    // uc_wiota_set_time_service_func(TIME_SERVICE_1588_PS, 1);
+    // 2.if GPS/1588/sync assiatant is supprted, enable the GPS/1588/sync assiatant time service function. if not enable, will be calculated using the default dfe counter method.
+    // note:if GPS/1588/sync assiatant is not supported, not setting is required.
+    uc_wiota_set_time_service_func(TIME_SERVICE_GNSS, 1); // gps
+    // uc_wiota_set_time_service_func(TIME_SERVICE_1588_PS, 1); // 1588
+    // uc_wiota_set_time_service_func(TIME_SERVICE_SYNC_ASSISTANT, 1); // sync assiatant
+    /* if you want to test he time sync accuracy throught instruments such as oscilloscopes, you can activate the PPS of sync asstistant, by measuring
+     the PPS of GPS and AP8288, calculate the sync accuracy
+     it is best to turn it off after the measurement is completed. uc_wiota_set_sync_assistant_pps(0); */
+    // uc_wiota_set_sync_assistant_pps(1);
 
-    // 3.register the time service state callback function.
-    uc_wiota_register_time_service_state_callback(uc_wiota_time_service_state_cb);
-
-    // 4.init wiota.
+    // 3.init wiota.
     uc_wiota_init();
 
-    // 5.set frequency point.
+    // 4.set frequency point.
     uc_wiota_set_freq_info(145);
+
+    // 5. wiota run
+    uc_wiota_run();
 
     // 6.time sevice start
     // note:the time can be served only after the location completed. the localtion takes some time
     uc_wiota_time_service_start();
-
-    // 7.create gps location completed sem.
-    location_sem = rt_sem_create("location_sem", 0, RT_IPC_FLAG_PRIO);
-    RT_ASSERT(location_sem);
-
-    // 8.waiting for gps location completed.
-    // note:you must wait for the completion of GPS location before wiota run, and once the location is completed, you must run wiota immediately.
-    if (RT_EOK == rt_sem_take(location_sem, RT_WAITING_FOREVER))
-    {
-        // after location completed, run wiota.
-        uc_wiota_run();
-    }
-
-    // 9.delete location_sem.
-    rt_sem_delete(location_sem);
-
-    // other operation...
-    while (1)
-    {
-        send_test();
-        rt_thread_mdelay(1000);
-    }
-}
-
-void uc_wiota_sync_assistant_demo(void)
-{
-    // 1.enable the frame boundary alignment function.
-    uc_wiota_set_frame_boundary_align_func(1);
-
-    // 2.if want to sync time throught the sync assistant, set the sync time method to the sync assistant method
-    uc_wiota_set_time_service_func(TIME_SERVICE_SYNC_ASSISTANT, 1);
-
-    // 3.if you want to test he time sync accuracy throught instruments such as oscilloscopes, you can activate the PPS of sync asstistant, by measuring
-    // the PPS of GPS and AP8288, calculate the sync accuracy
-    // it is best to turn it off after the measurement is completed. uc_wiota_set_sync_assistant_pps(0);
-    uc_wiota_set_sync_assistant_pps(1);
-
-    // 4.init wiota.
-    uc_wiota_init();
-
-    // 5.set frequency point.
-    uc_wiota_set_freq_info(145);
-
-    // 6.run wiota
-    uc_wiota_run();
 
     // other operation...
     while (1)

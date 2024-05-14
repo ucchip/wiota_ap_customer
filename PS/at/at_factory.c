@@ -33,7 +33,7 @@ enum factory_command_type
 #define PWM_DEV_NAME "pwm2"
 #define AT24C02_ADDR 0xA0
 
-extern signed int factory_test_hanlde_rs_msg(unsigned int subType, unsigned int data);
+extern signed int factory_test_handle_rs_msg(unsigned int subType, unsigned int data);
 extern signed int factory_test_handle_loop_msg(unsigned char mcs, unsigned int packetNum, unsigned char dl_mode);
 extern void factory_test_set_save_loop_id_flag(unsigned char isSave);
 extern unsigned char factory_test_get_loop_is_rach(void);
@@ -247,7 +247,7 @@ static at_result_t at_factory_setup(const char *args)
     {
     case FACTORY_WIOTA:
     {
-        if (0 != factory_test_hanlde_rs_msg(data, data1))
+        if (0 != factory_test_handle_rs_msg(data, data1))
         {
             return AT_RESULT_FAILE;
         }

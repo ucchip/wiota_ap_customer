@@ -98,6 +98,7 @@ typedef struct
     F32 clkbias;
     F32 precthre;
     U32 dfecnt;
+    U32 rd0;
     U32 gprsDfeCnt;
     S32 prec;
     STU_COOR_XYZ pxyz;
@@ -105,6 +106,11 @@ typedef struct
     TYP_F32 decMs;
     S64 callt;
     S64 utct;
+    U32 dferecs[10];
+    F32 dprHot;
+    F32 dprHotGps, dprHotBds;
+    U08 dferecn;
+    BOOL lpval;
 } time_ast_t;
 
 typedef struct
@@ -114,8 +120,6 @@ typedef struct
     STU_COOR_XYZ pAt;
     STU_COOR_XYZ pFix;
 } tast_8288_call_t;
-
-#define GNSS_LNA_CONFIG 29
 
 //typedef void (*CALL_BACK)(IN const PSTU_RTC pRtc, IN const PSTU_USR_PVT pPvt);
 typedef void (*CALL_BACK)(IN const time_ast_t pTime);

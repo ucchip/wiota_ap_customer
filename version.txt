@@ -1,194 +1,202 @@
+v3.0_ap8088修改如下：
+	1. 子帧数据模式，仅支持二次开发，需参考网关开发demo
+	2. crc type功能，增加高mcs的子帧数据量
+	3. GPS库更新，GPS代码段增加，请合入link文件修改
+	4. GPS授时流程和精度优化，授时demo更新，请参考time_service_demo.c
+	5. 修改关闭协议栈log不生效问题
+	
 v2.9_ap8088修改如下：
-	1、同步paging修改为周期性发送paging信号，具体用法见api接口文档
-	2、新增帧号查询接口、让指定IOTE离开连接态接口、获取模组ID接口
-	3、子网ID的高12bit，默认固定为模组内部的id_mask，默认值为0x214, 故默认的子网ID仍为0x21456981
-	4、修改v2.8版本由于整理代码导致的GPS授时无法使用的问题
+	1. 同步paging修改为周期性发送paging信号，具体用法见api接口文档
+	2. 新增帧号查询接口、让指定IOTE离开连接态接口、获取模组ID接口
+	3. 子网ID的高12bit，默认固定为模组内部的id_mask，默认值为0x214, 故默认的子网ID仍为0x21456981
+	4. 修改v2.8版本由于整理代码导致的GPS授时无法使用的问题
+	
 v2.8_ap8088修改如下：
-	1、对外接口编码采用C99规范，变量类型修改较多，请注意核对
-	2、增加发送单音功能及相关api和at指令
-	3、增加帧长查询api及at指令
-	4、增加广播帧发送周期设置api及at指令（不建议更改）
-	5、增加广播发送轮数设置，默认发送三轮
-	6、去除单个子帧最大连接态iote个数设置接口，替换为设置最大连接态iote个数接口，用户不设置使用默认值（1:1为72个，1:2为144个）。
-	7、优化上行搬数逻辑，增加搬数校验
-	8、系统配置中ap_max_power改名为ap_tx_power，标识当前AP的发射功率，freq_idx加入系统配置中。
-	9、增加发送demo（供参考）
-	10、优化上行接收性能
-	11、增加资源管理，默认关闭，可在main函数打开，注意rt-thread/include/rtdef.h一定要对比合入
-	12、修复已知bug
-	13、对应api和at文档已更新，除了添加新增api和at外，还对广播和单波在不同symbol_length下的最大MCS和注意事项做了详细说明，具体请查看广播MCS设置部分
+	1. 对外接口编码采用C99规范，变量类型修改较多，请注意核对
+	2. 增加发送单音功能及相关api和at指令
+	3. 增加帧长查询api及at指令
+	4. 增加广播帧发送周期设置api及at指令（不建议更改）
+	5. 增加广播发送轮数设置，默认发送三轮
+	6. 去除单个子帧最大连接态iote个数设置接口，替换为设置最大连接态iote个数接口，用户不设置使用默认值（1:1为72个，1:2为144个）。
+	7. 优化上行搬数逻辑，增加搬数校验
+	8. 系统配置中ap_max_power改名为ap_tx_power，标识当前AP的发射功率，freq_idx加入系统配置中。
+	9. 增加发送demo（供参考）
+	10. 优化上行接收性能
+	11. 增加资源管理，默认关闭，可在main函数打开，注意rt-thread/include/rtdef.h一定要对比合入
+	12. 修复已知bug
+	13. 对应api和at文档已更新，除了添加新增api和at外，还对广播和单波在不同symbol_length下的最大MCS和注意事项做了详细说明，具体请查看广播MCS设置部分
 
 v2.7_ap8088修改如下：
-	1、增加同步paging功能及相关api和at指令
-	2、增加驱动demo，在application目录下
-	3、uboot刷写ap8288镜像增加校验，AT串口（uart0）默认不输出uboot的打印，uboot镜像更新
-	4、修改分区不当导致OTA无法升级的问题，link文件更新
-	5、1588协议授时精度优化
-	6、优化协议栈log
+	1. 增加同步paging功能及相关api和at指令
+	2. 增加驱动demo，在application目录下
+	3. uboot刷写ap8288镜像增加校验，AT串口（uart0）默认不输出uboot的打印，uboot镜像更新
+	4. 修改分区不当导致OTA无法升级的问题，link文件更新
+	5. 1588协议授时精度优化
+	6. 优化协议栈log
 
 v2.6_ap8088修改如下：
-	1、修改ap8288 gpio7复用为第一功能后（ap_sync），由于gpio7接地情况的不同导致有些版子出现dfe挂死问题，上层表现为协议栈停止运行或扫频超时
-	2、修改多线程临界区处理不当，导致下行任务异常触发断言的问题
-	3、关闭log口（uart1）rx中断，避免rx悬空状态接收到乱码问题，同时关闭FINSH功能（因为FINSH功能会重新打开rx中断），如需使用请用menuconfig配置打开
-	4、修改通过userid查询该id在帧结构位置信息的接口，请对比uc_wiota_api.h
-	5、修改上行接收重复包处理时，长度计算错误导致的内存越界问题，该问题会直接耗光内存池并导致程序卡死
-	6、将spi操作接口放到了packages/slave_uc8x88/目录下，二次开发是时请使用该接口，避免和协议栈发生冲突
-	7、修改AP在等paging res时，iote重启再发上行后，发送失败的问题
+	1. 修改ap8288 gpio7复用为第一功能后（ap_sync），由于gpio7接地情况的不同导致有些版子出现dfe挂死问题，上层表现为协议栈停止运行或扫频超时
+	2. 修改多线程临界区处理不当，导致下行任务异常触发断言的问题
+	3. 关闭log口（uart1）rx中断，避免rx悬空状态接收到乱码问题，同时关闭FINSH功能（因为FINSH功能会重新打开rx中断），如需使用请用menuconfig配置打开
+	4. 修改通过userid查询该id在帧结构位置信息的接口，请对比uc_wiota_api.h
+	5. 修改上行接收重复包处理时，长度计算错误导致的内存越界问题，该问题会直接耗光内存池并导致程序卡死
+	6. 将spi操作接口放到了packages/slave_uc8x88/目录下，二次开发是时请使用该接口，避免和协议栈发生冲突
+	7. 修改AP在等paging res时，iote重启再发上行后，发送失败的问题
 	备注：禁止在回调函数（包括接受回调和发送数据回调）里面加延迟操作，避免在回调函数里做大量操作！！！
 
 v2.5_ap8088修改如下：
-	1、修改下行连续数据包模式bug
-	2、子网配置移除系统id，请注意适配
-	3、提高了协议栈线程优先级
-	4、协议栈搬数改为spi标准接口，避免直接二次开发使用spi发生冲突，请对比合入spi驱动文件
-	5、修改paging tx bug
+	1. 修改下行连续数据包模式bug
+	2. 子网配置移除系统id，请注意适配
+	3. 提高了协议栈线程优先级
+	4. 协议栈搬数改为spi标准接口，避免直接二次开发使用spi发生冲突，请对比合入spi驱动文件
+	5. 修改paging tx bug
 
 v2.4_ap8088修改如下：
-	1、修改ota发送的slot冲突，cce新增保护机制，修改ota后终端无法接收下行的问题
-	2、发送下行和发送广播接口新增参数void *para，改参数可在非阻塞发送时传入发送数据的地址，在数据发送完成后会将该参数通过callback返回，方便用户知道具体哪条数据的发送情况，
+	1. 修改ota发送的slot冲突，cce新增保护机制，修改ota后终端无法接收下行的问题
+	2. 发送下行和发送广播接口新增参数void *para，改参数可在非阻塞发送时传入发送数据的地址，在数据发送完成后会将该参数通过callback返回，方便用户知道具体哪条数据的发送情况，
 如果不需要该功能，填NULL即可，具体请参考api文档
-	3、更新发送下行和广播的at，兼容新参数和非阻塞发送，去除单独的非阻塞发送at指令，具体参考at文档
-	4、新增gps授时功能和1588协议授时功能（注意如果开启GPS授时，在GPS运行期间会占用50K左右内存，过程大概持续3分钟左右，授时完成后GPS停止，会释放占用内存），可通过接口选择开启gps或1588，不可同时开启，具体授时相关接口参考api文档，接口使用参考application/time_service_demo.c，授时相关
+	3. 更新发送下行和广播的at，兼容新参数和非阻塞发送，去除单独的非阻塞发送at指令，具体参考at文档
+	4. 新增gps授时功能和1588协议授时功能（注意如果开启GPS授时，在GPS运行期间会占用50K左右内存，过程大概持续3分钟左右，授时完成后GPS停止，会释放占用内存），可通过接口选择开启gps或1588，不可同时开启，具体授时相关接口参考api文档，接口使用参考application/time_service_demo.c，授时相关
 at指令参考at文档
-	5、 WIoTa 协议栈代码和GPS代码段划分，请合并最新的link文件
-	6、子网配置增加旧版本（v2.3之前的版本）兼容标志位（old_subsys_v），默认为0，表示匹配v2.4的iote，如果只升级AP不升级iote，该标志位填1
-	7、子网配置增加比特加扰标志位（bitscb），默认为1，表示开启
-	8、AP默认关闭了iote_info_list和ap_state_list，与其相关的api和at将失效，意味着AP不再存储boostlevel 0的iote的任何信息，只做数据传输，此改动后AP能接入的boostlevel 0的iote个数将不再有限制（不代表同时连接态的数量）
-	9、AP新增paging tx相关api和at，可用ap唤醒iote，具体请参考api和at文档
-	10、AP新增组播发送相关api和at，发送前需知道有效组播id（iote设置的id）并通过接口设置，最多支持8个不同的组播id，具体请参考api和at文档
-	11、AP新增查询AP8288运行状态接口和at，只能通过该返回值判断异常或正常，当异常时不能判断导致异常的原因，具体请参考api和at文档
+	5. WIoTa 协议栈代码和GPS代码段划分，请合并最新的link文件
+	6. 子网配置增加旧版本（v2.3之前的版本）兼容标志位（old_subsys_v），默认为0，表示匹配v2.4的iote，如果只升级AP不升级iote，该标志位填1
+	7. 子网配置增加比特加扰标志位（bitscb），默认为1，表示开启
+	8. AP默认关闭了iote_info_list和ap_state_list，与其相关的api和at将失效，意味着AP不再存储boostlevel 0的iote的任何信息，只做数据传输，此改动后AP能接入的boostlevel 0的iote个数将不再有限制（不代表同时连接态的数量）
+	9. AP新增paging tx相关api和at，可用ap唤醒iote，具体请参考api和at文档
+	10. AP新增组播发送相关api和at，发送前需知道有效组播id（iote设置的id）并通过接口设置，最多支持8个不同的组播id，具体请参考api和at文档
+	11. AP新增查询AP8288运行状态接口和at，只能通过该返回值判断异常或正常，当异常时不能判断导致异常的原因，具体请参考api和at文档
 	
 v2.3_ap8088修改如下：
-	1、run之后可以动态修改subsysid、频点
-	2、终端接入上报优化
+	1. run之后可以动态修改subsysid、频点
+	2. 终端接入上报优化
 
 v2.2_ap8088修改如下：
-	1、修改发送接口超时时间设置过短导致的后续发送返回结果异常问题，超时时间不能设置小于当前配置下的一帧的时间
-	2、修改发送timer启动时机为发送第一个包时启动
-	3、修改发送数据at指令在数据发送失败或超时后at为返回结果的问题
-	4、修改link文件中cce trace地址配置错误导致的无法抓取cce log问题
+	1. 修改发送接口超时时间设置过短导致的后续发送返回结果异常问题，超时时间不能设置小于当前配置下的一帧的时间
+	2. 修改发送timer启动时机为发送第一个包时启动
+	3. 修改发送数据at指令在数据发送失败或超时后at为返回结果的问题
+	4. 修改link文件中cce trace地址配置错误导致的无法抓取cce log问题
 
 v2.1_ap8088修改如下：
-	1、修改202新模组上电无限重启的问题，GPIO25默认拉高
+	1. 修改202新模组上电无限重启的问题，GPIO25默认拉高
 
 v2.0_ap8088修改如下：
-	1、修复快速扫频没有返回结果的问题
-	2、修改更改配置为1:2后协议栈终端池资源配置还是1:1配置的问题
+	1. 修复快速扫频没有返回结果的问题
+	2. 修改更改配置为1:2后协议栈终端池资源配置还是1:1配置的问题
 
 v0.14_ap8088修改如下：
-	1、协议栈bug修改
-	2、demo协议优化
+	1. 协议栈bug修改
+	2. demo协议优化
 
 v0.13_ap8088修改如下：
-	1、静态数据结构更改
-	2、flash读写接口
-	3、应用部分接口更改，请对比uc_wiota_api.h
-	4、协议栈bug修改
-	5、添加uboot启动
+	1. 静态数据结构更改
+	2. flash读写接口
+	3. 应用部分接口更改，请对比uc_wiota_api.h
+	4. 协议栈bug修改
+	5. 添加uboot启动
 	demo 更新：
-		1、优化MQTT稳定性；
-		2、uboot支持ymodem、ota等；
-		3、wiota demo支持id管理、设备分组、组播控制等。
+		1. 优化MQTT稳定性；
+		2. uboot支持ymodem、ota等；
+		3. wiota demo支持id管理、设备分组、组播控制等。
 
 v0.12_ap8088修改如下：
-	1、兼容新板子
-	2、添加app demo，如需使用请将代码根目录下的rtcofig.h.demo替换rtconfig.h，demo的功能和使用请参考相关文档，注：正常的at版本和demo版本不可同时打开
-	3、全部采用scons编译，请安装rt-thread的环境（rt-thread官网可下载）
-	4、修改协议栈已知bug
+	1. 兼容新板子
+	2. 添加app demo，如需使用请将代码根目录下的rtcofig.h.demo替换rtconfig.h，demo的功能和使用请参考相关文档，注：正常的at版本和demo版本不可同时打开
+	3. 全部采用scons编译，请安装rt-thread的环境（rt-thread官网可下载）
+	4. 修改协议栈已知bug
 
 v0.11_ap8088修改如下：
-	1、增加工厂模式测试
-	2、修改多终端死机问题
-	3、默认关闭at回显，修改部分查询指令为cmd？的形式，具体请比对at_wiota.c
-	4、修改部分已知bug
+	1. 增加工厂模式测试
+	2. 修改多终端死机问题
+	3. 默认关闭at回显，修改部分查询指令为cmd？的形式，具体请比对at_wiota.c
+	4. 修改部分已知bug
 	
 v0.10_ap8088修改如下：
-	1、增加通过user id查询scramble id的接口，uc_wiota_query_scrambleid_by_userid()
-	2、增加工厂收发模式和回环测试模式，注意工厂的外设测试还未完成，暂不支持测试
-	3、增加吞吐率测试功能，具体请查看吞吐率测试文档
-	4、at命令设置系统配置的功率值需要将要设置的值加上20后作为设置值，如，要设置10，则需输入30。如果直接调用接口则不需要加20
-	5、下行增加mcs调整策略，当发送失败后重发时会降低mcs，增加下行成功率
-	6、查询版本信息接口增加ap8288版本信息查询，具体请见接口说明，uc_wiota_get_version()
-	7、合并iote状态查询接口为一个，离线和在线的状态通过type表示，接口uc_wiota_get_iote_info()
-	8、将连续数据包模式、1：2快速模式设置合并为数据速率设置，uc_wiota_set_data_rate()
-	9、合并ap8088和ap8288镜像（正常用codelite或scons编译即可），烧录固件只需正常烧写ap8088即可，ap8288会通过spi自动烧录
-	10、修改部分已知bug	
+	1. 增加通过user id查询scramble id的接口，uc_wiota_query_scrambleid_by_userid()
+	2. 增加工厂收发模式和回环测试模式，注意工厂的外设测试还未完成，暂不支持测试
+	3. 增加吞吐率测试功能，具体请查看吞吐率测试文档
+	4. at命令设置系统配置的功率值需要将要设置的值加上20后作为设置值，如，要设置10，则需输入30。如果直接调用接口则不需要加20
+	5. 下行增加mcs调整策略，当发送失败后重发时会降低mcs，增加下行成功率
+	6. 查询版本信息接口增加ap8288版本信息查询，具体请见接口说明，uc_wiota_get_version()
+	7. 合并iote状态查询接口为一个，离线和在线的状态通过type表示，接口uc_wiota_get_iote_info()
+	8. 将连续数据包模式、1：2快速模式设置合并为数据速率设置，uc_wiota_set_data_rate()
+	9. 合并ap8088和ap8288镜像（正常用codelite或scons编译即可），烧录固件只需正常烧写ap8088即可，ap8288会通过spi自动烧录
+	10. 修改部分已知bug	
 
 v0.09修改如下：(v0.08版本有问题，直接到v0.09版本)
-	1、修改某些数据长度下最后一个包的长度和底层不匹配导致的下行发送失败问题
-	2、添加连续数据包模式
-	3、添加crc16替换之前的crc32，长度由4个字节变为2个字节，并增加crc开关，可选择开启或关闭crc和加crc的长度限制，默认开启且数据长度大于等于100时加crc16，可通过接口uc_wiota_set_crc()设置
-	4、AP端添加RT-Thread的scons编译功能（可选择用scons编译或用codelite编译）
-	5、修改uc_wiota_interface.c/.h、uc_wiota_interface_test.c/.h 文件名，具体参见PS/app；修改部分ap应用层api接口名称和iote端保持一致，具体请对比uc_wiota_api.h
-	6、添加ap状态查询接口和离线状态的iote查询接口，具体参见接口说明文档
-	7、修改添加crc的条件为大于等于
-	8、替换at解析函数和新增部分at指令，具体请对比at_wiota.c，该文件改动较多请仔细对比合入
-	9、添加串口下载功能，上电后等有+SYSTEM:START打印后才能进行初始化等at指令操作
-	10、获取的黑名单、iote信息等链表使用完成后不在需要手动释放，且获取头节点后不在需要指向next，如果有用到这部分接口的请注意修改
-	11、默认开启看门狗
-	12、修改部分已知bug
+	1. 修改某些数据长度下最后一个包的长度和底层不匹配导致的下行发送失败问题
+	2. 添加连续数据包模式
+	3. 添加crc16替换之前的crc32，长度由4个字节变为2个字节，并增加crc开关，可选择开启或关闭crc和加crc的长度限制，默认开启且数据长度大于等于100时加crc16，可通过接口uc_wiota_set_crc()设置
+	4. AP端添加RT-Thread的scons编译功能（可选择用scons编译或用codelite编译）
+	5. 修改uc_wiota_interface.c/.h、uc_wiota_interface_test.c/.h 文件名，具体参见PS/app；修改部分ap应用层api接口名称和iote端保持一致，具体请对比uc_wiota_api.h
+	6. 添加ap状态查询接口和离线状态的iote查询接口，具体参见接口说明文档
+	7. 修改添加crc的条件为大于等于
+	8. 替换at解析函数和新增部分at指令，具体请对比at_wiota.c，该文件改动较多请仔细对比合入
+	9. 添加串口下载功能，上电后等有+SYSTEM:START打印后才能进行初始化等at指令操作
+	10. 获取的黑名单、iote信息等链表使用完成后不在需要手动释放，且获取头节点后不在需要指向next，如果有用到这部分接口的请注意修改
+	11. 默认开启看门狗
+	12. 修改部分已知bug
 
 v0.07修改如下：
-	1、添加dl：ul = 1 : 2时muti sm模式，可在两个group上同时发上行，提高传输速率，默认开启，可通过接口uc_wiota_set_muti_sm_mode();开启或关闭
-	2、修改activeTime计算错误问题
-	3、增加同一子帧位置上连接态终端最大数量的限制，默认为4个，最大8个，可通过接口uc_wiota_set_max_active_iote_num_in_the_same_subframe();设置
-	4、增加log模式接口，可设置关闭或开启trace log或spi log，接口uc_wiota_log_switch();
-	5、at串口和 trace log串口默认分开，at使用uart0，波特率默认115200；trace log使用uart1，波特率460800；
-	6、默认开启上下行主要流程log，便于后续问题分析，如需关闭请参照第5条说明关闭
-	7、新增at命令，请对比at_wiota.c
+	1. 添加dl：ul = 1 : 2时muti sm模式，可在两个group上同时发上行，提高传输速率，默认开启，可通过接口uc_wiota_set_muti_sm_mode();开启或关闭
+	2. 修改activeTime计算错误问题
+	3. 增加同一子帧位置上连接态终端最大数量的限制，默认为4个，最大8个，可通过接口uc_wiota_set_max_active_iote_num_in_the_same_subframe();设置
+	4. 增加log模式接口，可设置关闭或开启trace log或spi log，接口uc_wiota_log_switch();
+	5. at串口和 trace log串口默认分开，at使用uart0，波特率默认115200；trace log使用uart1，波特率460800；
+	6. 默认开启上下行主要流程log，便于后续问题分析，如需关闭请参照第5条说明关闭
+	7. 新增at命令，请对比at_wiota.c
 
 v0.06版本无修改，为了和终端版本保持一致；
 
 v0.05修改如下：
-	1、限制了普通数据包发送的最大长度为300个字节
-	2、新增跳频功能及接口（可设置跳频频点和跳频模式）
-	3、新增同一个子帧位置上连接台终端数量设置接口（默认为1个，最大不超过3个）
-	4、新增广播mcs设置接口（包括ota和普通广播）
-	5、修改注册上报数据接口名称，具体请对比uc_wiota_interface.h
-	6、新增at指令和修改部分at打印，具体请对比at_wiota.c
-	7、缩减mac头，提高mcs0的传输速率
-	8、修改AP端activeTime时间和终端不同步的问题
-	9、增加ota交叉流程，现在发送ota时可同时进行上下行业务
-	10、增加nack回退策略
+	1. 限制了普通数据包发送的最大长度为300个字节
+	2. 新增跳频功能及接口（可设置跳频频点和跳频模式）
+	3. 新增同一个子帧位置上连接台终端数量设置接口（默认为1个，最大不超过3个）
+	4. 新增广播mcs设置接口（包括ota和普通广播）
+	5. 修改注册上报数据接口名称，具体请对比uc_wiota_interface.h
+	6. 新增at指令和修改部分at打印，具体请对比at_wiota.c
+	7. 缩减mac头，提高mcs0的传输速率
+	8. 修改AP端activeTime时间和终端不同步的问题
+	9. 增加ota交叉流程，现在发送ota时可同时进行上下行业务
+	10. 增加nack回退策略
 
 v0.04修改如下：
-	1、AP应用接口更改
+	1. AP应用接口更改
 		1）新增获取版本接口：uc_wiota_get_version();
-	2、增加crc校验
-	3、paging功能可使用，使用uc_wiota_paging_and_send_normal_data()；接口即可，终端需至少随机接入后才能paging
-	4、优化at指令扫频接口，详见差异
-	5、修改已知bug：
+	2. 增加crc校验
+	3. paging功能可使用，使用uc_wiota_paging_and_send_normal_data()；接口即可，终端需至少随机接入后才能paging
+	4. 优化at指令扫频接口，详见差异
+	5. 修改已知bug：
 		1）wiota 退出死机问题
 		2）定时写入flash死机问题
 		3）广播数据发送与接收不一致问题
-	6、at使用uart1，默认关闭，如需打开请关闭宏AT_USING_UART1
+	6. at使用uart1，默认关闭，如需打开请关闭宏AT_USING_UART1
 
 v0.03修改如下：
-	1、增加硬件timer
-	2、开启watchdog功能，默认未开启，如需开启请在project文件中打开宏_WATCHDOG_APP_
-	3、开启at指令功能，具体at命令请参考wiota_AP_AT v0.00.md文档，替换串口配置文件sscom51(ap).ini，默认开启，如需关闭请关闭宏UC8088_MODULE
-	4、新增静态数据读写功能，静态数据1小时写入一次flash，默认开启
-	5、去除了多余的串口log信息
-	6、AP应用接口更改：
+	1. 增加硬件timer
+	2. 开启watchdog功能，默认未开启，如需开启请在project文件中打开宏_WATCHDOG_APP_
+	3. 开启at指令功能，具体at命令请参考wiota_AP_AT v0.00.md文档，替换串口配置文件sscom51(ap).ini，默认开启，如需关闭请关闭宏UC8088_MODULE
+	4. 新增静态数据读写功能，静态数据1小时写入一次flash，默认开启
+	5. 去除了多余的串口log信息
+	6. AP应用接口更改：
 		1）新增ap8288射频功率设置接口：uc_wiota_set_rf_power();可设置的范围为-1~34，具体用法参照uc_wiota_interface_test.c的例子test_set_ap8288_rf_power();
 		2）新增查询ap8288芯片温度接口：uc_wiota_read_temperatuer();读取温度需要两个子帧，有业务处理时不允许读取，具体用法参照uc_wiota_interface_test.c的例子test_read_temp();
 		3）新增扫频接口：uc_wiota_scan_freq();具体用法参照uc_wiota_interface_test.c的例子test_handle_scan_freq();
 		4）合并uc_wiota_reinit()和uc_wiota_first_init()为一个接口uc_wiota_init();
 		5）修改发送数据（广播和正常数据发送）接口回调函数参数，具体请自行对比差异；
 		6）修改超时时间类型为s32_t；
-	7、修改一些已知bug
+	7. 修改一些已知bug
 
 v0.02修改如下：
-	1、修改连接态生存时间设置不生效问题
-	2、增加大数据发送case，见test_send_broadcast_data()
-	3、动态参数增加ap最大功率ap_max_power和频谱spectrum_idx参数
-	4、增加获取dcxo和频点的接口
-	5、修改一些bug
+	1. 修改连接态生存时间设置不生效问题
+	2. 增加大数据发送case，见test_send_broadcast_data()
+	3. 动态参数增加ap最大功率ap_max_power和频谱spectrum_idx参数
+	4. 增加获取dcxo和频点的接口
+	5. 修改一些bug
 
 v0.01修改如下：
-	1、增加生存时间接口，修改接口名称为uc_wiota_set_active_time()、uc_wiota_get_active_time()
-	2、增加广播和OTA业务支持，见例子：test_send_broadcast()
-	3、增加wiota退出接口，解决wiota退出后的内存泄漏问题
-	4、独立uc_wiota_interface_test.c的例子，已test_开头
-	5、增加频点设置接口，uc_wiota_set_frequency_point()
+	1. 增加生存时间接口，修改接口名称为uc_wiota_set_active_time()、uc_wiota_get_active_time()
+	2. 增加广播和OTA业务支持，见例子：test_send_broadcast()
+	3. 增加wiota退出接口，解决wiota退出后的内存泄漏问题
+	4. 独立uc_wiota_interface_test.c的例子，已test_开头
+	5. 增加频点设置接口，uc_wiota_set_frequency_point()
 

@@ -90,9 +90,6 @@ int ptpd_task(void)
 {
     rt_thread_t tid = RT_NULL;
 
-    *(unsigned int *)0x3b0018 = 0; // set dfe max to 0xFFFFFFFF
-    rt_kprintf("gprs_dfe_max %u\n", *(unsigned int *)0x3b0018);
-
     tid = rt_thread_create("ptpv2", ptpd_thread, RT_NULL, THREAD_STACK_SIZE, THREAD_PRIORITY / 2, 5);
 
     if (tid != RT_NULL)

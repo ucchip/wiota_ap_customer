@@ -428,8 +428,11 @@ void uc_wiota_show_recv_data(unsigned int user_id, uc_dev_pos_t dev_pos, unsigne
     }
 
     at_server_printfln("+WIOTARECV:0x%x,%d,%d:", user_id, type, data_len);
-    at_send_data(recv_data, data_len);
-    at_server_printf("\r\n");
+    if (type != DATA_TYPE_SUBF_DATA)
+    {
+        at_send_data(recv_data, data_len);
+        at_server_printf("\r\n");
+    }
 }
 
 static void uc_wiota_sync_paging_cb(unsigned int user_id, unsigned char burst_idx, unsigned int fn_index)
@@ -1756,6 +1759,140 @@ static at_result_t at_wiota_module_id_query(void)
     return AT_RESULT_OK;
 }
 
+static at_result_t at_send_subf_mode_cfg_query(void)
+{
+    uc_subf_cfg_t subf_cfg = {0};
+
+    uc_wiota_get_subframe_mode_cfg(&subf_cfg);
+
+    at_server_printfln("+WIOTASUBFCFG:%d,%d", subf_cfg.block_size, subf_cfg.send_round);
+
+    return AT_RESULT_OK;
+}
+
+static at_result_t at_send_subf_mode_cfg_setup(const char *args)
+{
+    unsigned int block_size = 0;
+    unsigned int send_round = 0;
+    uc_subf_cfg_t subf_cfg = {0};
+
+    args = parse((char *)(++args), "d,d", &block_size, &send_round);
+    if (!args)
+    {
+        return AT_RESULT_PARSE_FAILE;
+    }
+
+    subf_cfg.block_size = block_size;
+    subf_cfg.send_round = send_round;
+
+    uc_wiota_set_subframe_mode_cfg(&subf_cfg);
+
+    return AT_RESULT_OK;
+}
+
+static at_result_t at_wiota_ul_subf_mode_setup(const char *args)
+{
+    unsigned int subf_mode = 0;
+    unsigned int user_id = 0;
+
+    args = parse((char *)(++args), "d,y", &subf_mode, &user_id);
+    if (!args)
+    {
+        return AT_RESULT_PARSE_FAILE;
+    }
+
+    uc_wiota_set_ul_subframe_mode(subf_mode, user_id);
+
+    return AT_RESULT_OK;
+}
+
+static at_result_t at_send_dl_subf_data_setup(const char *args)
+{
+    unsigned int data_len = 0;
+    unsigned int fn = 0;
+    unsigned char *subf_data = NULL;
+
+    args = parse((char *)(++args), "d,d", &data_len, &fn);
+    if (!args)
+    {
+        return AT_RESULT_PARSE_FAILE;
+    }
+
+    if (data_len > 0)
+    {
+        subf_data = (unsigned char *)rt_malloc(data_len);
+        if (subf_data == NULL)
+        {
+            rt_kprintf("rt_malloc failed!\n");
+            return AT_RESULT_FAILE;
+        }
+        rt_memset(subf_data, 0, data_len);
+
+        at_server_printfln(">");
+        if (at_server_recv(at_get_server(), (char *)subf_data, data_len, rt_tick_from_millisecond(WIOTA_WAIT_DATA_TIMEOUT)) != data_len)
+        {
+            rt_kprintf("at_server_recv fail\n");
+            rt_free(subf_data);
+            return AT_RESULT_FAILE;
+        }
+
+        uc_wiota_add_dl_subframe_data(subf_data, data_len, fn);
+
+        rt_free(subf_data);
+    }
+
+    return AT_RESULT_OK;
+}
+
+static at_result_t at_send_subf_mode_test_setup(const char *args)
+{
+    unsigned int mode = 0;
+
+    args = parse((char *)(++args), "d", &mode);
+    if (!args)
+    {
+        return AT_RESULT_PARSE_FAILE;
+    }
+
+    if (mode >= 0 && mode <= 2)
+    {
+        uc_wiota_set_subframe_test(mode);
+    }
+    else
+    {
+        uc_subf_test_t *test_info = uc_wiota_get_subframe_test();
+        if (test_info)
+        {
+            at_server_printfln("+WIOTASUBFSENDCNT:%u", test_info->send_cnt);
+            at_server_printfln("+WIOTASUBFNODENUM:%u", test_info->subf_node_num);
+            if (test_info->subf_node && test_info->subf_node_num > 0)
+            {
+                for (unsigned char i = 0; i < test_info->subf_node_num; i++)
+                {
+                    at_server_printfln("+WIOTASUBFTEST:0x%x,%u", test_info->subf_node[i].user_id, test_info->subf_node[i].recv_cnt);
+                }
+                rt_free(test_info->subf_node);
+            }
+            rt_free(test_info);
+        }
+    }
+
+    return AT_RESULT_OK;
+}
+
+static at_result_t at_mem_info_query(void)
+{
+    unsigned int total = 0;
+    unsigned int used = 0;
+    unsigned int max_used = 0;
+
+    rt_memory_info(&total, &used, &max_used);
+
+    at_server_printfln("+MEMINFO:%d", total - used);
+
+    return AT_RESULT_OK;
+}
+
 #ifdef RAMP_RF_SET_SUPPORT
 static at_result_t at_wiota_ramp_setup(const char *args)
 {
@@ -2544,22 +2681,6 @@ void uc_wiota_time_service_state_cb(time_service_state_e state)
 
     at_server_printfln("%s", str[state]);
 #endif
-    switch (state)
-    {
-    case TIME_SERVICE_INIT_END:
-    {
-        if (uc_wiota_get_state() == WIOTA_STATE_INIT)
-        {
-            uc_wiota_run();
-            at_server_printfln("+WIOTARUN:OK");
-            uc_wiota_register_callback();
-        }
-        break;
-    }
-
-    default:
-        break;
-    }
 }
 
 static at_result_t at_wiota_time_service_setup(const char *args)
@@ -2567,6 +2688,7 @@ static at_result_t at_wiota_time_service_setup(const char *args)
     unsigned int state = 0;
     unsigned char func_gnss = uc_wiota_get_time_service_func(TIME_SERVICE_GNSS);
     unsigned char func_1588 = uc_wiota_get_time_service_func(TIME_SERVICE_1588_PS);
+    unsigned char func_sync = uc_wiota_get_time_service_func(TIME_SERVICE_SYNC_ASSISTANT);
 
     args = parse((char *)(++args), "d", &state);
     if (!args)
@@ -2574,7 +2696,7 @@ static at_result_t at_wiota_time_service_setup(const char *args)
         return AT_RESULT_PARSE_FAILE;
     }
 
-    if (func_gnss != 1 && func_1588 != 1)
+    if (func_gnss != 1 && func_1588 != 1 && func_sync != 1)
     {
         return AT_RESULT_FAILE;
     }
@@ -2650,7 +2772,7 @@ static at_result_t at_wiota_time_service_state_query(void)
 
 static at_result_t at_wiota_gnss_pos_query(void)
 {
-    float pos_x = 0, pos_y = 0, pos_z = 0;
+    int pos_x = 0, pos_y = 0, pos_z = 0;
 
     uc_wiota_gnss_query_fix_pos(&pos_x, &pos_y, &pos_z);
     at_server_printfln("+GNSSPOSQUERY:%d,%d,%d", pos_x, pos_y, pos_z);
@@ -2699,10 +2821,13 @@ static at_result_t at_paging_tx_config_setup(const char *args)
 
 static at_result_t at_paging_tx_config_query(void)
 {
-    uc_lpm_tx_cfg_t *config = uc_wiota_get_paging_tx_cfg();
+    uc_lpm_tx_cfg_t config = {0};
+
+    uc_wiota_get_paging_tx_cfg(&config);
 
     at_server_printfln("+WIOTAPAGINGTX:%d,%d,%d,%d,%d,%d",
-                       config->freq, config->spectrum_idx, config->bandwidth, config->symbol_length, config->awaken_id, config->send_time);
+                       config.freq, config.spectrum_idx, config.bandwidth, config.symbol_length, config.awaken_id, config.send_time);
+
     return AT_RESULT_OK;
 }
 
@@ -2714,7 +2839,7 @@ static at_result_t at_paging_tx_send_exec(void)
         return AT_RESULT_REPETITIVE_FAILE;
     }
 
-    uc_wiota_start_paging_tx();
+    uc_wiota_paging_tx_start();
 
     return AT_RESULT_OK;
 }
@@ -2788,7 +2913,13 @@ AT_CMD_EXPORT("AT+WIOTAFRAMELEN", RT_NULL, RT_NULL, at_wiota_frame_len_query, RT
 AT_CMD_EXPORT("AT+WIOTAFRAMENUM", RT_NULL, RT_NULL, at_wiota_frame_num_query, RT_NULL, RT_NULL);
 AT_CMD_EXPORT("AT+WIOTAPPS", "<is_pps>", RT_NULL, at_wiota_sync_assistant_pps_query, at_wiota_sync_assistant_pps_setup, RT_NULL);
 AT_CMD_EXPORT("AT+WIOTAIOTELEAV", "<user_id>", RT_NULL, RT_NULL, at_wiota_iote_leaving_setup, RT_NULL);
-AT_CMD_EXPORT("AT+WIOTAMODULEID", "<user_id>", RT_NULL, at_wiota_module_id_query, RT_NULL, RT_NULL);
+AT_CMD_EXPORT("AT+WIOTAMODULEID", RT_NULL, RT_NULL, at_wiota_module_id_query, RT_NULL, RT_NULL);
+AT_CMD_EXPORT("AT+WIOTASUBFCFG", "=<block_size>,<send_round>", RT_NULL, at_send_subf_mode_cfg_query, at_send_subf_mode_cfg_setup, RT_NULL);
+AT_CMD_EXPORT("AT+WIOTAULSUBF", "<is_open>,<user_id>", RT_NULL, RT_NULL, at_wiota_ul_subf_mode_setup, RT_NULL);
+AT_CMD_EXPORT("AT+WIOTADLSUBF", "=<data_len>,<fn>", RT_NULL, RT_NULL, at_send_dl_subf_data_setup, RT_NULL);
+AT_CMD_EXPORT("AT+WIOTASUBFTEST", "=<mode>", RT_NULL, RT_NULL, at_send_subf_mode_test_setup, RT_NULL);
+AT_CMD_EXPORT("AT+MEMINFO", RT_NULL, RT_NULL, at_mem_info_query, RT_NULL, RT_NULL);
+
 #ifdef RAMP_RF_SET_SUPPORT
 AT_CMD_EXPORT("AT+WIOTASETRAMP", "<ramp_value>", RT_NULL, RT_NULL, at_wiota_ramp_setup, RT_NULL);
 AT_CMD_EXPORT("AT+WIOTASETRF", "<rf_ctrl_idx>", RT_NULL, RT_NULL, at_wiota_rf_setup, RT_NULL);

@@ -10,7 +10,7 @@ CROSS_TOOL  = 'gcc'
 
 if  CROSS_TOOL == 'gcc':
     PLATFORM    = 'gcc'
-    EXEC_PATH   = r'D:/Program Files (x86)/UCCHIP_IDE/riscv-gnu-toolchain/bin'
+    EXEC_PATH   = r'C:\Program Files (x86)\UCCHIP_IDE\riscv-gnu-toolchain\bin'
 else:
     print('Please make sure your toolchains is GNU GCC!')
     exit(0)
@@ -18,8 +18,8 @@ else:
 # if os.getenv('RTT_EXEC_PATH'):
 #     EXEC_PATH = os.getenv('RTT_EXEC_PATH')
 
-BUILD = 'debug'
-#BUILD = 'release'
+# BUILD = 'debug'
+BUILD = 'release'
 
 CORE = 'risc-v'
 MAP_FILE = 'rtthread.map'
@@ -43,7 +43,7 @@ if PLATFORM == 'gcc':
 
     DEVICE = ' -march=rv32imfc '
     #DEVICE = ' -march=rv32imc '
-    CFLAGS = '-g -Os -Wall '+ DEVICE
+    CFLAGS = ' -Wall '+ DEVICE
     #CFLAGS += ' -ffunction-sections -fdata-sections '
     CFLAGS += ' -ffunction-sections '
     # CFLAGS += ' -Iplatform -Ilibraries/inc '
@@ -56,11 +56,11 @@ if PLATFORM == 'gcc':
     CPATH = ''
     LPATH = ''
 
-    #if BUILD == 'debug':
-    #    CFLAGS += ' -O0 -g3'
-    #    AFLAGS += ' -g3'
-    #else:
-    #    CFLAGS += ' -O2'
+    if BUILD == 'debug':
+       CFLAGS += ' -Os -g'
+       AFLAGS += ' -g'
+    else:
+       CFLAGS += ' -O2'
 
     POST_ACTION = SIZE + ' $TARGET\n'
     #POST_ACTION += './tools/current_version.exe PS/app/include/uc_wiota_version.h' + '\n'

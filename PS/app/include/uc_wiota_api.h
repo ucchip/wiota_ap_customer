@@ -244,9 +244,10 @@ typedef enum
 
 typedef enum
 {
-    UC_RATE_NORMAL = 0, //not currently supported
-    UC_RATE_MID = 1,    //muti sm mode
-    UC_RATE_HIGH = 2    //grant mode
+    UC_RATE_NORMAL = 0,   //set dl mcs
+    UC_RATE_MID = 1,      //muti sm mode
+    UC_RATE_HIGH = 2,     //grant mode
+    UC_RATE_CRC_TYPE = 3, //only one byte crc
 } uc_data_rate_mode_e;
 
 typedef enum
@@ -275,6 +276,7 @@ typedef enum
 {
     DATA_TYPE_ACCESS = 0,
     DATA_TYPE_ACTIVE = 1,
+    DATA_TYPE_SUBF_DATA = 2,
 } uc_recv_data_type_e;
 
 typedef enum
@@ -300,6 +302,26 @@ typedef enum
     STATE_ABNORMAL = 0,
     STATE_NORMAL = 1,
 } ap8288_state_e;
+
+typedef struct
+{
+    unsigned char block_size;
+    unsigned char send_round;
+    unsigned char na[2];
+} uc_subf_cfg_t;
+
+typedef struct
+{
+    unsigned int user_id;
+    unsigned int recv_cnt;
+} uc_subf_node_t;
+
+typedef struct
+{
+    uc_subf_node_t *subf_node; // ul
+    unsigned int subf_node_num;// ul
+    unsigned int send_cnt; //dl
+} uc_subf_test_t;
 
 typedef void (*uc_send_callback)(uc_send_recv_t *result);
 typedef void (*uc_scan_callback)(uc_scan_recv_t *result);
@@ -343,7 +365,7 @@ void uc_wiota_time_service_start(void);
 
 void uc_wiota_time_service_stop(void);
 
-void uc_wiota_gnss_query_fix_pos(float *pos_x, float *pos_y, float *pos_z);
+void uc_wiota_gnss_query_fix_pos(int *pos_x, int *pos_y, int *pos_z);
 
 void uc_wiota_set_gnss_relocation(unsigned char is_relocation);
 
@@ -354,9 +376,9 @@ ap8288_state_e uc_wiota_get_ap8288_state(void);
 
 void uc_wiota_set_paging_tx_cfg(uc_lpm_tx_cfg_t *config);
 
-uc_lpm_tx_cfg_t* uc_wiota_get_paging_tx_cfg(void);
+void uc_wiota_get_paging_tx_cfg(uc_lpm_tx_cfg_t *config);
 
-void uc_wiota_start_paging_tx(void);
+void uc_wiota_paging_tx_start(void);
 
 void uc_wiota_register_sync_paging_callback(uc_paging_ctrl_callback callback);
 
@@ -377,6 +399,20 @@ unsigned int uc_wiota_get_frame_num(void);
 void uc_wiota_iote_leaving_active_state(unsigned int *user_id, unsigned int id_num);
 
 void uc_wiota_get_module_id(unsigned char *module_id);
+
+//{subf mode
+void uc_wiota_set_subframe_mode_cfg(uc_subf_cfg_t *subf_cfg);
+
+void uc_wiota_get_subframe_mode_cfg(uc_subf_cfg_t *subf_cfg);
+
+void uc_wiota_set_ul_subframe_mode(unsigned char subf_mode, unsigned int user_id); // ul
+
+void uc_wiota_add_dl_subframe_data(unsigned char *data, unsigned char data_len, unsigned char fn);  // dl
+
+void uc_wiota_set_subframe_test(unsigned char mode); // 0: close test, 1: open test, 2: clear test info
+
+uc_subf_test_t *uc_wiota_get_subframe_test(void);
+//} subf mode
 
 #ifdef RAMP_RF_SET_SUPPORT
 void uc_wiota_set_ramp_value(unsigned int ramp_value);
