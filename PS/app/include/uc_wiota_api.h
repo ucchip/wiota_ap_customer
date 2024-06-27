@@ -231,9 +231,29 @@ typedef struct
     unsigned char bandwidth;
     unsigned char symbol_length;
     unsigned short awaken_id; // indicate which id should send
-    unsigned short reserved;
+    unsigned char mode;       // 0: old id range(narrow), 1: extend id range(wide)
+    unsigned char reserved;   // re
     unsigned int send_time;   // ms, at least rx detect period
 } uc_lpm_tx_cfg_t, *uc_lpm_tx_cfg_p;
+
+typedef struct
+{
+    unsigned char freq;
+    unsigned char spectrum_idx;
+    unsigned char bandwidth;
+    unsigned char symbol_length;
+    unsigned char lpm_nlen;   // 1,2,3,4, default 4
+    unsigned char lpm_utimes; // 1,2,3, default 2
+    unsigned char threshold;  // detect threshold, 1~15, default 10
+    unsigned char extra_flag; // defalut, if set 1, last period will use extra_period, then wake up
+    unsigned short awaken_id; // indicate which id should detect
+    unsigned short reserved;
+    unsigned int detect_period; // ms, like 1000 ms
+    unsigned int extra_period;  // ms, extra new period before wake up
+    unsigned char mode;         // 0: old id range(narrow), 1: extend id range(wide)
+    unsigned char period_multiple;    // the multiples of detect_period using awaken_id_ano, if 0, no need
+    unsigned short awaken_id_another; // another awaken_id
+} uc_lpm_rx_cfg_t, *uc_lpm_rx_cfg_p;
 
 typedef enum
 {
@@ -303,6 +323,36 @@ typedef enum
     STATE_NORMAL = 1,
 } ap8288_state_e;
 
+typedef enum
+{
+    AWAKENED_CAUSE_HARD_RESET = 0, // also watchdog reset, spi cs reset
+    AWAKENED_CAUSE_SLEEP = 1,
+    AWAKENED_CAUSE_PAGING = 2,          // then get uc_lpm_paging_waken_cause_e
+    AWAKENED_CAUSE_GATING = 3,          // no need care
+    AWAKENED_CAUSE_FORCED_INTERNAL = 4, // not use
+    AWAKENED_CAUSE_OTHERS,
+} uc_awakened_cause_e;
+
+typedef enum
+{
+    PAGING_WAKEN_CAUSE_NULL = 0,            // not from paging
+    PAGING_WAKEN_CAUSE_PAGING_TIMEOUT = 1,  // from lpm timeout
+    PAGING_WAKEN_CAUSE_PAGING_SIGNAL = 2,   // from lpm signal
+    PAGING_WAKEN_CAUSE_SYNC_PG_TIMEOUT = 3, // from sync paging timeout
+    PAGING_WAKEN_CAUSE_SYNC_PG_SIGNAL = 4,  // from sync paging signal
+    PAGING_WAKEN_CAUSE_SYNC_PG_TIMING = 5,  // from sync paging timing set
+    PAGING_WAKEN_CAUSE_MAX,
+} uc_lpm_paging_waken_cause_e;
+
+typedef struct
+{
+    unsigned char is_cs_awakened;
+    unsigned char awaken_cause;          // uc_awakened_cause_e
+    unsigned char lpm_last_wakeup_cause; // uc_lpm_paging_waken_cause_e
+    unsigned char lpm_last_wakeup_idx;   // default first
+    unsigned int lpm_detected_times;
+} uc_awaken_cause_t;
+
 typedef struct
 {
     unsigned char block_size;
@@ -361,6 +411,12 @@ unsigned char uc_wiota_get_sync_assistant_pps(void);
 
 time_service_state_e uc_wiota_get_time_service_state(void);
 
+void uc_wiota_set_broadcast_utc_func(unsigned char is_bc_utc);
+
+void uc_wiota_set_time_service_cycle(unsigned char cycle_min); // unit: minute
+
+unsigned char uc_wiota_get_time_service_cycle(void);
+
 void uc_wiota_time_service_start(void);
 
 void uc_wiota_time_service_stop(void);
@@ -378,7 +434,19 @@ void uc_wiota_set_paging_tx_cfg(uc_lpm_tx_cfg_t *config);
 
 void uc_wiota_get_paging_tx_cfg(uc_lpm_tx_cfg_t *config);
 
-void uc_wiota_paging_tx_start(void);
+unsigned char uc_wiota_paging_tx_start(void);
+
+// paging rx, require new hardware support, old hardware called directly return
+void uc_wiota_set_paging_rx_cfg(uc_lpm_rx_cfg_t *config);
+
+void uc_wiota_get_paging_rx_cfg(uc_lpm_rx_cfg_t *config);
+
+void uc_wiota_paging_rx_enter(unsigned char is_need_32k_div, unsigned int timeout_max);
+
+void uc_wiota_get_awakened_cause(uc_awaken_cause_t *awaken_cause);
+
+unsigned char uc_wiota_get_is_new_hardware(void); // 1 new hardware, 0 old hardware
+//}
 
 void uc_wiota_register_sync_paging_callback(uc_paging_ctrl_callback callback);
 
@@ -405,7 +473,7 @@ void uc_wiota_set_subframe_mode_cfg(uc_subf_cfg_t *subf_cfg);
 
 void uc_wiota_get_subframe_mode_cfg(uc_subf_cfg_t *subf_cfg);
 
-void uc_wiota_set_ul_subframe_mode(unsigned char subf_mode, unsigned int user_id); // ul
+void uc_wiota_set_ul_subframe_mode(unsigned char subf_mode, unsigned int user_id, unsigned char rach_delay); // ul
 
 void uc_wiota_add_dl_subframe_data(unsigned char *data, unsigned char data_len, unsigned char fn);  // dl
 

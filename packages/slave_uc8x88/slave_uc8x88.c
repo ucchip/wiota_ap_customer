@@ -268,6 +268,9 @@ static int8_t flash_write_data(uint8_t chip_index, uint32_t addr_offset, uint8_t
     uint32_t write_page_size = 0;
     uint32_t index = 0;
     uint32_t page_offset = addr_offset / PAGE_SIZE;
+    uint8_t *read_buff = RT_NULL;
+    uint32_t try_cnt = 0;
+    int res = 0;
 
     if ((data_buf == RT_NULL) || (data_len == 0) || ((addr_offset % PAGE_SIZE) != 0))
     {
@@ -291,45 +294,49 @@ static int8_t flash_write_data(uint8_t chip_index, uint32_t addr_offset, uint8_t
         {
             write_page_size = data_len - index * PAGE_SIZE;
         }
-        flash_write(chip_index, (index + page_offset) * PAGE_SIZE, &data_buf[index * PAGE_SIZE], write_page_size);
+
+        for (try_cnt = 0; try_cnt < 5; try_cnt++)
+        {
+            flash_write(chip_index, (index + page_offset) * PAGE_SIZE, &data_buf[index * PAGE_SIZE], write_page_size);
+
+            if (order_verify)
+            {
+                if (RT_NULL == read_buff)
+                {
+                    read_buff = rt_malloc(PAGE_SIZE);
+                    if (read_buff == RT_NULL)
+                    {
+                        LOG_D("verify error 1, rt_malloc fail!!");
+                        return -2;
+                    }
+                }
+                rt_memset(read_buff, 0, write_page_size);
+
+                flash_read(chip_index, (index + page_offset) * PAGE_SIZE, read_buff, write_page_size);
+                if (0 != rt_memcmp(read_buff, &data_buf[index * PAGE_SIZE], write_page_size))
+                {
+                    LOG_E("chip_index %d verify error, pagenum %d\n", chip_index, (index + page_offset));
+                    continue;
+                }
+                break;
+            }
+            break;
+        }
+
+        if (try_cnt >= 5)
+        {
+            LOG_E("chip_index %d flash_write_data fail\n", chip_index);
+            res = 1;
+            break;
+        }
+        rt_thread_mdelay(1);
     }
 
-    //LOG_D("write flash end.");
-
-    if (order_verify)
+    if (RT_NULL != read_buff)
     {
-        uint8_t *read_buff = RT_NULL;
-
-        //LOG_D("begin to verify.");
-        read_buff = rt_malloc(PAGE_SIZE);
-        if (read_buff == RT_NULL)
-        {
-            LOG_D("verify error 1, rt_malloc fail!!");
-            return -2;
-        }
-        for (index = 0; index < page_num; index++)
-        {
-            if ((data_len - index * PAGE_SIZE) >= PAGE_SIZE)
-            {
-                write_page_size = PAGE_SIZE;
-            }
-            else
-            {
-                write_page_size = data_len - index * PAGE_SIZE;
-            }
-            flash_read(chip_index, (index + page_offset) * PAGE_SIZE, read_buff, write_page_size);
-            if (rt_memcmp(read_buff, &data_buf[index * PAGE_SIZE], write_page_size) != 0)
-            {
-                LOG_D("verify error 2, pagenum = %d", (index + page_offset));
-                rt_free(read_buff);
-                return -3;
-            }
-        }
         rt_free(read_buff);
-        //LOG_D("verify ok.");
     }
-
-    return 0;
+    return res;
 }
 
 static void mem_dummy_init(uint8_t chip_index)
@@ -420,6 +427,8 @@ void slave_uc8x88_init(uint8_t chip_index)
     {
         return;
     }
+
+    rt_thread_mdelay(10);
     if (slave_uc8x88_cfg_spi_init(chip_index) != 0)
     {
         return;

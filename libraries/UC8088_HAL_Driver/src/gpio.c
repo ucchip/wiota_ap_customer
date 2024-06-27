@@ -201,6 +201,16 @@ int gpio_get_irq_status()
     return *(volatile int *)(GPIO_REG_INTSTATUS);
 }
 
+void soc_hw_ldo_off(void)
+{
+    int a = (*(volatile unsigned int *)(0x1a10422c));
+    a &= (~(1 << 23)); // sim ldo 3.3v bit 23
+    a &= (~(1 << 27)); // IO ldo 3.3v bit 27
+    a &= (~(1 << 31)); // IO ldo 1.8v bit 31
+
+    *(volatile unsigned int *)0x1a10422c = a;
+}
+
 /* set ldo to 3.3v */
 void soc_hw_ldo_on(void)
 {
@@ -221,14 +231,6 @@ void soc_hw_ldo_on(void)
     gpio_set_pin_value(GPIO_PIN_13, GPIO_VALUE_HIGH);
 
     gpio_set_pin_value(GPIO_PIN_26, GPIO_VALUE_HIGH);
-     // reset ap8288
-    gpio_set_pin_value(GPIO_PIN_6, GPIO_VALUE_LOW);
-    int num = 5000;
-    while (num--)
-    {
-        asm("nop");
-    }
-    gpio_set_pin_value(GPIO_PIN_6, GPIO_VALUE_HIGH);
 }
 
 void gpio_8088_to_8288_change_value()
