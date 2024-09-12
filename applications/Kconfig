@@ -2,7 +2,7 @@ menu "wiota APP"
 
 config WIOTA_API_TEST
     bool "uc wiota api test, default close(WIOTA_API_TEST)"
-    default y
+    default n
 
 if RT_USING_WDT
     config _WATCHDOG_APP_

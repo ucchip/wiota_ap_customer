@@ -613,9 +613,12 @@ at_client_t at_client_get(const char *dev_name)
 
     for (idx = 0; idx < AT_CLIENT_NUM_MAX; idx++)
     {
-        if (rt_strcmp(at_client_table[idx].device->parent.name, dev_name) == 0)
+        if (at_client_table[idx].device)
         {
-            return &at_client_table[idx];
+            if (rt_strcmp(at_client_table[idx].device->parent.name, dev_name) == 0)
+            {
+                return &at_client_table[idx];
+            }
         }
     }
 

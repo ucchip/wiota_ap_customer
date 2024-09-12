@@ -98,6 +98,7 @@ typedef struct
     F32 clkbias;
     F32 precthre;
     U32 dfecnt;
+    U32 dfeIrcnt;
     U32 rd0;
     U32 gprsDfeCnt;
     S32 prec;

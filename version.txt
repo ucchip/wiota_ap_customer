@@ -1,3 +1,6 @@
+v3.1.1_ap8088修改如下：
+	1.修改AP任务删除和内存泄漏问题
+
 v3.1_ap8088修改如下：
 	1. AP增加低功耗，可被iote反向唤醒，paging rx相关接口
 	2. 超低功耗唤醒扩展ID模式，uc_lpm_tx_cfg_t和uc_lpm_rx_cfg_t结构体中增加mode
