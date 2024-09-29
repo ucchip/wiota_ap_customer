@@ -5,9 +5,11 @@ src = Split('''
 main.c
 resource_manager.c
 time_service_demo.c
+gps_demo.c
 ''')
 
 path = []
+objs=[]
 
 if GetDepend(['_WATCHDOG_APP_', 'RT_USING_WDT']):
     path += [cwd]
@@ -50,4 +52,14 @@ if GetDepend(['_UART_APP_']):
 
 group = DefineGroup('Applications', src, depend = [''], CPPPATH = path)
 
-Return('group')
+list=os.listdir(cwd)
+
+for d in list:
+    path = os.path.join(cwd, d)
+    if os.path.isfile(os.path.join(path, 'SConscript')):
+        objs = objs + SConscript(os.path.join(d, 'SConscript'))
+
+objs+=group
+
+
+Return('objs')

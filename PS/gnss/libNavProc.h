@@ -103,6 +103,7 @@ typedef struct
     U32 gprsDfeCnt;
     S32 prec;
     STU_COOR_XYZ pxyz;
+    STU_COOR_LLA plla;
     STU_RTC rtc;
     TYP_F32 decMs;
     S64 callt;
