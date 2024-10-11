@@ -202,10 +202,15 @@ CONFIG_AT_SW_VERSION_NUM=0x10301
 #
 # wiota APP
 #
-# CONFIG_WIOTA_API_TEST is not set
-# CONFIG_M8_GATEWAY_MODE_SUPPORT is not set
-# CONFIG__WATCHDOG_APP_ is not set
 CONFIG__WATCHDOG_APP_=y
+# CONFIG__ADC_APP_ is not set
+# CONFIG__DAC_APP_ is not set
+# CONFIG__IIC_APP_ is not set
+# CONFIG__PIN_APP_ is not set
+# CONFIG__PWM_APP_ is not set
+# CONFIG__SPI_FLASH_APP_ is not set
+# CONFIG__SPIM_FLASH_APP_ is not set
+# CONFIG__UART_APP_ is not set
 
 #
 # wiota PS
