@@ -38,6 +38,10 @@ extern "C"
 
 #define UC_WIOTA_MAX_MULTICAST_ID_NUM (8)
 
+#define UC_CRC32_LEN 4
+#define UC_CRC16_LEN 2
+#define UC_CRC8_LEN 1
+
 #define uc_container_of(ptr, type, member) \
     (type *)((char *)(ptr) - ((unsigned long)(&((type *)NULL)->member)))
 
@@ -489,6 +493,8 @@ void uc_wiota_get_paging_tx_cfg(uc_lpm_tx_cfg_t *config);
 
 int uc_wiota_paging_tx_start(void);
 
+int uc_wiota_paging_tx_frame_start(void);
+
 // paging rx, require new hardware support, old hardware called directly return
 int uc_wiota_set_paging_rx_cfg(uc_lpm_rx_cfg_t *config);
 
@@ -552,6 +558,20 @@ int uc_wiota_set_ramp_value(unsigned int ramp_value);
 int uc_wiota_set_rf_ctrl_idx(unsigned int rf_ctrl_idx);
 
 int uc_wiota_set_aagc_idx(unsigned char aagc_idx);
+
+int uc_wiota_set_bnack_func(int is_open);
+
+int uc_wiota_get_bnack_func(void);
+
+unsigned int uc_wiota_crc32_calc(const unsigned char *data, unsigned int data_len);
+
+unsigned int uc_wiota_crc16_calc(const unsigned char *data, unsigned int data_len);
+
+unsigned int uc_wiota_crc8_calc(const unsigned char *data, unsigned int data_len);
+
+void uc_wiota_set_dfe_counter_flag(void);
+
+void uc_wiota_master_control_bc_dfe_counter(void);
 
 // This function definition has been moved to uc_wiota_static.h
 //void uc_wiota_get_freq_list(unsigned char *list);

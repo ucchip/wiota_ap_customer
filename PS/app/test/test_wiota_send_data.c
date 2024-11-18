@@ -8,6 +8,7 @@
 
 #ifdef WIOTA_AP_SEND_DATA_DEMO
 #include "uc_wiota_api.h"
+#include "test_wiota_api.h"
 #include "rtdevice.h"
 
 static rt_mq_t recv_mq = NULL;

@@ -2253,6 +2253,28 @@ static at_result_t at_wiota_aagc_idx_setup(const char *args)
     return AT_RESULT_OK;
 }
 
+static at_result_t at_wiota_bnack_query(void)
+{
+    at_server_printfln("+WIOTABNACK:%d", uc_wiota_get_bnack_func());
+
+    return AT_RESULT_OK;
+}
+
+static at_result_t at_wiota_bnack_setup(const char *args)
+{
+    unsigned int is_open = 0;
+
+    args = parse((char *)(++args), "d", &is_open);
+    if (!args)
+    {
+        return AT_RESULT_PARSE_FAILE;
+    }
+
+    uc_wiota_set_bnack_func(is_open);
+
+    return AT_RESULT_OK;
+}
+
 #ifdef WIOTA_AP_STATE_INFO
 static at_result_t at_wiota_state_setup(const char *args)
 {
@@ -3268,6 +3290,17 @@ static at_result_t at_paging_tx_send_exec(void)
     return AT_RESULT_OK;
 }
 
+static at_result_t at_paging_tx_frame_send_exec(void)
+{
+    if (0 != uc_wiota_paging_tx_frame_start())
+    {
+        return AT_RESULT_FAILE;
+    }
+
+    return AT_RESULT_OK;
+}
+
+
 static at_result_t at_paging_config_mode_query(void)
 {
     uc_lpm_rx_cfg_t config_rx;
@@ -3499,6 +3532,7 @@ AT_CMD_EXPORT("AT+GNSSPOSQUERY", "=<type>", RT_NULL, RT_NULL, at_wiota_gnss_pos_
 AT_CMD_EXPORT("AT+GNSSRELOCATION", "=<state>", RT_NULL, RT_NULL, at_wiota_gnss_relocation_setup, RT_NULL);
 AT_CMD_EXPORT("AT+WIOTAPAGINGTX", "=<freq>,<spec_idx>,<band>,<symbol>,<awaken_id>,<send_time>", RT_NULL, at_paging_tx_config_query, at_paging_tx_config_setup, RT_NULL);
 AT_CMD_EXPORT("AT+WIOTASENDPT", RT_NULL, RT_NULL, RT_NULL, RT_NULL, at_paging_tx_send_exec);
+AT_CMD_EXPORT("AT+WIOTASENDPTF", RT_NULL, RT_NULL, RT_NULL, RT_NULL, at_paging_tx_frame_send_exec);
 AT_CMD_EXPORT("AT+WIOTAPAGINGRX", "=<freq>,<spec_i>,<band>,<symbol>,<aw_id>,<d_period>,<nlen>,<ut>,<thres>,<ex_flag>,<ex_period>,<period_mult>,<aw_id_ano>",
               RT_NULL, at_paging_rx_config_query, at_paging_rx_config_setup, RT_NULL);
 AT_CMD_EXPORT("AT+WIOTAPAGINGMODE", "=<rx_mode>,<tx_mode>", RT_NULL, at_paging_config_mode_query, at_paging_config_mode_setup, RT_NULL);
@@ -3528,6 +3562,7 @@ AT_CMD_EXPORT("AT+WIOTARAMPTYPE", "=<ramp_type>", RT_NULL, RT_NULL, at_wiota_ram
 AT_CMD_EXPORT("AT+WIOTARAMPVALUE", "=<ramp_value>", RT_NULL, RT_NULL, at_wiota_ramp_value_setup, RT_NULL);
 AT_CMD_EXPORT("AT+WIOTASETRF", "=<rf_ctrl_idx>", RT_NULL, RT_NULL, at_wiota_rf_setup, RT_NULL);
 AT_CMD_EXPORT("AT+WIOTASETAAGC", "=<aagc_idx>", RT_NULL, RT_NULL, at_wiota_aagc_idx_setup, RT_NULL);
+AT_CMD_EXPORT("AT+WIOTABNACK", "=<is_open>", RT_NULL, at_wiota_bnack_query, at_wiota_bnack_setup, RT_NULL);
 
 #ifdef WIOTA_BC_MODE_TEST
 AT_CMD_EXPORT("AT+WIOTABCMODE", "=<mode>", RT_NULL, RT_NULL, at_wiota_bcmode_setup, RT_NULL);

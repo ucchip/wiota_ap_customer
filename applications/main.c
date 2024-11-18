@@ -15,6 +15,9 @@
 #ifdef RT_USING_AT
 #include "at.h"
 #endif
+#ifdef WIOTA_API_TEST
+#include "test_wiota_api.h"
+#endif
 #ifdef _WATCHDOG_APP_
 #include "uc_watchdog_app.h"
 #endif
@@ -51,6 +54,10 @@
 
 #ifdef WIOTA_AP_SEND_DATA_DEMO
 #include "test_wiota_send_data.h"
+#endif
+
+#ifdef UC_SPI_COM_SUPPORT
+#include "uc_wiota_spi_com.h"
 #endif
 
 void ExtISR()
@@ -145,11 +152,18 @@ int main(void)
 #ifdef WIOTA_APP_DEMO
     manager_enter();
 #else
+#ifdef WIOTA_API_TEST
+    wiota_api_test();
+#else
+#ifdef UC_SPI_COM_SUPPORT
+    uc_wiota_spi_com_init();
+#endif
 #ifdef RT_USING_AT
 #ifdef AT_USING_SERVER
     at_server_init();
 #endif // AT_USING_SERVER
 #endif // RT_USING_AT
+#endif // WIOTA_API_TEST
 #endif // WIOTA_APP_DEMO
 
 #ifdef WIZ_USING_W5500

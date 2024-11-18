@@ -15,7 +15,8 @@ MEMORY
     instrram    : ORIGIN = 0x00053000, LENGTH = 0x42000  /* 264K */
     datarom     : ORIGIN = 0x00200000, LENGTH = 0x62000  /* 392K */
     staticdata  : ORIGIN = 0x00262000, LENGTH = 0x2000   /*   8K */
-    dataram     : ORIGIN = 0x00300000, LENGTH = 0x3A000  /* d_sram ends at 256K 340000  0x3B490 */
+    dataram     : ORIGIN = 0x00300000, LENGTH = 0x36800  /* d_sram ends at 256K 340000  0x3B490 */
+    spiram      : ORIGIN = 0x00336800, LENGTH = 0x3800   /* 14K */
     ccetraceram : ORIGIN = 0x0033A000, LENGTH = 0x1490   /* 5k temp */
     rvtraceram  : ORIGIN = 0x0033B490, LENGTH = 0x1770   /* 6000 byte */
     stack       : ORIGIN = 0x0033CC00, LENGTH = 0x2000   /* stack and 32ec00 is reserved for trace buffer */
@@ -267,6 +268,60 @@ SECTIONS
         *(.rfinfo);
         *(.dumpdata);
     } > staticdata
+
+    .spiulheartinfo :
+    {
+        . = ALIGN(4);
+        *(.spiulheartinfo)
+    } > spiram
+
+    .spidlrbrstate :
+    {
+        . = ALIGN(4);
+        *(.spidlrbrstate)
+    } > spiram
+
+    .spidlrbwstate :
+    {
+        . = ALIGN(4);
+        *(.spidlrbwstate)
+    } > spiram
+
+    .spidlbuf :
+    {
+        . = ALIGN(4);
+        *(.spidlbuf)
+    } > spiram
+
+    .spidlbufstat :
+    {
+        . = ALIGN(4);
+        *(.spidlbufstat)
+    } > spiram
+
+    .spiulrbrstate :
+    {
+        . = ALIGN(4);
+        *(.spiulrbrstate)
+    } > spiram
+
+    .spiulrbwstate :
+    {
+        . = ALIGN(4);
+        *(.spiulrbwstate)
+    } > spiram
+
+    .spiulbuf :
+    {
+        . = ALIGN(4);
+        *(.spiulbuf)
+    } > spiram
+
+    .spiulbufstat :
+    {
+        . = ALIGN(4);
+        *(.spiulbufstat)
+    } > spiram
 
     .shbss :
     {
