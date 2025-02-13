@@ -42,6 +42,36 @@ extern "C"
 #define UC_CRC16_LEN 2
 #define UC_CRC8_LEN 1
 
+#define MIN_SPECTRUM_IDX 0
+#define MAX_SPECTRUM_IDX 7
+#define MIN_BANDWIDTH 1
+#define MAX_BANDWIDTH 1
+#define MIN_LPM_NLEN 1
+#define MAX_LPM_NLEN 4
+#define MIN_LPM_UTIMES 1
+#define MAX_LPM_UTIMES 3
+#define MIN_THRESHOLD 3
+#define MAX_THRESHOLD 15
+#define MIN_SEND_TIME 20
+#define MAX_SEND_TIME 44000
+
+typedef enum sym_len
+{
+    SYMBOL_LENGTH_128 = 0,
+    SYMBOL_LENGTH_256 = 1,
+    SYMBOL_LENGTH_512 = 2,
+    SYMBOL_LENGTH_1024 = 3,
+} symbol_length_e;
+
+
+typedef enum group_num
+{
+    UL_GROUP_NUM_1 = 0,
+    UL_GROUP_NUM_2 = 1,
+    UL_GROUP_NUM_4 = 2,
+    UL_GROUP_NUM_8 = 3,
+} ul_group_num_e;
+
 #define uc_container_of(ptr, type, member) \
     (type *)((char *)(ptr) - ((unsigned long)(&((type *)NULL)->member)))
 
@@ -61,6 +91,7 @@ typedef enum
 {
     UC_LOG_UART = 0,
     UC_LOG_SPI = 1,
+    UC_LOG_DEBUG = 2,
 } uc_log_type_e;
 
 typedef enum
@@ -439,7 +470,7 @@ void uc_wiota_set_state(uc_wiota_run_state_e state);
 
 unsigned char uc_wiota_get_state(void);
 
-void uc_wiota_read_value_from_mem(unsigned int type, unsigned int read_addr, unsigned int read_len, unsigned char *out_buf);
+int uc_wiota_read_value_from_mem(unsigned int type, unsigned int read_addr, unsigned int read_len, unsigned char *out_buf);
 
 //void uc_wiota_write_value_to_reg(unsigned int value, unsigned int addr);
 

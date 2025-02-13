@@ -24,6 +24,7 @@ enum factory_command_type
     FACTORY_DA = 4,
     FACTORY_UART1 = 5,
     FACTORY_PWM = 6,
+    FACTORY_GPS = 7,
 };
 
 #define DAC_DEV_NAME "dac"
@@ -38,6 +39,7 @@ extern signed int factory_test_handle_loop_msg(unsigned char mcs, unsigned int p
 extern void factory_test_set_save_loop_id_flag(unsigned char isSave);
 extern unsigned char factory_test_get_loop_is_rach(void);
 extern unsigned char *factory_test_gen_rand_data(unsigned short data_len);
+extern int factory_gps_test(int cmd, int mode);
 
 #ifdef RT_USING_I2C
 static rt_err_t write_reg(struct rt_i2c_bus_device *bus, rt_uint8_t reg, rt_uint8_t *data)
@@ -230,7 +232,10 @@ static at_result_t at_factory_setup(const char *args)
     args = parse((char *)(++args), "d,d,d", &type, &data, &data1);
     if (!args)
     {
-        return AT_RESULT_PARSE_FAILE;
+        if (type != FACTORY_WIOTA || data != 6)
+        {
+            return AT_RESULT_PARSE_FAILE;
+        }
     }
 
     if (type == FACTORY_WIOTA && data == 6)
@@ -317,6 +322,12 @@ static at_result_t at_factory_setup(const char *args)
         break;
     }
 #endif
+    case FACTORY_GPS:
+        if (0 != factory_gps_test(FACTORY_GPS, data))
+        {
+            return AT_RESULT_FAILE;
+        }
+        break;
     default:
         return AT_RESULT_CMD_ERR;
     }

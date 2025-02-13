@@ -61,7 +61,7 @@ void boot_set_mode(unsigned int modem);
 
 void boot_get_version(char *version);
 
-void boot_set_file_size(unsigned int len);
+int boot_set_file_size(unsigned int len);
 unsigned int boot_get_file_size(void);
 
 void boot_set_select_flag(unsigned char flag);

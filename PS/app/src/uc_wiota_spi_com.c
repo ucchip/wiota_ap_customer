@@ -1127,7 +1127,7 @@ static void uc_wiota_handle_exec_msg(unsigned char *sub_data)
         break;
 
     case WIOTA_PAGING_TX_START:
-        uc_wiota_paging_tx_start();
+        uc_wiota_paging_tx_frame_start();
         break;
 
     case WIOTA_MASTER_READY:

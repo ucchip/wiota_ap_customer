@@ -80,11 +80,14 @@ static at_result_t at_uboot_config_set(const char *args)
         break;
 
     case UBOOT_FILE_SIZE_SET:
-        boot_set_file_size(value);
+        if (0 != boot_set_file_size(value))
+        {
+            return AT_RESULT_CMD_ERR;
+        }
         break;
 
     default:
-        break;
+        return AT_RESULT_CMD_ERR;
     }
 
     return AT_RESULT_OK;
