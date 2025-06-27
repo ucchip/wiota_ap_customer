@@ -59,6 +59,8 @@ void boot_flash_erase_8288(uint32_t nEraseSize);
 bool boot_flash_write_8288(int nAddrBegin,const uint8_t *pData, int nWriteLen);
 bool boot_need_reflash_8288(void);
 bool boot_reflash_8288(void);
+void boot_ap8288_reboot(void);
+
 //void boot_spim_read(void *pOut, int nOutLen, uint8_t nCmd, int nAddr, int nAddrLen);
 //void boot_spim_write(uint8_t nCmd, int nAddr, int nAddrLen, const void *pData, int nDataLen);
 

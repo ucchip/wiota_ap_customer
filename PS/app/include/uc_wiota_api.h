@@ -54,6 +54,7 @@ extern "C"
 #define MAX_THRESHOLD 15
 #define MIN_SEND_TIME 20
 #define MAX_SEND_TIME 44000
+#define MAX_ACTIVE_IOTE_NUM 144
 
 typedef enum sym_len
 {
@@ -63,7 +64,6 @@ typedef enum sym_len
     SYMBOL_LENGTH_1024 = 3,
 } symbol_length_e;
 
-
 typedef enum group_num
 {
     UL_GROUP_NUM_1 = 0,
@@ -71,6 +71,13 @@ typedef enum group_num
     UL_GROUP_NUM_4 = 2,
     UL_GROUP_NUM_8 = 3,
 } ul_group_num_e;
+
+typedef enum dlul_ratio
+{
+    RATIO_ONE_TO_ONE = 0,
+    RATIO_ONE_TO_TWO = 1,
+    RATIO_ONE_TO_FOUR = 2,
+} dlul_ratio_e;
 
 #define uc_container_of(ptr, type, member) \
     (type *)((char *)(ptr) - ((unsigned long)(&((type *)NULL)->member)))
@@ -92,6 +99,7 @@ typedef enum
     UC_LOG_UART = 0,
     UC_LOG_SPI = 1,
     UC_LOG_DEBUG = 2,
+    UC_LOG_TS = 3,
 } uc_log_type_e;
 
 typedef enum
@@ -198,7 +206,7 @@ typedef struct
     unsigned char id_len;        //id len
     unsigned char pp;            //0: 1, 1: 2, 2: 4, 3: not use
     unsigned char symbol_length; //128,256,512,1024
-    unsigned char dlul_ratio;    //0 1:1,  1 1:2
+    unsigned char dlul_ratio;    //0 1:1,  1 1:2, 2 1:4
     unsigned char bt_value;      //bt from rf 1: 0.3, 0: 1.2
     unsigned char group_number;  //frame ul group number: 1,2,4,8
     unsigned char spectrum_idx;  //default value:3(470M-510M)
@@ -593,6 +601,14 @@ int uc_wiota_set_aagc_idx(unsigned char aagc_idx);
 int uc_wiota_set_bnack_func(int is_open);
 
 int uc_wiota_get_bnack_func(void);
+
+int uc_wiota_set_dl_rf_mode(unsigned char mode);// default 0, 0 all with open, 1 only actived when there is a dl task
+
+unsigned char uc_wiota_get_dl_rf_mode(void);
+
+int uc_wiota_set_ota_last_subframe_idle(unsigned char is_idle);
+
+unsigned char uc_wiota_get_ota_last_subframe_idle(void);
 
 unsigned int uc_wiota_crc32_calc(const unsigned char *data, unsigned int data_len);
 

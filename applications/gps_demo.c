@@ -160,41 +160,41 @@ void print_lla_info(float longitude, float latitude, float altitude)
  *
  * @param time_ast GNSS授时信息
  */
-static void gps_pvt_callback(IN const time_ast_t time_ast)
+static void gps_pvt_callback(IN const time_ast_t *time_ast)
 {
     // 当前世界时间
     unsigned int time_sec = 0;
     unsigned int time_usec = 0;
-    int fdat = (int)(time_ast.decMs.fDat * 1000);  // us, maybe lost 1us
-    int fsec = (int)(time_ast.rtc.fSec * 1000000); // s -> us
-    unsigned int gps_delay_us = get_diff_gps_dfe(time_ast.dfeIrcnt, time_ast.dfecnt) * 1000 / 16384;
+    int fdat = (int)(time_ast->decMs.fDat * 1000);  // us, maybe lost 1us
+    int fsec = (int)(time_ast->rtc.fSec * 1000000); // s -> us
+    unsigned int gps_delay_us = get_diff_gps_dfe(time_ast->dfeIrcnt, time_ast->dfecnt) * 1000 / 16384;
 
     time_t time_stamp = 0;
     struct tm tm = {0};
 
-    tm.tm_year = time_ast.rtc.sYear - 1900;
-    tm.tm_mon = time_ast.rtc.ucMon - 1;
-    tm.tm_mday = time_ast.rtc.ucDay;
-    tm.tm_hour = time_ast.rtc.ucHour;
-    tm.tm_min = time_ast.rtc.ucMin;
-    tm.tm_sec = (int)time_ast.rtc.fSec;
+    tm.tm_year = time_ast->rtc.sYear - 1900;
+    tm.tm_mon = time_ast->rtc.ucMon - 1;
+    tm.tm_mday = time_ast->rtc.ucDay;
+    tm.tm_hour = time_ast->rtc.ucHour;
+    tm.tm_min = time_ast->rtc.ucMin;
+    tm.tm_sec = (int)time_ast->rtc.fSec;
     time_stamp = mktime(&tm);
 
     // 转化为时间戳
     time_sec = time_stamp;
-    time_usec = (fsec - (int)time_ast.rtc.fSec * 1000000) + fdat + gps_delay_us;
+    time_usec = (fsec - (int)time_ast->rtc.fSec * 1000000) + fdat + gps_delay_us;
     g_cur_time.time_s = time_sec;
     g_cur_time.time_us = time_usec;
 
     // 当前位置，三维坐标
-    g_coor_xyz.pos_x = time_ast.pxyz.tX.fDat + time_ast.pxyz.tX.fErr;
-    g_coor_xyz.pos_y = time_ast.pxyz.tY.fDat + time_ast.pxyz.tY.fErr;
-    g_coor_xyz.pos_z = time_ast.pxyz.tZ.fDat + time_ast.pxyz.tZ.fErr;
+    g_coor_xyz.pos_x = time_ast->pxyz.tX.fDat + time_ast->pxyz.tX.fErr;
+    g_coor_xyz.pos_y = time_ast->pxyz.tY.fDat + time_ast->pxyz.tY.fErr;
+    g_coor_xyz.pos_z = time_ast->pxyz.tZ.fDat + time_ast->pxyz.tZ.fErr;
 
     // 当前位置，经纬度海拔
-    g_coor_lla.longitude = time_ast.plla.tLon.fDat + time_ast.plla.tLon.fErr;
-    g_coor_lla.latitude = time_ast.plla.tLat.fDat + time_ast.plla.tLat.fErr;
-    g_coor_lla.altitude = time_ast.plla.fAlt;
+    g_coor_lla.longitude = time_ast->plla.tLon.fDat + time_ast->plla.tLon.fErr;
+    g_coor_lla.latitude = time_ast->plla.tLat.fDat + time_ast->plla.tLat.fErr;
+    g_coor_lla.altitude = time_ast->plla.fAlt;
 
     if (g_pos_sem)
     {

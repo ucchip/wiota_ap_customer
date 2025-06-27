@@ -106,6 +106,8 @@ typedef enum
     WIOTA_PAGING_RX_SET,
     WIOTA_AAGC_IDX_SET = 25,
     WIOTA_BNACK_FUNC_SET,
+    WIOTA_OTA_LAST_SUBF_IDLE_SET,
+    WIOTA_DL_RF_MODE_SET,
 } uc_wiota_setup_cmd_e;
 
 typedef enum
@@ -126,7 +128,9 @@ typedef enum
     WIOTA_FRAME_LEN_GET,
     WIOTA_FRAME_NUM_GET,
     WIOTA_TS_FUNC_GET = 15,
-    WIOTA_PPS_GET
+    WIOTA_PPS_GET,
+    WIOTA_OTA_LAST_SUBF_IDLE_GET,
+    WIOTA_DL_RF_MODE_GET,
 } uc_wiota_query_cmd_e;
 
 typedef enum
@@ -150,6 +154,7 @@ typedef enum
     WIOTA_MC_ID_DEL,
     WIOTA_VERSION_GET,
     WIOTA_ADD_DL_SUBF_DATA,
+    WIOTA_MODULEID_GET,
 } uc_other_cmd_e;
 
 typedef enum
@@ -371,6 +376,12 @@ typedef struct
     cmd_header_t cmd_header;
     unsigned int frame_num;
 } fn_refresh_t;
+
+typedef struct
+{
+    cmd_header_t cmd_header;
+    unsigned char moduleid[20];
+} moduleid_info_t;
 
 struct cmd_send_para
 {
@@ -1127,7 +1138,7 @@ static void uc_wiota_handle_exec_msg(unsigned char *sub_data)
         break;
 
     case WIOTA_PAGING_TX_START:
-        uc_wiota_paging_tx_frame_start();
+        uc_wiota_paging_tx_start();
         break;
 
     case WIOTA_MASTER_READY:
@@ -1338,6 +1349,14 @@ static void uc_wiota_handle_setup_msg(unsigned char *sub_data)
         uc_wiota_set_bnack_func(in_value[0]);
         break;
 
+    case WIOTA_OTA_LAST_SUBF_IDLE_SET:
+        uc_wiota_set_ota_last_subframe_idle(in_value[0]);
+        break;
+
+    case WIOTA_DL_RF_MODE_SET:
+        uc_wiota_set_dl_rf_mode(in_value[0]);
+        break;
+
     default:
         break;
     }
@@ -1468,6 +1487,14 @@ static void uc_wiota_handle_query_msg(unsigned char *sub_data)
 
     case WIOTA_PPS_GET:
         out_value[0] = uc_wiota_get_sync_assistant_pps();
+        break;
+
+    case WIOTA_OTA_LAST_SUBF_IDLE_GET:
+        out_value[0] = uc_wiota_get_ota_last_subframe_idle();
+        break;
+
+    case WIOTA_DL_RF_MODE_GET:
+        out_value[0] = uc_wiota_get_dl_rf_mode();
         break;
 
     default:
@@ -1778,6 +1805,31 @@ static void uc_wiota_handle_other_msg(unsigned char *sub_data, unsigned char cmd
         subf_data_ex_t *subf_data = (subf_data_ex_t *)sub_data;
 
         uc_wiota_add_dl_subframe_data(subf_data->data, subf_data->data_len, subf_data->fn);
+        break;
+    }
+
+    case WIOTA_MODULEID_GET:
+    {
+        moduleid_info_t mod_info = {0};
+        struct cmd_send_para cmd_info = {0};
+
+        mod_info.cmd_header.result = WIOTA_CMD_EXEC_SUC;
+        mod_info.cmd_header.cmd_type = CMD_TYPE_OTHER;
+        mod_info.cmd_header.cmd = cmd;
+
+        uc_wiota_get_module_id(mod_info.moduleid);
+
+        // cmd
+        cmd_info.cmd_header = &mod_info.cmd_header,
+        cmd_info.para_num = 1;
+        // para 1
+        cmd_info.para_ptr[0] = ((unsigned char *)&mod_info) + sizeof(cmd_header_t);
+        cmd_info.para_len[0] = sizeof(moduleid_info_t) - sizeof(cmd_header_t);
+
+        if (uc_wiota_send_data_to_gateway(&cmd_info) != 0)
+        {
+            rt_kprintf("modid send fail\n");
+        }
         break;
     }
 

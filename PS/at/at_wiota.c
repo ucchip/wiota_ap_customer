@@ -44,6 +44,8 @@ enum at_wiota_log
     AT_LOG_SPI_OPEN,
     AT_LOG_ISR_CLOSE,
     AT_LOG_ISR_OPEN,
+    AT_LOG_TS_CLOSE,
+    AT_LOG_TS_OPEN,
 };
 
 enum at_test_communication_command
@@ -1609,6 +1611,11 @@ static at_result_t at_wiotalog_setup(const char *args)
         result = uc_wiota_log_switch(UC_LOG_DEBUG, mode - AT_LOG_ISR_CLOSE);
         break;
 
+    case AT_LOG_TS_CLOSE:
+    case AT_LOG_TS_OPEN:
+        result = uc_wiota_log_switch(UC_LOG_TS, mode - AT_LOG_TS_CLOSE);
+        break;
+
     default:
         return AT_RESULT_FAILE;
     }
@@ -2315,6 +2322,57 @@ static at_result_t at_wiota_bnack_setup(const char *args)
     uc_wiota_set_bnack_func(is_open);
 
     return AT_RESULT_OK;
+}
+
+static at_result_t at_wiota_dl_rf_mode_query(void)
+{
+    at_server_printfln("+WIOTADLRF:%d", uc_wiota_get_dl_rf_mode());
+
+    return AT_RESULT_OK;
+}
+
+static at_result_t at_wiota_dl_rf_mode_setup(const char *args)
+{
+    unsigned int mode = 0;
+
+    args = parse((char *)(++args), "d", &mode);
+    if (!args)
+    {
+        return AT_RESULT_PARSE_FAILE;
+    }
+
+    if (0 == uc_wiota_set_dl_rf_mode(mode))
+    {
+        return AT_RESULT_OK;
+    }
+
+    return AT_RESULT_FAILE;
+}
+
+
+static at_result_t at_wiota_ota_last_subf_idle_query(void)
+{
+    at_server_printfln("+WIOTADLRF:%d", uc_wiota_get_ota_last_subframe_idle());
+
+    return AT_RESULT_OK;
+}
+
+static at_result_t at_wiota_ota_last_subf_idle_setup(const char *args)
+{
+    unsigned int is_idle = 0;
+
+    args = parse((char *)(++args), "d", &is_idle);
+    if (!args)
+    {
+        return AT_RESULT_PARSE_FAILE;
+    }
+
+    if (0 == uc_wiota_set_ota_last_subframe_idle(is_idle))
+    {
+        return AT_RESULT_OK;
+    }
+
+    return AT_RESULT_FAILE;
 }
 
 #ifdef WIOTA_AP_STATE_INFO
@@ -3594,7 +3652,7 @@ AT_CMD_EXPORT("AT+WIOTAULSUBF", "=<subf_mode>,<user_id>,<rach_delay>", RT_NULL, 
 AT_CMD_EXPORT("AT+WIOTADLSUBF", "=<data_len>,<fn>", RT_NULL, RT_NULL, at_send_dl_subf_data_setup, RT_NULL);
 AT_CMD_EXPORT("AT+WIOTASUBFTEST", "=<mode>", RT_NULL, RT_NULL, at_send_subf_mode_test_setup, RT_NULL);
 AT_CMD_EXPORT("AT+MEMINFO", RT_NULL, RT_NULL, at_mem_info_query, RT_NULL, RT_NULL);
-AT_CMD_EXPORT("AT+WIOTABL05", "=<is_open>", RT_NULL, RT_NULL, at_wiota_boost_level05_setup, RT_NULL);
+AT_CMD_EXPORT("AT+WIOTABLZF", "=<is_open>", RT_NULL, RT_NULL, at_wiota_boost_level05_setup, RT_NULL);
 AT_CMD_EXPORT("AT+WIOTARESEND", "=<times>", RT_NULL, at_wiota_resend_query, at_wiota_resend_setup, RT_NULL);
 AT_CMD_EXPORT("AT+WIOTAFN", RT_NULL, RT_NULL, RT_NULL, RT_NULL, at_wiota_fn_refresh_cb_exec);
 AT_CMD_EXPORT("AT+WIOTARSBYFN", "=<data_id>,<len>,<user_id>,<start_recv_fn>,<recv_fns>,<send_fns>", RT_NULL, RT_NULL, at_wiota_recv_send_sm_by_fn_setup, RT_NULL);
@@ -3604,6 +3662,8 @@ AT_CMD_EXPORT("AT+WIOTARAMPVALUE", "=<ramp_value>", RT_NULL, RT_NULL, at_wiota_r
 AT_CMD_EXPORT("AT+WIOTASETRF", "=<rf_ctrl_idx>", RT_NULL, RT_NULL, at_wiota_rf_setup, RT_NULL);
 AT_CMD_EXPORT("AT+WIOTASETAAGC", "=<aagc_idx>", RT_NULL, RT_NULL, at_wiota_aagc_idx_setup, RT_NULL);
 AT_CMD_EXPORT("AT+WIOTABNACK", "=<is_open>", RT_NULL, at_wiota_bnack_query, at_wiota_bnack_setup, RT_NULL);
+AT_CMD_EXPORT("AT+WIOTADLRF", "=<mode>", RT_NULL, at_wiota_dl_rf_mode_query, at_wiota_dl_rf_mode_setup, RT_NULL);
+AT_CMD_EXPORT("AT+WIOTASUBFIDLE", "=<is_idle>", RT_NULL, at_wiota_ota_last_subf_idle_query, at_wiota_ota_last_subf_idle_setup, RT_NULL);
 
 #ifdef WIOTA_BC_MODE_TEST
 AT_CMD_EXPORT("AT+WIOTABCMODE", "=<mode>", RT_NULL, RT_NULL, at_wiota_bcmode_setup, RT_NULL);

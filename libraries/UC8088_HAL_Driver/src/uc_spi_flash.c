@@ -246,7 +246,7 @@ __critical void FlashQRead(uint32_t nAddr, uint8_t *pData, uint16_t usLen)
 {
     spi_read_fifo(NULL, 0);
     WAIT_XIP_FREE;
-    REG_SPI_CMD = FLASH_CMD_FREAD << 24; // set cmd
+    REG_SPI_CMD = FLASH_CMD_READ << 24; // set cmd
     REG_SPI_ADDR = (nAddr << 8);
     REG_SPI_LEN = 0x1808 | (usLen << 19); // set cmd,addr and data len
     WAIT_XIP_FREE;

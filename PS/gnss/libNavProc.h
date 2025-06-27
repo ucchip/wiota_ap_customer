@@ -10,14 +10,22 @@
 #include "stdbool.h"
 #include "stdio.h"
 
+typedef signed char S08;
 typedef signed short S16;
-typedef unsigned short U16;
-typedef unsigned char U08;
-typedef float F32;
-typedef unsigned int U32;
 typedef signed int S32;
-typedef signed long S64;
-typedef bool BOOL;
+typedef signed long long int S64;
+
+typedef unsigned char U08;
+typedef unsigned short U16;
+typedef unsigned int U32;
+typedef unsigned long long int U64;
+
+typedef char C08;
+
+typedef U08 BOOL;
+
+typedef float F32;
+typedef double F64;
 
 #define FALSE 0
 #define TRUE 1
@@ -90,6 +98,7 @@ typedef struct
     F32 fGdop;
 } STU_USR_PVT, *PSTU_USR_PVT;
 
+#pragma pack(4)
 typedef struct
 {
     BOOL req;
@@ -97,6 +106,7 @@ typedef struct
     S16 leapsec;
     F32 clkbias;
     F32 precthre;
+    U32 fixok;
     U32 dfecnt;
     U32 dfeIrcnt;
     U32 rd0;
@@ -114,6 +124,7 @@ typedef struct
     U08 dferecn;
     BOOL lpval;
 } time_ast_t;
+#pragma pack()
 
 typedef struct
 {
@@ -121,10 +132,12 @@ typedef struct
     BOOL enFix;
     STU_COOR_XYZ pAt;
     STU_COOR_XYZ pFix;
+    U32 FixCnt;
+    U32 FLashCnt;
 } tast_8288_call_t;
 
 //typedef void (*CALL_BACK)(IN const PSTU_RTC pRtc, IN const PSTU_USR_PVT pPvt);
-typedef void (*CALL_BACK)(IN const time_ast_t pTime);
+typedef void (*CALL_BACK)(IN const time_ast_t *pTime);
 EXT_NAVPROC void GnssStart(IN const CALL_BACK GetPvt, IN U08 ucLnaEnablePin, IN BOOL bFlashOpt, IN const U08 *pAgnssData);
 EXT_NAVPROC void GnssStop();
 EXT_NAVPROC void TicIsr();
