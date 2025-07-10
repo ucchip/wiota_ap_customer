@@ -245,6 +245,7 @@ __critical void FlashReadSec(uint32_t nAddr, uint8_t *pData, uint16_t usLen)
 __critical void FlashQRead(uint32_t nAddr, uint8_t *pData, uint16_t usLen)
 {
     spi_read_fifo(NULL, 0);
+    REG_SPI_DUMMY = 0;
     WAIT_XIP_FREE;
     REG_SPI_CMD = FLASH_CMD_READ << 24; // set cmd
     REG_SPI_ADDR = (nAddr << 8);
