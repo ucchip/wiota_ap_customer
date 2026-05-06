@@ -34,13 +34,6 @@ enum factory_command_type
 #define PWM_DEV_NAME "pwm2"
 #define AT24C02_ADDR 0xA0
 
-extern signed int factory_test_handle_rs_msg(unsigned int subType, unsigned int data);
-extern signed int factory_test_handle_loop_msg(unsigned char mcs, unsigned int packetNum, unsigned char dl_mode);
-extern void factory_test_set_save_loop_id_flag(unsigned char isSave);
-extern unsigned char factory_test_get_loop_is_rach(void);
-extern unsigned char *factory_test_gen_rand_data(unsigned short data_len);
-extern int factory_gps_test(int cmd, int mode);
-
 #ifdef RT_USING_I2C
 static rt_err_t write_reg(struct rt_i2c_bus_device *bus, rt_uint8_t reg, rt_uint8_t *data)
 {

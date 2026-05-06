@@ -14,7 +14,11 @@
 
 #ifdef RT_USING_AT
 #include "at.h"
+#ifdef _AT_SIMPLIFIED_
+#include "at_simplified.h"
 #endif
+#endif
+
 #ifdef WIOTA_API_TEST
 #include "test_wiota_api.h"
 #endif
@@ -161,6 +165,9 @@ int main(void)
 #ifdef RT_USING_AT
 #ifdef AT_USING_SERVER
     at_server_init();
+#ifdef _AT_SIMPLIFIED_
+    at_simplified_init();
+#endif // _AT_SIMPLIFIED_
 #endif // AT_USING_SERVER
 #endif // RT_USING_AT
 #endif // WIOTA_API_TEST
@@ -183,9 +190,14 @@ int main(void)
     wiota_ap_data_recv_and_send_demo();
 #endif
 
-    // while (1)
-    // {
-    //     resource_manager(RESOURCE_DETAIL_MODE);
-    //     rt_thread_mdelay(10000);
-    // }
+    while (1)
+    {
+#ifdef _AT_SIMPLIFIED_
+        at_simplified_running();
+#else
+        rt_thread_mdelay(2000);
+#endif
+        // resource_manager(RESOURCE_DETAIL_MODE);
+        // rt_thread_mdelay(10000);
+    }
 }

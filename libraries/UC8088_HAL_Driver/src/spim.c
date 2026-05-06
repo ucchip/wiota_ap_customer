@@ -12,17 +12,6 @@
 #include <sectdefs.h>
 #include <stdint.h>
 
-#if 0
-void spim_setup_slave() {
-    gpio_set_pin_function(PIN_SSPIM_SIO0, FUNC_SPI);
-    gpio_set_pin_function(PIN_SSPIM_SIO1, FUNC_SPI);
-    gpio_set_pin_function(PIN_SSPIM_SIO2, FUNC_SPI);
-    gpio_set_pin_function(PIN_SSPIM_SIO3, FUNC_SPI);
-    gpio_set_pin_function(PIN_SSPIM_CSN, FUNC_SPI);
-}
-
-#endif
-
 void spim_init(SPI_TypeDef *SPIx, SPIM_CFG_Type *SPI_ConfigStruc)
 {
     CHECK_PARAM(PARAM_SPIM(SPIx));
@@ -32,30 +21,16 @@ void spim_init(SPI_TypeDef *SPIx, SPIM_CFG_Type *SPI_ConfigStruc)
 
 void spim_setup_master(int numcs)
 {
-    // uint32_t * pad_mux = (uint32_t *)0x1a107000;
-    // uint32_t * pad_cfg = (uint32_t *)0x1a107020;
-    // // (*pad_mux) |= 0x3F00; //pad 8-13
-    // (*pad_mux) |= 0x2700; //pad 8-13,no 11 12
-
-    //    pad_cfg += 2; //8-11;
-    //    *pad_cfg =0x01010100; //pin 9-11 pull up
-    //    pad_cfg += 1;
-    //    *pad_cfg = 0x01; //12-13 pull up
-
-    gpio_set_pin_function(8, 1);
-    gpio_set_pin_function(9, 1);
-    gpio_set_pin_function(10, 1);
+    gpio_set_pin_function(GPIO_PIN_8, GPIO_FUNC_1);
+    gpio_set_pin_function(GPIO_PIN_9, GPIO_FUNC_1);
+    gpio_set_pin_function(GPIO_PIN_10, GPIO_FUNC_1);
     if (numcs == 0)
-        gpio_set_pin_function(13, 1);
+        gpio_set_pin_function(GPIO_PIN_13, GPIO_FUNC_1);
 
     uint32_t *pad_cfg = (uint32_t *)0x1a107020;
     (*pad_cfg) |= (1 << 8);
     (*pad_cfg) |= (1 << 9);
     (*pad_cfg) |= (1 << 10);
-
-    // rt_kprintf("gpio 8:%d\n",gpio_get_pin_function(8));
-    // rt_kprintf("gpio 9:%d\n",gpio_get_pin_function(9));
-    // rt_kprintf("gpio 12:%d\n",gpio_get_pin_function(12));
 }
 
 void spim_send_data_noaddr(int cmd, char *data, int datalen, int useQpi);

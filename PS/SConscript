@@ -6,10 +6,14 @@ src = []
 path = []
 
 if GetDepend(['RT_USING_AT', 'AT_USING_SERVER']):
-    src += ['at/at_wiota.c', 'at/at_boot.c']
-
-    if GetDepend(['UC8088_FACTORY_TEST']):
-        src += ['at/at_factory.c']
+    path += ['at/']
+    if GetDepend('_AT_SIMPLIFIED_'):
+        path += ['at_simplified/']
+        src += ['at_simplified/at_simplified.c', 'at_simplified/fastlz.c']
+    else:
+        src += ['at/at_wiota.c', 'at/at_boot.c']
+        if GetDepend(['UC8088_FACTORY_TEST']):
+            src += ['at/at_factory.c']
 
 if GetDepend(['UC_SPI_COM_SUPPORT']):
     src += ['app/src/uc_wiota_spi_com.c']

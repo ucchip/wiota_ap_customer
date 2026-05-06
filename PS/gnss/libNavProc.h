@@ -126,6 +126,15 @@ typedef struct
 } time_ast_t;
 #pragma pack()
 
+typedef enum
+{
+    FIXNULL = 0,
+    FIXAT = 1,
+    FIXFLASH = 2,
+    FIXQUICK = 3,
+    FIXNORMAL = 4
+} fix_type_e;
+
 typedef struct
 {
     BOOL enAt;
@@ -138,8 +147,11 @@ typedef struct
 
 //typedef void (*CALL_BACK)(IN const PSTU_RTC pRtc, IN const PSTU_USR_PVT pPvt);
 typedef void (*CALL_BACK)(IN const time_ast_t *pTime);
-EXT_NAVPROC void GnssStart(IN const CALL_BACK GetPvt, IN U08 ucLnaEnablePin, IN BOOL bFlashOpt, IN const U08 *pAgnssData);
+typedef void (*gnss_rst_callback)(BOOL rst);
+EXT_NAVPROC U08 GnssStart(IN const CALL_BACK GetPvt, IN U08 ucLnaEnablePin, IN BOOL bFlashOpt, IN const U08 *pAgnssData);
 EXT_NAVPROC void GnssStop();
 EXT_NAVPROC void TicIsr();
 EXT_NAVPROC void get_fix_pos(tast_8288_call_t *tcall);
+EXT_NAVPROC void gnss_register_rst_callback(gnss_rst_callback callback);
+
 #endif

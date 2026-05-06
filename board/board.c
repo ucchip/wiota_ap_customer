@@ -9,6 +9,7 @@
 
 #include <uc_utils.h>
 #include <uc_event.h>
+#include <uc_watchdog.h>
 #include "uc_timer.h"
 #include "uc_spi_flash.h"
 
@@ -196,6 +197,17 @@ void uc8088_chip_reset(void)
     volatile uint32_t *pmu_ctrl = (uint32_t *)0x1a104200;
 
     *pmu_ctrl |= 1 << 14;
+}
+
+void wdt_reset(void)
+{
+    rt_hw_interrupt_disable();
+    WDG_Cmd(UC_WATCHDOG, DISABLE);
+    WDG_SetReload(UC_WATCHDOG, 0xffffffff - 1);
+    WDG_Cmd(UC_WATCHDOG, ENABLE);
+    WDG_FEED(UC_WATCHDOG);
+    while (1)
+        ;
 }
 
 #ifdef RT_USING_FINSH

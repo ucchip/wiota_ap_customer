@@ -36,4 +36,8 @@ config ZCRD_CUSTOMER
     bool "default close(ZCRD_CUSTOMER)"
     default n
 
+config _AT_SIMPLIFIED_
+    bool "simplified at cmd, default close(_AT_SIMPLIFIED_)"
+    default n
+
 endmenu

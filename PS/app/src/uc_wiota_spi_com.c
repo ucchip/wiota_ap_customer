@@ -108,6 +108,10 @@ typedef enum
     WIOTA_BNACK_FUNC_SET,
     WIOTA_OTA_LAST_SUBF_IDLE_SET,
     WIOTA_DL_RF_MODE_SET,
+    WIOTA_PAGING_RX_ENTER,
+    WIOTA_AFH_FUNC_SET = 30,
+    WIOTA_PWM_CTRL_PA_SET,
+    WIOTA_RAMP_POWER_SET,
 } uc_wiota_setup_cmd_e;
 
 typedef enum
@@ -131,6 +135,8 @@ typedef enum
     WIOTA_PPS_GET,
     WIOTA_OTA_LAST_SUBF_IDLE_GET,
     WIOTA_DL_RF_MODE_GET,
+    WIOTA_AFH_FUNC_GET,
+    WIOTA_8288_MEM_GET,
 } uc_wiota_query_cmd_e;
 
 typedef enum
@@ -152,9 +158,11 @@ typedef enum
     WIOTA_BL_GET,
     WIOTA_MC_ID_ADD,
     WIOTA_MC_ID_DEL,
-    WIOTA_VERSION_GET,
+    WIOTA_VERSION_GET = 5,
     WIOTA_ADD_DL_SUBF_DATA,
     WIOTA_MODULEID_GET,
+    WIOTA_AFH_MAP_SET,
+    WIOTA_RAMP_POWER_CFG_SET,
 } uc_other_cmd_e;
 
 typedef enum
@@ -165,6 +173,7 @@ typedef enum
     WIOTA_DROP,
     WIOTA_TS_STATE,
     WIOTA_FN_REFRESH,
+    WIOTA_CCE_ABNORMAL,
     // WIOTA_MP_FULL,
     // WIOTA_MP_EMPTY,
 } uc_wiota_recv_cmd_e;
@@ -188,11 +197,11 @@ typedef enum
 #pragma pack(4)
 typedef struct
 {
-    unsigned char cmd_type : 3; // max 5
-    unsigned char cmd : 5;      // max 13
-    unsigned char channel : 3;  // max 7
-    unsigned char result : 1;
-    unsigned char reserved : 4;
+    unsigned short cmd_type : 3; // max 5
+    unsigned short cmd : 6;      // max 33
+    unsigned short channel : 3;  // max 7
+    unsigned short result : 1;
+    unsigned short reserved : 3;
     unsigned short data_len;
     unsigned int header_crc;
 } cmd_header_t;
@@ -205,7 +214,7 @@ typedef struct
 typedef struct
 {
     cmd_header_t cmd_header;
-    unsigned int in_value[11];
+    unsigned int in_value[14];
 } setup_cmd_info_t;
 
 typedef struct
@@ -222,7 +231,7 @@ typedef struct
 typedef struct
 {
     cmd_header_t cmd_header;
-    unsigned int out_value[11];
+    unsigned int out_value[14];
 } query_result_info_t;
 
 typedef struct
@@ -382,6 +391,26 @@ typedef struct
     cmd_header_t cmd_header;
     unsigned char moduleid[20];
 } moduleid_info_t;
+
+typedef struct
+{
+    cmd_header_t cmd_header;
+    unsigned char afh_map[26];
+} afh_map_t;
+
+typedef struct
+{
+    cmd_header_t cmd_header;
+    ramp_power_cfg_t ramp_power_cfg[34];
+    int ramp_size;
+} ramp_power_cfg_ex_t;
+
+typedef struct
+{
+    cmd_header_t cmd_header;
+    unsigned char dfe_err_cnt;
+    unsigned char rf_err_cnt;
+} cce_abnormal_t;
 
 struct cmd_send_para
 {
@@ -1050,10 +1079,10 @@ static void uc_wiota_fn_refresh(unsigned int frame_num)
         uc_wiota_send_heart_msg(frame_num);
     }
 
-    if (frame_num % 30 == 0)
-    {
-        uc_wiota_print_data_cnt();
-    }
+    // if (frame_num % 30 == 0)
+    // {
+    //     uc_wiota_print_data_cnt();
+    // }
 
     if (g_report_fn_to_gw)
     {
@@ -1079,11 +1108,52 @@ static void uc_wiota_fn_refresh(unsigned int frame_num)
     }
 }
 
+static void uc_wiota_cce_abnormal_callback(unsigned char dfe_err_cnt, unsigned char rf_err_cnt)
+{
+    cce_abnormal_t cce_abnormal = {0};
+    struct cmd_send_para cmd_info = {0};
+
+    cce_abnormal.cmd_header.cmd_type = CMD_TYPE_RECV;
+    cce_abnormal.cmd_header.cmd = WIOTA_CCE_ABNORMAL;
+    cce_abnormal.cmd_header.result = WIOTA_CMD_EXEC_SUC;
+    cce_abnormal.dfe_err_cnt = dfe_err_cnt;
+    cce_abnormal.rf_err_cnt = rf_err_cnt;
+
+    // cmd
+    cmd_info.cmd_header = &cce_abnormal.cmd_header,
+    cmd_info.para_num = 1;
+    // para 1
+    cmd_info.para_ptr[0] = ((unsigned char *)&cce_abnormal) + sizeof(cmd_header_t);
+    cmd_info.para_len[0] = sizeof(cce_abnormal_t) - sizeof(cmd_header_t);
+
+    if (uc_wiota_send_data_to_gateway(&cmd_info) != 0)
+    {
+        rt_kprintf("cce abnormal send fail\n");
+    }
+}
+
+static void wiota_cmd_exec_result(unsigned char cmd_type, unsigned char cmd)
+{
+    exec_result_info_t result = {0};
+    struct cmd_send_para cmd_info = {0};
+
+    result.cmd_header.result = WIOTA_CMD_EXEC_SUC;
+    result.cmd_header.cmd_type = cmd_type;
+    result.cmd_header.cmd = cmd;
+
+    // cmd res
+    cmd_info.cmd_header = &result.cmd_header,
+    cmd_info.para_num = 0;
+
+    if (uc_wiota_send_data_to_gateway(&cmd_info) != 0)
+    {
+        rt_kprintf("cmd_type %d, cmd %d send fail\n", cmd_type, cmd);
+    }
+}
+
 static void uc_wiota_handle_exec_msg(unsigned char *sub_data)
 {
     exec_cmd_info_t *exec_cmd = (exec_cmd_info_t *)sub_data;
-    exec_result_info_t result = {0};
-    struct cmd_send_para cmd_info = {0};
 
     switch (exec_cmd->cmd_header.cmd)
     {
@@ -1106,6 +1176,7 @@ static void uc_wiota_handle_exec_msg(unsigned char *sub_data)
         uc_wiota_register_recv_data_detail_callback(uc_wiota_recv_detail_callback);
         uc_wiota_register_sync_paging_callback(uc_wiota_paging_ctrl_callback);
         uc_wiota_register_fn_refresh_callback(uc_wiota_fn_refresh);
+        uc_wiota_register_cce_abnormal_callback(uc_wiota_cce_abnormal_callback);
         break;
 
     case WIOTA_EXIT:
@@ -1113,18 +1184,7 @@ static void uc_wiota_handle_exec_msg(unsigned char *sub_data)
         break;
 
     case WIOTA_REBOOT:
-        result.cmd_header.result = WIOTA_CMD_EXEC_SUC;
-        result.cmd_header.cmd_type = exec_cmd->cmd_header.cmd_type;
-        result.cmd_header.cmd = exec_cmd->cmd_header.cmd;
-
-        // cmd res
-        cmd_info.cmd_header = &result.cmd_header,
-        cmd_info.para_num = 0;
-
-        if (uc_wiota_send_data_to_gateway(&cmd_info) != 0)
-        {
-            rt_kprintf("reboot send fail\n");
-        }
+        wiota_cmd_exec_result(exec_cmd->cmd_header.cmd_type, exec_cmd->cmd_header.cmd);
         rt_thread_mdelay(1000);
         uc8088_chip_reset();
         break;
@@ -1163,25 +1223,12 @@ static void uc_wiota_handle_exec_msg(unsigned char *sub_data)
         break;
     }
 
-    result.cmd_header.result = WIOTA_CMD_EXEC_SUC;
-    result.cmd_header.cmd_type = exec_cmd->cmd_header.cmd_type;
-    result.cmd_header.cmd = exec_cmd->cmd_header.cmd;
-
-    // cmd
-    cmd_info.cmd_header = &result.cmd_header,
-    cmd_info.para_num = 0;
-
-    if (uc_wiota_send_data_to_gateway(&cmd_info) != 0)
-    {
-        rt_kprintf("exec res send fail\n");
-    }
+    wiota_cmd_exec_result(exec_cmd->cmd_header.cmd_type, exec_cmd->cmd_header.cmd);
 }
 
 static void uc_wiota_handle_setup_msg(unsigned char *sub_data)
 {
     setup_cmd_info_t *setup_cmd = (setup_cmd_info_t *)sub_data;
-    exec_result_info_t result = {0};
-    struct cmd_send_para cmd_info = {0};
     unsigned int *in_value = setup_cmd->in_value;
 
     // for (int i = 0; i < 11; i++)
@@ -1197,6 +1244,7 @@ static void uc_wiota_handle_setup_msg(unsigned char *sub_data)
     {
         sub_system_config_t config = {0};
 
+        uc_wiota_get_system_config(&config);
         config.ap_tx_power = in_value[0];
         config.id_len = in_value[1];
         config.pp = in_value[2];
@@ -1208,6 +1256,7 @@ static void uc_wiota_handle_setup_msg(unsigned char *sub_data)
         config.old_subsys_v = in_value[8];
         config.bitscb = in_value[9];
         config.subsystem_id = in_value[10];
+        config.freq_idx = in_value[11];
         uc_wiota_set_system_config(&config);
         break;
     }
@@ -1221,11 +1270,9 @@ static void uc_wiota_handle_setup_msg(unsigned char *sub_data)
         break;
 
     case WIOTA_HOPPING_FREQ_SET:
-        uc_wiota_set_hopping_freq(in_value[0]);
         break;
 
     case WIOTA_HOPPING_MODE_SET:
-        uc_wiota_set_hopping_mode(in_value[0], in_value[1]);
         break;
 
     case WIOTA_MAX_IOTE_NUM_SET:
@@ -1308,8 +1355,10 @@ static void uc_wiota_handle_setup_msg(unsigned char *sub_data)
     {
         uc_subf_cfg_t subf_cfg = {0};
 
-        subf_cfg.block_size = in_value[0];
-        subf_cfg.send_round = in_value[1];
+        subf_cfg.ul_vfs = in_value[0];
+        subf_cfg.dl_vfs = in_value[1];
+        subf_cfg.send_round = in_value[2];
+        subf_cfg.once_len = in_value[3];
         uc_wiota_set_subframe_mode_cfg(&subf_cfg);
         break;
     }
@@ -1341,6 +1390,13 @@ static void uc_wiota_handle_setup_msg(unsigned char *sub_data)
         break;
     }
 
+    case WIOTA_PAGING_RX_ENTER:
+    {
+        // reply in advance, otherwise it will not be able to reply entering sleep mode
+        wiota_cmd_exec_result(setup_cmd->cmd_header.cmd_type, setup_cmd->cmd_header.cmd);
+        uc_wiota_paging_rx_enter(in_value[0], in_value[1]);
+        break;
+    }
     case WIOTA_AAGC_IDX_SET:
         uc_wiota_set_aagc_idx(in_value[0]);
         break;
@@ -1357,22 +1413,23 @@ static void uc_wiota_handle_setup_msg(unsigned char *sub_data)
         uc_wiota_set_dl_rf_mode(in_value[0]);
         break;
 
+    case WIOTA_AFH_FUNC_SET:
+        uc_wiota_set_afh_func(in_value[0]);
+        break;
+
+    case WIOTA_PWM_CTRL_PA_SET:
+        uc_wiota_set_pwm_ctrl_pa(in_value[0], in_value[1]);
+        break;
+
+    case WIOTA_RAMP_POWER_SET:
+        uc_wiota_set_ramp_power(in_value[0]);
+        break;
+
     default:
         break;
     }
 
-    result.cmd_header.result = WIOTA_CMD_EXEC_SUC;
-    result.cmd_header.cmd_type = setup_cmd->cmd_header.cmd_type;
-    result.cmd_header.cmd = setup_cmd->cmd_header.cmd;
-
-    //cmd res
-    cmd_info.cmd_header = &result.cmd_header,
-    cmd_info.para_num = 0;
-
-    if (uc_wiota_send_data_to_gateway(&cmd_info) != 0)
-    {
-        rt_kprintf("setup res send fail\n");
-    }
+    wiota_cmd_exec_result(setup_cmd->cmd_header.cmd_type, setup_cmd->cmd_header.cmd);
 }
 
 static void uc_wiota_handle_query_msg(unsigned char *sub_data)
@@ -1409,7 +1466,8 @@ static void uc_wiota_handle_query_msg(unsigned char *sub_data)
         out_value[8] = config.old_subsys_v;
         out_value[9] = config.bitscb;
         out_value[10] = config.subsystem_id;
-        out_value_num = 11;
+        out_value[11] = config.freq_idx;
+        out_value_num = 12;
         break;
     }
 
@@ -1497,6 +1555,12 @@ static void uc_wiota_handle_query_msg(unsigned char *sub_data)
         out_value[0] = uc_wiota_get_dl_rf_mode();
         break;
 
+    case WIOTA_AFH_FUNC_GET:
+        out_value[0] = uc_wiota_get_afh_func();
+        break;
+    case WIOTA_8288_MEM_GET:
+        uc_wiota_read_value_from_mem(1, in_value[0], 4, (unsigned char *)&out_value[0]);
+        break;
     default:
         break;
     }
@@ -1679,8 +1743,6 @@ static void uc_wiota_handle_other_msg(unsigned char *sub_data, unsigned char cmd
     case WIOTA_MC_ID_DEL:
     {
         id_info_t *id_info = (id_info_t *)sub_data;
-        exec_result_info_t result = {0};
-        struct cmd_send_para cmd_info = {0};
         unsigned int *id = RT_NULL;
         id = id_info->id;
 
@@ -1705,18 +1767,7 @@ static void uc_wiota_handle_other_msg(unsigned char *sub_data, unsigned char cmd
         {
             uc_wiota_del_multicast_id(id, id_info->id_num);
         }
-        result.cmd_header.result = WIOTA_CMD_EXEC_SUC;
-        result.cmd_header.cmd_type = CMD_TYPE_OTHER;
-        result.cmd_header.cmd = cmd;
-
-        // cmd
-        cmd_info.cmd_header = &result.cmd_header,
-        cmd_info.para_num = 0;
-
-        if (uc_wiota_send_data_to_gateway(&cmd_info) != 0)
-        {
-            rt_kprintf("id_set res send fail\n");
-        }
+        wiota_cmd_exec_result(CMD_TYPE_OTHER, cmd);
         break;
     }
 
@@ -1830,6 +1881,22 @@ static void uc_wiota_handle_other_msg(unsigned char *sub_data, unsigned char cmd
         {
             rt_kprintf("modid send fail\n");
         }
+        break;
+    }
+
+    case WIOTA_AFH_MAP_SET:
+    {
+        afh_map_t *afh_map = (afh_map_t *)sub_data;
+        uc_wiota_set_afh_map(afh_map->afh_map);
+        wiota_cmd_exec_result(CMD_TYPE_OTHER, cmd);
+        break;
+    }
+
+    case WIOTA_RAMP_POWER_CFG_SET:
+    {
+        ramp_power_cfg_ex_t *ramp_power = (ramp_power_cfg_ex_t *)sub_data;
+        uc_wiota_set_ramp_power_cfg(ramp_power->ramp_power_cfg, ramp_power->ramp_size);
+        wiota_cmd_exec_result(CMD_TYPE_OTHER, cmd);
         break;
     }
 
@@ -1957,7 +2024,7 @@ static unsigned short uc_wiota_dl_data_parse(void)
                 {
                     rt_kprintf("channel %d, sub_data crc_check error, len %d %d, cnt %d\n",
                                ap_channel_id, sub_data_len, dl_data_len, check_cnt);
-                    // ctx_print_data_by_u8(sub_data, sub_data_len);
+                    // uc_print_data_hex(sub_data, sub_data_len);
                     if (check_cnt == 0)
                     {
                         // cp right cmd header to backup data
@@ -2089,6 +2156,8 @@ int uc_wiota_spi_com_init(void)
                                                   3,
                                                   3);
     RT_ASSERT(dl_irq_handler);
+
+    uc_wiota_enable_ul_irq(); // notify mcu, ap startup
 
     // hand shake with gateway
     uc_wiota_hand_shake_with_gateway();

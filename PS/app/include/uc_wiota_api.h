@@ -54,7 +54,7 @@ extern "C"
 #define MAX_THRESHOLD 15
 #define MIN_SEND_TIME 20
 #define MAX_SEND_TIME 44000
-#define MAX_ACTIVE_IOTE_NUM 144
+#define MAX_ACTIVE_IOTE_NUM 160
 
 typedef enum sym_len
 {
@@ -400,9 +400,10 @@ typedef struct
 
 typedef struct
 {
-    unsigned char block_size;
-    unsigned char send_round;
-    unsigned char na[2];
+    unsigned char ul_vfs;     // ul voice frame size, default 12byte
+    unsigned char dl_vfs;     // dl voice frame size, default 12byte
+    unsigned char send_round; // dl vouce send round, default 1 round
+    unsigned char once_len;   // default 1 + 4 + 3 * dl_vfs
 } uc_subf_cfg_t;
 
 typedef struct
@@ -448,6 +449,17 @@ typedef struct
     float altitude;
 } uc_ts_info_t;
 
+typedef struct
+{
+    signed short slope;
+    signed short intercept;
+} freq_ramp_cfg_t;
+
+typedef struct
+{
+    freq_ramp_cfg_t freq_ramp[4];
+} ramp_power_cfg_t;
+
 typedef void (*uc_send_callback)(uc_send_recv_t *result);
 typedef void (*uc_scan_callback)(uc_scan_recv_t *result);
 typedef void (*uc_temp_callback)(uc_temp_recv_t *result);
@@ -459,6 +471,7 @@ typedef void (*uc_drop_callback)(unsigned int user_id);
 typedef void (*uc_recv_callback)(unsigned int user_id, uc_dev_pos_t dev_pos, unsigned char *data, unsigned short data_len, uc_recv_data_type_e data_type);
 typedef void (*uc_recv_detail_callback)(uc_recv_detail_t *recv_detail);
 typedef void (*uc_fn_refresh_callback)(unsigned int frame_num);
+typedef void (*uc_cce_state_callback)(unsigned char dfe_err_cnt, unsigned char rf_err_cnt);
 
 typedef struct
 {
@@ -594,6 +607,12 @@ int uc_wiota_set_ramp_type(unsigned char ramp_type);
 
 int uc_wiota_set_ramp_value(unsigned int ramp_value);
 
+int uc_wiota_set_ramp_power(unsigned int ramp_power);
+
+int uc_wiota_set_ramp_power_cfg(ramp_power_cfg_t *ramp_power, int ramp_size); // 0 - 33 dbm
+
+int uc_wiota_set_pwm_ctrl_pa(unsigned int period, unsigned int duty);
+
 int uc_wiota_set_rf_ctrl_idx(unsigned int rf_ctrl_idx);
 
 int uc_wiota_set_aagc_idx(unsigned char aagc_idx);
@@ -610,6 +629,14 @@ int uc_wiota_set_ota_last_subframe_idle(unsigned char is_idle);
 
 unsigned char uc_wiota_get_ota_last_subframe_idle(void);
 
+int uc_wiota_set_afh_func(unsigned char is_open);
+
+unsigned char uc_wiota_get_afh_func(void);
+
+int uc_wiota_set_afh_map(unsigned char afh_map[26]);
+
+void uc_wiota_register_cce_abnormal_callback(uc_cce_state_callback callback);
+
 unsigned int uc_wiota_crc32_calc(const unsigned char *data, unsigned int data_len);
 
 unsigned int uc_wiota_crc16_calc(const unsigned char *data, unsigned int data_len);
@@ -619,6 +646,13 @@ unsigned int uc_wiota_crc8_calc(const unsigned char *data, unsigned int data_len
 void uc_wiota_set_dfe_counter_flag(void);
 
 void uc_wiota_master_control_bc_dfe_counter(void);
+
+extern signed int factory_test_handle_rs_msg(unsigned int subType, unsigned int data);
+extern signed int factory_test_handle_loop_msg(unsigned char mcs, unsigned int packetNum, unsigned char dl_mode);
+extern void factory_test_set_save_loop_id_flag(unsigned char isSave);
+extern unsigned char factory_test_get_loop_is_rach(void);
+extern unsigned char *factory_test_gen_rand_data(unsigned short data_len);
+extern int factory_gps_test(int cmd, int mode);
 
 // This function definition has been moved to uc_wiota_static.h
 //void uc_wiota_get_freq_list(unsigned char *list);
@@ -702,33 +736,6 @@ int uc_wiota_set_freq_info(unsigned char freq_idx);
     freq_idx.
 **********************************************************************************/
 unsigned char uc_wiota_get_freq_info(void);
-
-/*********************************************************************************
- This function is to set frequency point of hopping.
-
- param:
-        in:
-            hopping_freq_t:frequency point of hopping.
-        out:NULL.
-
- return:
-    int.
-**********************************************************************************/
-int uc_wiota_set_hopping_freq(unsigned char hopping_freq);
-
-/*********************************************************************************
- This function is to set mode of hopping frequency.
-
- param:
-        in:
-            ori_freq_count:working ori freq frames.
-            hopping_freq_count:working hopping freq frames.
-        out:NULL.
-
- return:
-    int.
-**********************************************************************************/
-int uc_wiota_set_hopping_mode(unsigned char ori_freq_frame, unsigned char hopping_freq_frame);
 
 /**********************************************************************************
  This function is to set max iote num of active state.
